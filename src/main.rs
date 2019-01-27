@@ -1,5 +1,6 @@
 //extern crate jsonrpc_core;
 use std::process;
+//use std::error::Error;
 
 #[macro_use]
 extern crate serde_derive;
@@ -26,6 +27,6 @@ fn main() {
     let str_file_common_init = &arguments[1];
     let str_file_local_init = &arguments[2];
     println!("CommonInit = {}     LocalInit = {}", str_file_common_init, str_file_local_init);
-    let common_init = parsing_input::read_common_init_from_file(str_file_common_init);
+    let common_init : types::CommonInit = parsing_input::read_common_init_ci(str_file_common_init);
     println!("Hello, world!");
 }  
