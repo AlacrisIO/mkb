@@ -14,11 +14,13 @@ struct SingleRegistrar {
 }
 
 #[derive(Serialize, Deserialize)]
-struct CommonInit {
-    registrars: Vec<SingleRegistrar>
+pub struct CommonInit {
+    registrars: Vec<SingleRegistrar>,
+    consensus_fraction: f32,
 }
 
 
+#[derive(Debug, Serialize, Deserialize)]
 struct SingleEnt {
     name: String,
     address: String,
