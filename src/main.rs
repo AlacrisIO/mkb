@@ -1,8 +1,19 @@
-extern crate jsonrpc_core;
+//extern crate jsonrpc_core;
 use std::process;
+
+#[macro_use]
+extern crate serde_derive;
+extern crate serde;
+extern crate serde_json;
+
+//use serde::{Serialize, Serializer, Deserialize, Deserializer};
+//use self::serde::{Deserialize, Serialize};
+//use serde_json::Result;
+
 
 
 mod types;
+mod parsing_input;
 
 fn main() {
     let arguments: Vec<String> = std::env::args().collect();
@@ -12,10 +23,9 @@ fn main() {
         println!("Exiting program. It is run as mkb common_init.json local_init.json");
         process::exit(1);
     }
-    let strFileCommonInit = &arguments[1];
-    let strFileLocalInit = &arguments[2];
-    println!("CommonInit = {} LocalInit = {}", strFileCommonInit, strFileLocalInit);
-
+    let str_file_common_init = &arguments[1];
+    let str_file_local_init = &arguments[2];
+    println!("CommonInit = {}     LocalInit = {}", str_file_common_init, str_file_local_init);
     
     println!("Hello, world!");
 }  

@@ -1,6 +1,11 @@
+//extern crate serde;
+//extern crate serde_json;
 use std::vec;
+//use self::serde::{Serialize, Serializer, Deserialize, Deserializer};
+//use self::serde::{Deserialize, Serialize};
+//use self::serde_json::Result;
 
-#[derive(Debug)]
+#[derive(Debug, Serialize, Deserialize)]
 struct SingleRegistrar {
     name: String,
     address: String,
@@ -8,7 +13,7 @@ struct SingleRegistrar {
     port: i32
 }
 
-
+#[derive(Serialize, Deserialize)]
 struct CommonInit {
     registrars: Vec<SingleRegistrar>
 }
