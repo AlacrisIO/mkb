@@ -10,6 +10,7 @@ struct SingleRegistrar {
     name: String,
     address: String,
     public_key: String,
+    url: String,
     port: i32
 }
 
@@ -26,7 +27,8 @@ struct SingleEnt {
     address: String,
     public_key: String,
     private_key: String,
-    password: String
+    password: String,
+    database_file: String
 }
 
 

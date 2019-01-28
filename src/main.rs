@@ -7,6 +7,11 @@ extern crate serde_derive;
 extern crate serde;
 extern crate serde_json;
 
+
+extern crate log;
+use log::{info, trace, warn};
+
+
 //use serde::{Serialize, Serializer, Deserialize, Deserializer};
 //use self::serde::{Deserialize, Serialize};
 //use serde_json::Result;
@@ -17,6 +22,8 @@ mod types;
 mod parsing_input;
 
 fn main() {
+    trace!("Beginning MKB");
+
     let arguments: Vec<String> = std::env::args().collect();
     let nb_arg = arguments.len();
     println!("nb_arg={}", nb_arg);
@@ -28,5 +35,8 @@ fn main() {
     let str_file_local_init = &arguments[2];
     println!("CommonInit = {}     LocalInit = {}", str_file_common_init, str_file_local_init);
     let common_init : types::CommonInit = parsing_input::read_common_init_ci(str_file_common_init);
+    
+
+    
     println!("Hello, world!");
 }  

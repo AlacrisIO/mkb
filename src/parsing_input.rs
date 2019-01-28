@@ -9,6 +9,21 @@ use types;
 //mod types;
 
 
+
+
+/// Returns a new Flaker based on the specified identifier
+///
+/// # Arguments
+///
+/// * `identifier` - A 6 byte vec that provides some arbitrary identification.
+///
+/// # Remarks
+///
+/// This is a convenience function that converts the `identifier` `vec` into
+/// a 6 byte array. Where possible, prefer the array and use `new`.
+///
+/// *Note*: This also assumes the `flaker` is being created on a little endian
+/// CPU. 
 pub fn read_common_init_ci_exn<P: AsRef<Path>>(path: P) -> Result<types::CommonInit, Box<Error>> {
     // Open the file in read-only mode with buffer.
     let file = File::open(path)?;
@@ -29,7 +44,5 @@ pub fn read_common_init_ci<P: AsRef<Path>>(path: P) -> types::CommonInit {
             process::exit(1);
         },
     }
-
-    
 }
 
