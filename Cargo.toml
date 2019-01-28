@@ -9,7 +9,8 @@ authors = ["Mathieu Dutour Sikiric <Mathieu.Dutour@gmail.com>"]
 
 [dependencies]
 #jsonrpc-core = { git = "https://github.com/paritytech/jsonrpc.git", branch = "parity-2.2" }
-parity-ethereum = { git = "https://github.com/paritytech/parity-ethereum" }
+#parity-ethereum = { git = "https://github.com/paritytech/parity-ethereum" }
+rocksdb = "0.8.1"
 #rocksdb = { git = "https://github.com/nervosnetwork/rust-rocksdb" }
 #rust_sodium = "~0.10.0"
 serde_json = "1.0.37"

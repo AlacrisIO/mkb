@@ -1,15 +1,24 @@
-
-use rocksdb::DB;
-
-static mut db: DB;
+use std::process;
+//xuse std::error::Error;
 
 
-pub fn open_database(file_database: String) {
-    db = DB::open_default(file_database).unwrap();
-}
+extern crate rocksdb;
+use self::rocksdb::DB;
 
 
-pub fn put_value(key: String, value: String) {
-    db.put(key, value);
+use log::{info};
+
+
+
+pub fn open_database(file_database: &String) -> DB {
+//    let db : Result<DB,Error> = DB::open_default(file_database);
+    let db = DB::open_default(file_database);
+    match db {
+        Ok(v) => v,
+        Err(_) => {
+            info!("Error reading the database file_satabase={}", file_database);
+            process::exit(1);
+        },
+    }
 }
 

@@ -9,6 +9,7 @@
 	 "address": "0x9ccaed210ce8c0cb49c5ad1c4f583406c264ba69",
 	 "public_key": "049e0a7e3c05e3328c603b0c27fbfdfc5030c95d9ad179a431c14f81e30a64ce95f625447e182a8be718d45f9ab9723f9b8571dd5c5752daa66feb84938b095805",
 	 "port": 8806
-	}]
+	}],
+    "consensus_fraction" : 0.60
 }	    
     

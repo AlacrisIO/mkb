@@ -22,13 +22,13 @@ pub struct CommonInit {
 
 
 #[derive(Debug, Serialize, Deserialize)]
-struct SingleEnt {
+pub struct SingleEnt {
     name: String,
     address: String,
     public_key: String,
     private_key: String,
     password: String,
-    database_file: String
+    pub database_file: String
 }
 
 
