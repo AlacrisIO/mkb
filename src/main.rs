@@ -21,6 +21,7 @@ use log::{info, trace};
 mod db;
 mod types;
 mod parsing_input;
+mod infinite_loop;
 
 fn main() {
     trace!("Beginning MKB");

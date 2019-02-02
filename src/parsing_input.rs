@@ -3,6 +3,14 @@ use std::error::Error;
 use std::fs::File;
 use std::io::BufReader;
 use std::path::Path;
+//use serde::{Serialize, Serializer, Deserialize, Deserializer};
+
+//use serde::Deserializer;
+//use serde::de::DeserializeOwned;
+//use serde::Deserialize;
+use serde_json;
+//use serde::de::Deserialize;
+//use serde::ser::Serialize;
 
 use types;
 use log::{info};
@@ -30,6 +38,9 @@ pub fn read_common_init_ci_exn<P: AsRef<Path>>(path: P) -> Result<types::CommonI
     let u : types::CommonInit = serde_json::from_reader(reader)?;
     Ok(u)
 }
+
+
+
 
 
 pub fn read_common_init_ci<P: AsRef<Path>>(path: P) -> types::CommonInit {
@@ -67,20 +78,16 @@ pub fn read_single_ent<P: AsRef<Path>>(path: P) -> types::SingleEnt {
     }
 }
 
-
-
 /*
-pub fn read_t_json_exn<P: AsRef<Path>, T: serde::Deserialize<'de>>(path: P) -> Result<T, Box<Error>> {
-    // Open the file in read-only mode with buffer.
+pub fn read_t_json_exn<T: Deserialize>(path: String) -> Result<T, Box<Error>> {
     let file = File::open(path)?;
     let reader = BufReader::new(file);
-
-    // Read the JSON contents of the file as an instance of `CommonInit`.
     let u : T = serde_json::from_reader(reader)?;
     Ok(u)
 }
+*/
 
-
+/*
 pub fn read_t_json<P: AsRef<Path>, T>(path: P) -> T {
     let u_res : Result<T, Box<Error>> = read_t_json_exn(path);
     match u_res {
