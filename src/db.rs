@@ -2,12 +2,11 @@ use std::process;
 //xuse std::error::Error;
 
 
-extern crate rocksdb;
-use self::rocksdb::DB;
+//extern crate rocksdb;
+use rocksdb::DB;
 
 
 use log::{info};
-
 
 
 pub fn open_database(file_database: &String) -> DB {

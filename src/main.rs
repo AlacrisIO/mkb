@@ -7,6 +7,16 @@ extern crate serde_derive;
 extern crate serde;
 extern crate serde_json;
 
+extern crate jsonrpc_core;
+extern crate jsonrpc_pubsub;
+#[macro_use]
+extern crate jsonrpc_macros;
+extern crate jsonrpc_tcp_server;
+
+extern crate rocksdb;
+
+
+
 
 extern crate log;
 use log::{info, trace};
@@ -40,10 +50,9 @@ fn main() {
     let single_ent : types::SingleEnt = parsing_input::read_single_ent(str_file_local_init);
     let database_file = single_ent.database_file;
 
-    
     let db = db::open_database(&database_file);
-    
-    println!("Hello, world!");
 
+    infinite_loop::inf_loop(db, common_init);
     
-}  
+    println!("Normal termination of the MKB");
+}
