@@ -47,12 +47,12 @@ fn main() {
     let str_file_local_init = &arguments[2];
     trace!("CommonInit = {}     LocalInit = {}", str_file_common_init, str_file_local_init);
     let common_init : types::CommonInit = parsing_input::read_common_init_ci(str_file_common_init);
-    let single_ent : types::SingleEnt = parsing_input::read_single_ent(str_file_local_init);
-    let database_file = single_ent.database_file;
-
+    let local_init : types::LocalInit = parsing_input::read_local_init(str_file_local_init);
+    
+    let database_file : String = local_init.database_file.clone();
     let db = db::open_database(&database_file);
 
-    infinite_loop::inf_loop(db, common_init);
+    infinite_loop::inf_loop(db, common_init, local_init);
     
     println!("Normal termination of the MKB");
 }

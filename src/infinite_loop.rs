@@ -1,4 +1,4 @@
-use std::process;
+//use std::process;
 use jsonrpc_core::*;
 use jsonrpc_core::futures::Future;
 
@@ -6,7 +6,24 @@ use rocksdb::DB;
 
 use types;
 
-pub fn inf_loop(db: DB, common_init: types::CommonInit)
+use log::{info};
+use std::net::{IpAddr, Ipv4Addr, SocketAddr};
+
+
+fn get_registrar_by_address(address: String, common_init: types::CommonInit) -> Option<types::SingleRegistrar> {
+    for e_rec in common_init.registrars {
+        if e_rec.address == address {
+            Some(e_rec);
+        }
+    }
+    None
+//    info!("Failed to find the address in the list of registrars");
+//    process::exit(1);
+}
+
+
+
+pub fn inf_loop(db: DB, common_init: types::CommonInit, local_init: types::LocalInit)
 {
     let mut io = IoHandler::new();
     io.add_method("terminate", |_: Params| {
@@ -30,13 +47,11 @@ pub fn inf_loop(db: DB, common_init: types::CommonInit)
     io.add_method("get_data", |_: Params| {
         Ok(Value::String("adding account to the syste,".into()))
     });
-    
-    loop {
-        
+    //
+    let my_reg = get_registrar_by_address(local_init.address, common_init).expect("Failed to find registrar");
 
-
-        
-    }
+    let my_hostname = IpAddr::V4(Ipv4Addr::new(my_reg.ip_address[0], my_reg.ip_address[1], my_reg.ip_address[2], my_reg.ip_address[3]));
+    let socket = SocketAddr::new(my_hostname, my_reg.port);
     
     
     

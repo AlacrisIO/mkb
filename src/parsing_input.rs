@@ -56,19 +56,19 @@ pub fn read_common_init_ci<P: AsRef<Path>>(path: P) -> types::CommonInit {
 
 
 
-pub fn read_single_ent_exn<P: AsRef<Path>>(path: P) -> Result<types::SingleEnt, Box<Error>> {
+pub fn read_local_init_exn<P: AsRef<Path>>(path: P) -> Result<types::LocalInit, Box<Error>> {
     // Open the file in read-only mode with buffer.
     let file = File::open(path)?;
     let reader = BufReader::new(file);
 
     // Read the JSON contents of the file as an instance of `CommonInit`.
-    let u : types::SingleEnt = serde_json::from_reader(reader)?;
+    let u : types::LocalInit = serde_json::from_reader(reader)?;
     Ok(u)
 }
 
 
-pub fn read_single_ent<P: AsRef<Path>>(path: P) -> types::SingleEnt {    
-    let u_res : Result<types::SingleEnt, Box<Error>> = read_single_ent_exn(path);
+pub fn read_local_init<P: AsRef<Path>>(path: P) -> types::LocalInit {    
+    let u_res : Result<types::LocalInit, Box<Error>> = read_local_init_exn(path);
     match u_res {
         Ok(v) => v,
         Err(_) => {
