@@ -17,9 +17,9 @@ extern crate rocksdb;
 
 
 
-
-extern crate log;
-use log::{info, trace};
+//#[macro_use]
+//extern crate log;
+//use log::{info, trace};
 
 
 //use serde::{Serialize, Serializer, Deserialize, Deserializer};
@@ -34,25 +34,30 @@ mod parsing_input;
 mod infinite_loop;
 
 fn main() {
-    trace!("Beginning MKB");
+    println!("Beginning MKB");
 
     let arguments: Vec<String> = std::env::args().collect();
     let nb_arg = arguments.len();
     println!("nb_arg={}", nb_arg);
     if nb_arg != 3 {
-        info!("Exiting program. It is run as mkb common_init.json local_init.json");
+        println!("Exiting program. It is run as mkb common_init.json local_init.json");
         process::exit(1);
     }
     let str_file_common_init = &arguments[1];
     let str_file_local_init = &arguments[2];
-    trace!("CommonInit = {}     LocalInit = {}", str_file_common_init, str_file_local_init);
+    println!("CommonInit = {}     LocalInit = {}", str_file_common_init, str_file_local_init);
     let common_init : types::CommonInit = parsing_input::read_common_init_ci(str_file_common_init);
+    println!("We have common_init");
+
     let local_init : types::LocalInit = parsing_input::read_local_init(str_file_local_init);
+    println!("We have local_init");
     
     let database_file : String = local_init.database_file.clone();
+    println!("We have database_file = {}", database_file);
+    
     let db = db::open_database(&database_file);
+    println!("We have opened db");
 
     infinite_loop::inf_loop(db, common_init, local_init);
-    
-    info!("Normal termination of the MKB");
+    println!("Normal termination of the MKB");
 }

@@ -6,7 +6,7 @@ use std::process;
 use rocksdb::DB;
 
 
-use log::{info};
+//use log::{info};
 
 
 pub fn open_database(file_database: &String) -> DB {
@@ -15,7 +15,7 @@ pub fn open_database(file_database: &String) -> DB {
     match db {
         Ok(v) => v,
         Err(_) => {
-            info!("Error reading the database file_satabase={}", file_database);
+            println!("Error reading the database file_satabase={}", file_database);
             process::exit(1);
         },
     }
