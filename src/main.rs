@@ -9,8 +9,8 @@ extern crate serde_json;
 
 extern crate jsonrpc_core;
 extern crate jsonrpc_pubsub;
-#[macro_use]
-extern crate jsonrpc_macros;
+//#[macro_use]
+//extern crate jsonrpc_macros;
 extern crate jsonrpc_tcp_server;
 
 extern crate rocksdb;
@@ -54,5 +54,5 @@ fn main() {
 
     infinite_loop::inf_loop(db, common_init, local_init);
     
-    println!("Normal termination of the MKB");
+    info!("Normal termination of the MKB");
 }
