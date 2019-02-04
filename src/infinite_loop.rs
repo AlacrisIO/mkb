@@ -8,19 +8,20 @@ use types;
 
 use std::net::{IpAddr, Ipv4Addr, SocketAddr};
 
-use jsonrpc_tcp_server::ServerBuilder;
+use jsonrpc_http_server::{ServerBuilder};
+//use jsonrpc_minihttp_server::jsonrpc_core::*;
+
+
+//use jsonrpc_tcp_server::ServerBuilder;
 //use jsonrpc_tcp_server::jsonrpc_core::*;
 
 fn get_registrar_by_address(address: String, common_init: types::CommonInit) -> Option<types::SingleRegistrar> {
     for e_rec in common_init.registrars {
         if e_rec.address == address {
-            println!("We matched the test");
             return Some(e_rec);
         }
     }
     None
-//    println!("Failed to find the address in the list of registrars");
-//    process::exit(1);
 }
 
 
@@ -34,27 +35,28 @@ pub fn inf_loop(db: DB, common_init: types::CommonInit, local_init: types::Local
     });
     io.add_method("add_account", |_: Params| {
         println!("Processing a add_account command");
-        Ok(Value::String("adding account to the syste,".into()))
+//        Ok(json!({"success": true}))
+        Ok(Value::String("adding account to the system".into()))
     });
     io.add_method("deposit", |_: Params| {
         println!("Processing a deposit command");
-        Ok(Value::String("adding account to the syste,".into()))
+        Ok(Value::String("deposit operation".into()))
     });
     io.add_method("payment", |_: Params| {
         println!("Processing a payment command");
-        Ok(Value::String("adding account to the syste,".into()))
+        Ok(Value::String("payment operation".into()))
     });
     io.add_method("withdrawal", |_: Params| {
         println!("Processing a withdrawal command");
-        Ok(Value::String("adding account to the syste,".into()))
+        Ok(Value::String("withdrawal operation".into()))
     });
     io.add_method("send_data", |_: Params| {
         println!("Processing a send_data command");
-        Ok(Value::String("adding account to the syste,".into()))
+        Ok(Value::String("send data operation".into()))
     });
     io.add_method("get_data", |_: Params| {
         println!("Processing a get_data command");
-        Ok(Value::String("adding account to the syste,".into()))
+        Ok(Value::String("get data operation".into()))
     });
     //
     let my_reg = get_registrar_by_address(local_init.address, common_init).expect("Failed to find registrar");
@@ -67,7 +69,7 @@ pub fn inf_loop(db: DB, common_init: types::CommonInit, local_init: types::Local
 
     //
     let server = ServerBuilder::new(io)
-        .start(&socket)
+        .start_http(&socket)
         .expect("Server must start with no issues");
     
     server.wait()

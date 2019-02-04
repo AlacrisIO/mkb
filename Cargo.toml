@@ -8,7 +8,7 @@ authors = ["Mathieu Dutour Sikiric <Mathieu.Dutour@gmail.com>"]
 
 
 [dependencies]
-#jsonrpc-http-server = "10.0.1"
+jsonrpc-http-server = "10.0.1"
 jsonrpc-tcp-server = "10.0.1"
 jsonrpc-ipc-server = "10.0.1"
 jsonrpc-ws-server = "10.0.1"
