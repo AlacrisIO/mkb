@@ -12,7 +12,7 @@ extern crate jsonrpc_pubsub;
 extern crate jsonrpc_http_server;
 //#[macro_use]
 //extern crate jsonrpc_macros;
-extern crate jsonrpc_tcp_server;
+//extern crate jsonrpc_tcp_server;
 
 extern crate rocksdb;
 
