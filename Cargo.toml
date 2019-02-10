@@ -17,28 +17,43 @@ authors = ["Mathieu Dutour Sikiric <Mathieu.Dutour@gmail.com>"]
 
 
 [dependencies]
+#json stuff
 jsonrpc-http-server = "10.0.1"
-#jsonrpc-tcp-server = "10.0.1"
 jsonrpc-ipc-server = "10.0.1"
 jsonrpc-ws-server = "10.0.1"
 jsonrpc-macros = "10.0.1"
 jsonrpc-pubsub = "10.0.1"
 jsonrpc-core = "10.0.1"
 
-rocksdb = "0.8.1"
-secp256k1 = { git = "https://github.com/rust-bitcoin/rust-secp256k1/", features = [ "rand", "serde" ]}
-#rocksdb = { git = "https://github.com/nervosnetwork/rust-rocksdb" }
-multi-party-schnorr = { git = "https://github.com/KZen-networks/multi-party-schnorr" }
-rust_sodium = "~0.10.0"
-serde_json = "1.0.37"
+#serde stuff
+serde_json = { version = "1.0.37", features = ["arbitrary_precision"]}
 serde = "1.0"
 serde_derive = "1.0"
-log = "0.4.6"
-ring = "0.13.5"
 
+#pure rust stuff
+merkle-cbt = "0.1.1"
+
+#large integers
+num = "0.2.0"
+num-derive = "0.2"
+num-bigint = "0.2.2"
+num-traits = "0.2.6"
+num-format = { version = "0.1", features = ["num-bigint", "with-serde"] }
+
+log = "0.4.6"
+
+rocksdb = "0.8.1"
+secp256k1 = { git = "https://github.com/rust-bitcoin/rust-secp256k1/", features = [ "rand", "serde" ]}
+multi-party-schnorr = { git = "https://github.com/KZen-networks/multi-party-schnorr" }
+
+#cryto stuff
+ring = "0.13.5"
 keccak-hash = "0.1"
 
 
+#rocksdb = { git = "https://github.com/nervosnetwork/rust-rocksdb" }
+#jsonrpc-tcp-server = "10.0.1"
+#rust_sodium = "~0.10.0"
 #parity-ethereum = { git = "https://github.com/paritytech/parity-ethereum" }
 #multi-party-ecdsa = { git = "https://github.com/KZen-networks/multi-party-ecdsa" }
 

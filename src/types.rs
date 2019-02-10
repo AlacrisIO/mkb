@@ -5,7 +5,15 @@
 //use self::serde::{Deserialize, Serialize};
 //use self::serde_json::Result;
 
-#[derive(Debug, Serialize, Deserialize)]
+
+
+//use num_bigint::BigUint;
+//use serde_json::Number;
+use serde::Deserialize;
+//use serde_json::Value;
+
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct SingleRegistrar {
     pub name: String,
     pub address: String,
@@ -14,11 +22,12 @@ pub struct SingleRegistrar {
     pub port: u16
 }
 
-#[derive(Serialize, Deserialize)]
+#[derive(Clone, Serialize, Deserialize)]
 pub struct CommonInit {
     pub registrars: Vec<SingleRegistrar>,
     pub consensus_fraction: f32
 }
+
 
 
 #[derive(Debug, Serialize, Deserialize)]
@@ -31,14 +40,24 @@ pub struct LocalInit {
     pub database_file: String
 }
 
+// Internal types
+
 // RPC request from the users
 
 #[derive(Serialize, Deserialize)]
-pub struct AddAccountRequest {
+pub struct AccountInfo {
     account_name: String,
     public_key: String,
     private_key: String
 }
+
+
+#[derive(Serialize, Deserialize)]
+pub struct Account {
+    account_info: AccountInfo,
+    available_funds: u64
+}
+
 
 #[derive(Serialize, Deserialize)]
 pub struct DepositRequest {

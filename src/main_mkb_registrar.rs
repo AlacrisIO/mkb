@@ -16,6 +16,11 @@ extern crate jsonrpc_http_server;
 
 extern crate rocksdb;
 
+//big integers
+//#![cfg(feature = "serde")]
+extern crate num_bigint;
+extern crate num_traits;
+extern crate num_derive;
 
 
 //#[macro_use]
@@ -33,6 +38,7 @@ mod db;
 mod types;
 mod parsing_input;
 mod infinite_loop;
+mod gossip_protocol;
 
 fn main() {
     println!("Beginning MKB");

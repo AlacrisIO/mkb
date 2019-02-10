@@ -10,7 +10,6 @@ use rocksdb::DB;
 
 
 pub fn open_database(file_database: &String) -> DB {
-//    let db : Result<DB,Error> = DB::open_default(file_database);
     let db = DB::open_default(file_database);
     match db {
         Ok(v) => v,
