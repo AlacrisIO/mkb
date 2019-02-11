@@ -36,7 +36,7 @@ merkle-cbt = "0.1.1"
 #large integers
 num = "0.2.0"
 num-derive = "0.2"
-num-bigint = "0.2.2"
+num-bigint = { version = "0.2.2", features = [ "serde" ] }
 num-traits = "0.2.6"
 num-format = { version = "0.1", features = ["num-bigint", "with-serde"] }
 

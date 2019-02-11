@@ -7,7 +7,7 @@
 
 
 
-//use num_bigint::BigUint;
+use num_bigint::BigUint;
 //use serde_json::Number;
 use serde::Deserialize;
 //use serde_json::Value;
@@ -30,7 +30,7 @@ pub struct CommonInit {
 
 
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct LocalInit {
     pub name: String,
     pub address: String,
@@ -55,7 +55,8 @@ pub struct AccountInfo {
 #[derive(Serialize, Deserialize)]
 pub struct Account {
     account_info: AccountInfo,
-    available_funds: u64
+    available_funds: BigUint
+//    available_funds: u64
 }
 
 
