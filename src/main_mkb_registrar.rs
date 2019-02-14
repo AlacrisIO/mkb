@@ -16,6 +16,12 @@ extern crate jsonrpc_http_server;
 
 extern crate rocksdb;
 
+// The ed25519 cryptography. VRF depends on it.
+extern crate ed25519_dalek;
+
+//The Merkle trees from CBT.
+extern crate merkle_cbt;
+
 //big integers
 //#![cfg(feature = "serde")]
 extern crate num_bigint;

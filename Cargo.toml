@@ -31,7 +31,7 @@ serde = "1.0"
 serde_derive = "1.0"
 
 #pure rust stuff
-merkle-cbt = "0.1.1"
+merkle-cbt = { version = "0.1.1", features = [ "sha3"] }
 
 #large integers
 num = "0.2.0"
@@ -49,6 +49,9 @@ multi-party-schnorr = { git = "https://github.com/KZen-networks/multi-party-schn
 #cryto stuff
 ring = "0.13.5"
 keccak-hash = "0.1"
+
+#ed25519
+ed25519-dalek = { git = "https://github.com/dalek-cryptography/ed25519-dalek", features = [ "serde" ] }
 
 
 #rocksdb = { git = "https://github.com/nervosnetwork/rust-rocksdb" }

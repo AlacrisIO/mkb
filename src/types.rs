@@ -6,11 +6,15 @@
 //use self::serde_json::Result;
 
 
+//use merkle_cbt::merkle_tree::CBMT;
+use merkle_cbt::Merge;
 
 use num_bigint::BigUint;
 //use serde_json::Number;
 use serde::Deserialize;
 //use serde_json::Value;
+
+
 
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -44,15 +48,22 @@ pub struct LocalInit {
 
 // RPC request from the users
 
-#[derive(Serialize, Deserialize)]
+#[derive(Ord, PartialOrd, Eq, PartialEq, Clone, Serialize, Deserialize)]
 pub struct AccountInfo {
     account_name: String,
     public_key: String,
     private_key: String
 }
 
+impl Merge for AccountInfo {
+    fn merge(left: &Self, right: &Self) -> Self {
+        right.clone()
+    }
+}
 
-#[derive(Serialize, Deserialize)]
+
+
+#[derive(Clone, Serialize, Deserialize)]
 pub struct Account {
     account_info: AccountInfo,
     available_funds: BigUint
@@ -60,33 +71,33 @@ pub struct Account {
 }
 
 
-#[derive(Serialize, Deserialize)]
+#[derive(Clone, Serialize, Deserialize)]
 pub struct DepositRequest {
     account_name: String,
     amount: f32
 }
 
-#[derive(Serialize, Deserialize)]
+#[derive(Clone, Serialize, Deserialize)]
 pub struct PaymentRequest {
     account_name_sender: String,
     account_name_receiver: String,
     amount: f32
 }
 
-#[derive(Serialize, Deserialize)]
+#[derive(Clone, Serialize, Deserialize)]
 pub struct WithdrawRequest {
     account_name: String,
     amount: f32
 }
 
-#[derive(Serialize, Deserialize)]
+#[derive(Clone, Serialize, Deserialize)]
 pub struct SendDataRequest {
     account_name: String,
     key: String,
     data: String
 }
 
-#[derive(Serialize, Deserialize)]
+#[derive(Clone, Serialize, Deserialize)]
 pub struct GetDataRequest {
     account_name: String,
     key: String

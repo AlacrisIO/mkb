@@ -1,6 +1,7 @@
 //use std::process;
 use jsonrpc_core::*;
 //use jsonrpc_core::futures::Future;
+use std::sync::{Arc, Mutex};
 
 use rocksdb::DB;
 
@@ -28,35 +29,56 @@ fn get_registrar_by_address(address: String, common_init: types::CommonInit) -> 
 
 pub fn inf_loop(db: DB, common_init: types::CommonInit, local_init: types::LocalInit)
 {
+    //    let server_handle = Arc::new(Mutex<Option<ServerHandle>>);
+    //    let for_io = server_handle.clone();
+
+    
     let mut io = IoHandler::new();
     io.add_method("terminate", |_: Params| {
         println!("Processing a terminate command");
         Ok(Value::String("We are trying to exit from the terminate".into()))
     });
-    io.add_method("add_account", |_: Params| {
+    io.add_method("add_account", |params: Params| {
         println!("Processing a add_account command");
-//        Ok(json!({"success": true}))
-        Ok(Value::String("adding account to the system".into()))
+        match params.parse::<types::AccountInfo>() {
+            Ok(_eval) => Ok(Value::String("adding account to the system".into())),
+            _ => Ok(Value::String("failed adding account".into())),
+        }
     });
-    io.add_method("deposit", |_: Params| {
+    io.add_method("deposit", |params: Params| {
         println!("Processing a deposit command");
-        Ok(Value::String("deposit operation".into()))
+        match params.parse::<types::DepositRequest>() {
+            Ok(_eval) => Ok(Value::String("deposit operation".into())),
+            _ => Ok(Value::String("failed deposit operation".into())),
+        }
     });
-    io.add_method("payment", |_: Params| {
+    io.add_method("payment", |params: Params| {
         println!("Processing a payment command");
-        Ok(Value::String("payment operation".into()))
+        match params.parse::<types::DepositRequest>() {
+            Ok(_eval) => Ok(Value::String("payment operation".into())),
+            _ => Ok(Value::String("failed payment operation".into())),
+        }
     });
-    io.add_method("withdrawal", |_: Params| {
+    io.add_method("withdrawal", |params: Params| {
         println!("Processing a withdrawal command");
-        Ok(Value::String("withdrawal operation".into()))
+        match params.parse::<types::PaymentRequest>() {
+            Ok(_eval) => Ok(Value::String("withdrawal operation".into())),
+            _ => Ok(Value::String("failed withdrawal operation".into())),
+        }
     });
-    io.add_method("send_data", |_: Params| {
+    io.add_method("send_data", |params: Params| {
         println!("Processing a send_data command");
-        Ok(Value::String("send data operation".into()))
+        match params.parse::<types::SendDataRequest>() {
+            Ok(_eval) => Ok(Value::String("send data operation".into())),
+            _ => Ok(Value::String("failed send data operation".into())),
+        }
     });
-    io.add_method("get_data", |_: Params| {
+    io.add_method("get_data", |params: Params| {
         println!("Processing a get_data command");
-        Ok(Value::String("get data operation".into()))
+        match params.parse::<types::SendDataRequest>() {
+            Ok(_eval) => Ok(Value::String("get data operation".into())),
+            _ => Ok(Value::String("failed get data operation".into())),
+        }
     });
     //
     let my_reg = get_registrar_by_address(local_init.address, common_init).expect("Failed to find registrar");
