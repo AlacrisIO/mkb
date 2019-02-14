@@ -18,7 +18,8 @@ Gossip protocol works as follows:
 * Single packet are sent which contains a single request.
 * They must also contains the signature of the transactions.
 * We send single packet. They are sent to all the neighbors.
-* 
+
+
 
 
 

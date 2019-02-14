@@ -1,17 +1,19 @@
 //use std::process;
 use jsonrpc_core::*;
 //use jsonrpc_core::futures::Future;
-//use std::sync::{Arc, Mutex};
+use std::sync::{Arc, Mutex};
 
 
 
 use rocksdb::DB;
-use types;
+//use types;
+use types::*;
 
 use std::net::{IpAddr, Ipv4Addr, SocketAddr};
 
 use jsonrpc_http_server::{ServerBuilder};
 use jsonrpc_client_http::HttpTransport;
+
 
 
 //use jsonrpc_tcp_server::ServerBuilder;
@@ -23,7 +25,7 @@ use jsonrpc_client_http::HttpTransport;
 
 
 
-fn get_registrar_by_address(address: String, common_init: types::CommonInit) -> Option<types::SingleRegistrar> {
+fn get_registrar_by_address(address: String, common_init: CommonInit) -> Option<SingleRegistrar> {
     for e_rec in common_init.registrars {
         if e_rec.address == address {
             return Some(e_rec);
@@ -33,23 +35,24 @@ fn get_registrar_by_address(address: String, common_init: types::CommonInit) -> 
 }
 
 
-fn spreading_info() {
-    
-}
 
-
-fn process_request() {
+fn process_request(esumreq: SumTypeRequest) {
     
     
 }
 
 
 
-pub fn inf_loop(db: DB, common_init: types::CommonInit, local_init: types::LocalInit)
+pub fn inf_loop(db: DB, common_init: CommonInit, local_init: LocalInit)
 {
-    //    let server_handle = Arc::new(Mutex<Option<ServerHandle>>);
+//    let server_handle : Arc<i32>;
+//    let server_handle : Arc<Mutex<i32>>;
+//    let server_handle : Arc<Mutex<Option<i32>>>;
+//    let server_handle : Arc<Mutex<Option<ServerHandle>>>;
     //    let for_io = server_handle.clone();
 
+    
+    
     let mut io = IoHandler::new();
     io.add_method("terminate", |_: Params| {
         println!("Processing a terminate command");
@@ -57,19 +60,19 @@ pub fn inf_loop(db: DB, common_init: types::CommonInit, local_init: types::Local
     });
     io.add_method("add_account", |params: Params| {
         println!("Processing a add_account command");
-        match params.parse::<types::AccountInfo>() {
+        match params.parse::<AccountInfo>() {
             Ok(eval) => {
-                let esumreq = types::SumTypeRequest::accountinfo(eval);
+                let esumreq = SumTypeRequest::accountinfo(eval);
                 return Ok(Value::String("adding account to the system".into()));
-            }
+            },
             _ => Ok(Value::String("failed adding account".into())),
         }
     });
     io.add_method("deposit", |params: Params| {
         println!("Processing a deposit command");
-        match params.parse::<types::DepositRequest>() {
+        match params.parse::<DepositRequest>() {
             Ok(eval) => {
-                let esumreq = types::SumTypeRequest::depositrequest(eval);
+                let esumreq = SumTypeRequest::depositrequest(eval);
                 return Ok(Value::String("deposit operation".into()));
             },
             _ => Ok(Value::String("failed deposit operation".into())),
@@ -77,40 +80,40 @@ pub fn inf_loop(db: DB, common_init: types::CommonInit, local_init: types::Local
     });
     io.add_method("payment", |params: Params| {
         println!("Processing a payment command");
-        match params.parse::<types::PaymentRequest>() {
+        match params.parse::<PaymentRequest>() {
             Ok(eval) => {
-                let esumreq = types::SumTypeRequest::paymentrequest(eval);
-                Ok(Value::String("payment operation".into()))
+                let esumreq = SumTypeRequest::paymentrequest(eval);
+                return Ok(Value::String("payment operation".into()));
             },
             _ => Ok(Value::String("failed payment operation".into())),
         }
     });
     io.add_method("withdrawal", |params: Params| {
         println!("Processing a withdrawal command");
-        match params.parse::<types::PaymentRequest>() {
+        match params.parse::<PaymentRequest>() {
             Ok(eval) => {
-                let esumreq = types::SumTypeRequest::paymentrequest(eval);
-                Ok(Value::String("withdrawal operation".into()))
+                let esumreq = SumTypeRequest::paymentrequest(eval);
+                return Ok(Value::String("withdrawal operation".into()));
             },
             _ => Ok(Value::String("failed withdrawal operation".into())),
         }
     });
     io.add_method("send_data", |params: Params| {
         println!("Processing a send_data command");
-        match params.parse::<types::SendDataRequest>() {
+        match params.parse::<SendDataRequest>() {
             Ok(eval) => {
-                let esumreq = types::SumTypeRequest::senddatarequest(eval);
-                Ok(Value::String("send data operation".into()))
+                let esumreq = SumTypeRequest::senddatarequest(eval);
+                return Ok(Value::String("send data operation".into()));
             },
             _ => Ok(Value::String("failed send data operation".into())),
         }
     });
     io.add_method("get_data", |params: Params| {
         println!("Processing a get_data command");
-        match params.parse::<types::GetDataRequest>() {
+        match params.parse::<GetDataRequest>() {
             Ok(eval) => {
-                let esumreq = types::SumTypeRequest::getdatarequest(eval);
-                Ok(Value::String("get data operation".into()))
+                let esumreq = SumTypeRequest::getdatarequest(eval);
+                return Ok(Value::String("get data operation".into()));
             },
             _ => Ok(Value::String("failed get data operation".into())),
         }
