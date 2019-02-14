@@ -103,3 +103,21 @@ pub struct GetDataRequest {
     key: String
 }
 
+pub enum SumTypeRequest {
+    accountinfo(AccountInfo),
+    depositrequest(DepositRequest),
+    paymentrequest(PaymentRequest),
+    withdrawrequest(WithdrawRequest),
+    senddatarequest(SendDataRequest),
+    getdatarequest(GetDataRequest),
+}
+
+
+
+pub struct TransmissionRequest {
+    pub address_origin: String,
+    pub address_target: String,
+    pub sum_type_request: SumTypeRequest,
+}
+
+

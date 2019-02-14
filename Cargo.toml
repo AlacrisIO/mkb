@@ -24,6 +24,10 @@ jsonrpc-ws-server = "10.0.1"
 jsonrpc-macros = "10.0.1"
 jsonrpc-pubsub = "10.0.1"
 jsonrpc-core = "10.0.1"
+jsonrpc-client-http = "0.5.0"
+jsonrpc-client-core = "0.5.0"
+#jsonrpc-tcp-server = "10.0.1"
+
 
 #serde stuff
 serde_json = { version = "1.0.37", features = ["arbitrary_precision"]}
@@ -31,6 +35,7 @@ serde = "1.0"
 serde_derive = "1.0"
 
 #pure rust stuff
+numext-fixed-hash = "0.1.2"
 merkle-cbt = { version = "0.1.1", features = [ "sha3"] }
 
 #large integers
@@ -55,7 +60,6 @@ ed25519-dalek = { git = "https://github.com/dalek-cryptography/ed25519-dalek", f
 
 
 #rocksdb = { git = "https://github.com/nervosnetwork/rust-rocksdb" }
-#jsonrpc-tcp-server = "10.0.1"
 #rust_sodium = "~0.10.0"
 #parity-ethereum = { git = "https://github.com/paritytech/parity-ethereum" }
 #multi-party-ecdsa = { git = "https://github.com/KZen-networks/multi-party-ecdsa" }

@@ -1,6 +1,6 @@
-
 use types;
 
+#[derive(Debug, Serialize, Deserialize)]
 pub struct RoutingLine {
     pub list_direct_neighbor: Vec<String>
 }
@@ -9,6 +9,9 @@ pub struct RoutingLine {
 pub struct GossipProtocol {
     pub list_routing_line: Vec<RoutingLine>,
     pub initial_address: String
+}
+
+pub struct Message {
 }
 
 
@@ -36,3 +39,8 @@ pub fn compute_gossip_protocol(common_init: types::CommonInit, address: String) 
     GossipProtocol { list_routing_line: the_vect, initial_address: address }
 }
 
+
+pub fn propagate_info(common_init: types::CommonInit, gp: GossipProtocol) {
+    
+    
+}
