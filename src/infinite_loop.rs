@@ -3,11 +3,16 @@ use jsonrpc_core::*;
 //use jsonrpc_core::futures::Future;
 use std::sync::{Arc, Mutex};
 
+use std::sync::RwLock;
 
+//use futures::Future;
+//use futures::future::{self, Either};
+//use futures_cpupool::CpuPool;
 
 use rocksdb::DB;
 //use types;
 use types::*;
+use db::*;
 
 use std::net::{IpAddr, Ipv4Addr, SocketAddr};
 
@@ -34,22 +39,41 @@ fn get_registrar_by_address(address: String, common_init: CommonInit) -> Option<
     None
 }
 
-
-
-fn process_request(esumreq: SumTypeRequest) {
-    
+fn database_update(mut w: std::sync::RwLockWriteGuard<DBE>, esumreq: SumTypeRequest) {
+    let iter = (*w).iter;
+    let iter_str = iter.to_string();
+    let value_str : String = serde_json::to_string(&esumreq).unwrap();
+    //
+    let key_u8_b = iter_str.as_bytes();
+    let value_u8_b = value_str.as_bytes();
+    (*w).db.put(key_u8_b, value_u8_b).unwrap();
+    let iter_inc : i32 = iter + 1;
+    (*w).iter = iter_inc;
     
 }
 
 
-
-pub fn inf_loop(db: DB, common_init: CommonInit, local_init: LocalInit)
+pub fn inf_loop(mut dbe: DBE, common_init: CommonInit, local_init: LocalInit)
 {
 //    let server_handle : Arc<i32>;
 //    let server_handle : Arc<Mutex<i32>>;
 //    let server_handle : Arc<Mutex<Option<i32>>>;
 //    let server_handle : Arc<Mutex<Option<ServerHandle>>>;
     //    let for_io = server_handle.clone();
+
+    let lock = RwLock::<DBE>::new(dbe);
+    let process_request = move |esumreq: SumTypeRequest| {
+        let mut w : std::sync::RwLockWriteGuard<DBE> = lock.write().unwrap();
+        database_update(w, esumreq);
+    };
+
+
+    
+    let nb_call : RwLock<i32> = RwLock::new(0);
+    let increase_nb_call = move || {
+        let mut w = nb_call.write().unwrap();
+        *w += 1;
+    };
 
     
     
@@ -58,11 +82,14 @@ pub fn inf_loop(db: DB, common_init: CommonInit, local_init: LocalInit)
         println!("Processing a terminate command");
         Ok(Value::String("We are trying to exit from the terminate".into()))
     });
-    io.add_method("add_account", |params: Params| {
+    io.add_method("add_account", move |params: Params| {
         println!("Processing a add_account command");
         match params.parse::<AccountInfo>() {
             Ok(eval) => {
                 let esumreq = SumTypeRequest::accountinfo(eval);
+                increase_nb_call();
+                process_request(esumreq);
+//                return future:ok(Value::SymTypeRequest(esumreq));
                 return Ok(Value::String("adding account to the system".into()));
             },
             _ => Ok(Value::String("failed adding account".into())),

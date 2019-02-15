@@ -1,6 +1,12 @@
 use types;
 
 #[derive(Debug, Serialize, Deserialize)]
+pub struct SimpleExportScheme {
+    pub list_neighbor: Vec<String>
+}
+
+
+#[derive(Debug, Serialize, Deserialize)]
 pub struct RoutingLine {
     pub list_direct_neighbor: Vec<String>
 }

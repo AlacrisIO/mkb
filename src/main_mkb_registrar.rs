@@ -76,9 +76,9 @@ fn main() {
     let database_file : String = local_init.database_file.clone();
     println!("We have database_file = {}", database_file);
     
-    let db = db::open_database(&database_file);
+    let mut dbe = db::open_database(&database_file);
     println!("We have opened db");
 
-    infinite_loop::inf_loop(db, common_init, local_init);
+    infinite_loop::inf_loop(dbe, common_init, local_init);
     println!("Normal termination of the MKB");
 }

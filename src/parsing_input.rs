@@ -12,12 +12,8 @@ use serde_json;
 //use serde::de::Deserialize;
 //use serde::ser::Serialize;
 
-use types;
+use types::*;
 //use log::{info};
-
-//mod types;
-
-
 
 
 /// Returns the common initialization file or an error.
@@ -29,7 +25,7 @@ use types;
 /// # Remarks
 ///
 /// The input file is in JSON format.
-pub fn read_common_init_ci<P: AsRef<Path>>(path: P) -> types::CommonInit {
+pub fn read_common_init_ci<P: AsRef<Path>>(path: P) -> CommonInit {
     // Open the file in read-only mode with buffer.
     let file = File::open(path).expect("Error in opening path");
     println!("read_common_init_ci : After open statement");
@@ -39,19 +35,19 @@ pub fn read_common_init_ci<P: AsRef<Path>>(path: P) -> types::CommonInit {
     
 
     // Read the JSON contents of the file as an instance of `CommonInit`.
-    let u : types::CommonInit = serde_json::from_reader(reader).expect("Error in parsing of input");
+    let u : CommonInit = serde_json::from_reader(reader).expect("Error in parsing of input");
     println!("read_common_init_ci : We have read u");
     u
 }
 
 
 
-pub fn read_local_init<P: AsRef<Path>>(path: P) -> types::LocalInit {
+pub fn read_local_init<P: AsRef<Path>>(path: P) -> LocalInit {
     // Open the file in read-only mode with buffer.
     let file = File::open(path).expect("Error read_local_init, operation");
     let reader = BufReader::new(file);
 
-    let u : types::LocalInit = serde_json::from_reader(reader).expect("Error reading types::LocalInit");
+    let u : LocalInit = serde_json::from_reader(reader).expect("Error reading types::LocalInit");
     u
 }
 

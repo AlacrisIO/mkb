@@ -1,9 +1,6 @@
 //extern crate serde;
 //extern crate serde_json;
 //use std::vec;
-//use self::serde::{Serialize, Serializer, Deserialize, Deserializer};
-//use self::serde::{Deserialize, Serialize};
-//use self::serde_json::Result;
 
 
 //use merkle_cbt::merkle_tree::CBMT;
@@ -103,6 +100,7 @@ pub struct GetDataRequest {
     key: String
 }
 
+#[derive(Clone, Serialize, Deserialize)]
 pub enum SumTypeRequest {
     accountinfo(AccountInfo),
     depositrequest(DepositRequest),
@@ -114,6 +112,7 @@ pub enum SumTypeRequest {
 
 
 
+#[derive(Clone, Serialize, Deserialize)]
 pub struct TransmissionRequest {
     pub address_origin: String,
     pub address_target: String,
