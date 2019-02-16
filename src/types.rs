@@ -102,12 +102,12 @@ pub struct GetDataRequest {
 
 #[derive(Clone, Serialize, Deserialize)]
 pub enum SumTypeRequest {
-    accountinfo(AccountInfo),
-    depositrequest(DepositRequest),
-    paymentrequest(PaymentRequest),
-    withdrawrequest(WithdrawRequest),
-    senddatarequest(SendDataRequest),
-    getdatarequest(GetDataRequest),
+    Accountinfo(AccountInfo),
+    Depositrequest(DepositRequest),
+    Paymentrequest(PaymentRequest),
+    Withdrawrequest(WithdrawRequest),
+    Senddatarequest(SendDataRequest),
+    Getdatarequest(GetDataRequest),
 }
 
 

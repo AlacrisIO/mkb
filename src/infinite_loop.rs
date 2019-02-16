@@ -39,7 +39,8 @@ fn get_registrar_by_address(address: String, common_init: CommonInit) -> Option<
     None
 }
 
-fn database_update(mut w: std::sync::RwLockWriteGuard<DBE>, esumreq: SumTypeRequest) {
+
+fn database_update(mut w: std::sync::MutexGuard<DBE>, esumreq: SumTypeRequest) {
     let iter = (*w).iter;
     let iter_str = iter.to_string();
     let value_str : String = serde_json::to_string(&esumreq).unwrap();
@@ -49,7 +50,6 @@ fn database_update(mut w: std::sync::RwLockWriteGuard<DBE>, esumreq: SumTypeRequ
     (*w).db.put(key_u8_b, value_u8_b).unwrap();
     let iter_inc : i32 = iter + 1;
     (*w).iter = iter_inc;
-    
 }
 
 
@@ -61,20 +61,17 @@ pub fn inf_loop(mut dbe: DBE, common_init: CommonInit, local_init: LocalInit)
 //    let server_handle : Arc<Mutex<Option<ServerHandle>>>;
     //    let for_io = server_handle.clone();
 
-    let lock = RwLock::<DBE>::new(dbe);
+    let lk = Arc::new(Mutex::<DBE>::new(dbe));
     let process_request = move |esumreq: SumTypeRequest| {
-        let mut w : std::sync::RwLockWriteGuard<DBE> = lock.write().unwrap();
+        let mut w : std::sync::MutexGuard<DBE> = lk.lock().unwrap();
         database_update(w, esumreq);
     };
-
-
-    
-    let nb_call : RwLock<i32> = RwLock::new(0);
-    let increase_nb_call = move || {
-        let mut w = nb_call.write().unwrap();
-        *w += 1;
-    };
-
+    let process_request_0 = process_request.clone();
+    let process_request_1 = process_request.clone();
+    let process_request_2 = process_request.clone();
+    let process_request_3 = process_request.clone();
+    let process_request_4 = process_request.clone();
+    let process_request_5 = process_request.clone();
     
     
     let mut io = IoHandler::new();
@@ -86,60 +83,63 @@ pub fn inf_loop(mut dbe: DBE, common_init: CommonInit, local_init: LocalInit)
         println!("Processing a add_account command");
         match params.parse::<AccountInfo>() {
             Ok(eval) => {
-                let esumreq = SumTypeRequest::accountinfo(eval);
-                increase_nb_call();
-                process_request(esumreq);
-//                return future:ok(Value::SymTypeRequest(esumreq));
+                let esumreq = SumTypeRequest::Accountinfo(eval);
+                process_request_0(esumreq);
                 return Ok(Value::String("adding account to the system".into()));
             },
             _ => Ok(Value::String("failed adding account".into())),
         }
     });
-    io.add_method("deposit", |params: Params| {
+    io.add_method("deposit", move |params: Params| {
         println!("Processing a deposit command");
         match params.parse::<DepositRequest>() {
             Ok(eval) => {
-                let esumreq = SumTypeRequest::depositrequest(eval);
+                let esumreq = SumTypeRequest::Depositrequest(eval);
+                process_request_1(esumreq);
                 return Ok(Value::String("deposit operation".into()));
             },
             _ => Ok(Value::String("failed deposit operation".into())),
         }
     });
-    io.add_method("payment", |params: Params| {
+    io.add_method("payment", move |params: Params| {
         println!("Processing a payment command");
         match params.parse::<PaymentRequest>() {
             Ok(eval) => {
-                let esumreq = SumTypeRequest::paymentrequest(eval);
+                let esumreq = SumTypeRequest::Paymentrequest(eval);
+                process_request_2(esumreq);
                 return Ok(Value::String("payment operation".into()));
             },
             _ => Ok(Value::String("failed payment operation".into())),
         }
     });
-    io.add_method("withdrawal", |params: Params| {
+    io.add_method("withdrawal", move |params: Params| {
         println!("Processing a withdrawal command");
-        match params.parse::<PaymentRequest>() {
+        match params.parse::<WithdrawRequest>() {
             Ok(eval) => {
-                let esumreq = SumTypeRequest::paymentrequest(eval);
+                let esumreq = SumTypeRequest::Withdrawrequest(eval);
+                process_request_3(esumreq);
                 return Ok(Value::String("withdrawal operation".into()));
             },
             _ => Ok(Value::String("failed withdrawal operation".into())),
         }
     });
-    io.add_method("send_data", |params: Params| {
+    io.add_method("send_data", move |params: Params| {
         println!("Processing a send_data command");
         match params.parse::<SendDataRequest>() {
             Ok(eval) => {
-                let esumreq = SumTypeRequest::senddatarequest(eval);
+                let esumreq = SumTypeRequest::Senddatarequest(eval);
+                process_request_4(esumreq);
                 return Ok(Value::String("send data operation".into()));
             },
             _ => Ok(Value::String("failed send data operation".into())),
         }
     });
-    io.add_method("get_data", |params: Params| {
+    io.add_method("get_data", move |params: Params| {
         println!("Processing a get_data command");
         match params.parse::<GetDataRequest>() {
             Ok(eval) => {
-                let esumreq = SumTypeRequest::getdatarequest(eval);
+                let esumreq = SumTypeRequest::Getdatarequest(eval);
+                process_request_5(esumreq);
                 return Ok(Value::String("get data operation".into()));
             },
             _ => Ok(Value::String("failed get data operation".into())),
@@ -160,9 +160,5 @@ pub fn inf_loop(mut dbe: DBE, common_init: CommonInit, local_init: LocalInit)
         .expect("Server must start with no issues");
     
     server.wait()
-        
-    
-    
-    
 }
 

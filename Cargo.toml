@@ -34,6 +34,12 @@ serde_json = { version = "1.0.37", features = ["arbitrary_precision"]}
 serde = "1.0"
 serde_derive = "1.0"
 
+#the future system
+futures = "0.1.25"
+
+
+
+
 #pure rust stuff
 numext-fixed-hash = "0.1.2"
 merkle-cbt = { version = "0.1.1", features = [ "sha3"] }
