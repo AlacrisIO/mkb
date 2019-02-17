@@ -4,7 +4,7 @@ use std::process;
 
 //extern crate rocksdb;
 use rocksdb::DB;
-
+use types::*;
 
 //use log::{info};
 
@@ -26,3 +26,14 @@ pub fn open_database(file_database: &String) -> DBE {
     }
 }
 
+pub fn database_update(mut w: std::sync::MutexGuard<DBE>, esumreq: SumTypeRequest) {
+    let iter = (*w).iter;
+    let iter_str = iter.to_string();
+    let value_str : String = serde_json::to_string(&esumreq).unwrap();
+    //
+    let key_u8_b = iter_str.as_bytes();
+    let value_u8_b = value_str.as_bytes();
+    (*w).db.put(key_u8_b, value_u8_b).unwrap();
+    let iter_inc : i32 = iter + 1;
+    (*w).iter = iter_inc;
+}
