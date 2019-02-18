@@ -1,8 +1,9 @@
-use types;
+use types::*;
+use merkle_data_tree::*;
 
 #[derive(Debug, Serialize, Deserialize)]
-pub struct SimpleExportScheme {
-    pub list_neighbor: Vec<String>
+pub struct SimpleGossipProtocol {
+    pub list_neighbor: Vec<usize>
 }
 
 
@@ -22,31 +23,38 @@ pub struct Message {
 
 
 
-pub fn compute_gossip_protocol(common_init: types::CommonInit, address: String) -> GossipProtocol {
-    let len = address.len();
-    let mut the_vect = Vec::new();
-    for i in 0..len {
-        let esub_str = &address[0..i];
-        let get_routing_line = || {
-            for eval in common_init.clone().registrars {
-                if address != eval.address {
-                    let eval_str = &eval.address[0..i];
-                    if eval_str == esub_str {
-                        return vec![eval.clone().address];
-                    }
-                }
-            }
-            vec![]
-        };
-        let e_line: RoutingLine = RoutingLine { list_direct_neighbor: get_routing_line() };
-        the_vect.push(e_line);
-        
+
+
+
+
+pub fn compute_simple_gossip_protocol(common_init: CommonInit, address: String) -> SimpleGossipProtocol {
+    let nb_reg = common_init.registrars.len();
+    let mut the_vect = Vec::<usize>::new();
+    for i_reg in 0..nb_reg {
+        let addr_reg = &common_init.registrars[i_reg];
+        if addr_reg.address != address {
+            the_vect.push(i_reg);
+        }
     }
-    GossipProtocol { list_routing_line: the_vect, initial_address: address }
+    SimpleGossipProtocol { list_neighbor: the_vect }
 }
 
 
-pub fn propagate_info(common_init: types::CommonInit, gp: GossipProtocol) {
-    
-    
+fn check_transaction(registrar: SingleRegistrar) -> bool {
+    true
+}
+
+
+
+
+pub fn propagate_info(common_init: CommonInit, sgp: SimpleGossipProtocol) -> bool {
+    let nb_neigh = sgp.list_neighbor.len();
+    for i_neigh in 0..nb_neigh {
+        let i_reg = sgp.list_neighbor[i_neigh];
+        let eval = check_transaction(common_init.registrars[i_reg].clone());
+        if eval == false {
+            return false;
+        }
+    }
+    return true;
 }
