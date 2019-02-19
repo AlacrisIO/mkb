@@ -128,3 +128,9 @@ pub struct Message {
     pub message: String,
 }
 
+#[derive(Clone, Serialize, Deserialize)]
+pub struct MerkleVerification {
+    pub result: bool, 
+    pub signature: Option<String>,
+}
+

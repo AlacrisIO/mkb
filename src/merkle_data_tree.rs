@@ -16,7 +16,8 @@ pub struct AllDataMerkleTree {
 // This function takes the request, check for correctness.
 // If correct, the signature is returned to be checked.
 // If not correct, then the signature is sent in order to be checked.
-pub fn get_signature(eval: SumTypeRequest) -> Result<String, String> {
+pub fn get_signature(eval: SumTypeRequest) -> MerkleVerification {
     let str : String = "it is ok".to_string();
-    return Ok(str);
+    let merkl = MerkleVerification { result: true, signature: None };
+    merkl
 }

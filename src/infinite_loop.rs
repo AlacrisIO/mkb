@@ -14,6 +14,7 @@ use jsonrpc_core::{Error as JsonRpcError};
 //use types;
 use types::*;
 use db::*;
+use merkle_data_tree::*;
 
 use std::net::{IpAddr, Ipv4Addr, SocketAddr};
 
@@ -58,7 +59,7 @@ pub fn inf_loop(mut dbe: DBE, common_init: CommonInit, local_init: LocalInit)
     let check_correctness_1 = check_correctness.clone();
     
     let process_request = move |esumreq: SumTypeRequest| {
-        let mut w : std::sync::MutexGuard<DBE> = lk.lock().unwrap();
+        let w : std::sync::MutexGuard<DBE> = lk.lock().unwrap();
         database_update(w, esumreq);
     };
 
@@ -143,9 +144,30 @@ pub fn inf_loop(mut dbe: DBE, common_init: CommonInit, local_init: LocalInit)
             _ => Err(JsonRpcError::invalid_params("failed get_data operation".to_string())),
         }
     });
+
+
     io.add_method("internal_check", move |params: Params| {
         println!("Doing an internal check");
-        Ok(Value::String("internal_check operation".into()))
+        fn fct(emer: &MerkleVerification) -> Result<serde_json::Value> {
+            match emer.result {
+                true => {
+                    let estr = serde_json::to_string(emer).unwrap();
+                    //                    return Ok(Value::String("get data operation".into()));
+                    return Ok(Value::String(estr));
+                },
+                _ => Err(JsonRpcError::invalid_params("internal_check operation failed".to_string())),
+            }
+        };
+    
+        match params.parse::<Message>() {
+            Ok(eval) => {
+                let esumreq = serde_json::from_str(&eval.message).unwrap();
+                let emerkl = get_signature(esumreq);
+                return fct(&emerkl);
+            },
+//            _ => Err(JsonRpcError::invalid_params("parse of internal_check failed".to_string())),
+            _ => Ok(Value::String("get data operation".into())),
+        }
     });
     
     //
