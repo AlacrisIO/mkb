@@ -57,7 +57,9 @@ mod parsing_input;
 mod infinite_loop;
 mod gossip_protocol;
 mod merkle_data_tree;
+
 mod rpc_server;
+mod rpc_client;
 
 fn main() {
     println!("Beginning MKB");

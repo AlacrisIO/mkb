@@ -17,6 +17,7 @@ use tokio::prelude::*;
 use types::*;
 use db::*;
 
+/*
 pub fn send_message(mesg: Message) -> Result<String,String> {
     let addr: SocketAddr = mesg.ip_plus_port.parse().expect("Could not parse as SocketAddr");
     
@@ -28,11 +29,11 @@ pub fn send_message(mesg: Message) -> Result<String,String> {
         let sock = BufReader::new(socket);
         tokio::io::read_until(sock, b'\n', Vec::new())
     });
-    let (_socket, data) = core.run(response).unwrap();
+    let (_socket, data) = tokio::run(response).unwrap();
     let str = String::from_utf8_lossy(&data);
     Ok(str);
 }
-
+*/
 
 
 pub fn loop_operation(mut dbe: DBE, sing_reg: SingleRegistrar) {
