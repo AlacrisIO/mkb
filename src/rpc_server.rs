@@ -3,7 +3,7 @@
 
 
 
-use std::io::BufReader;
+//use std::io::BufReader;
 use std::net::SocketAddr;
 
 use futures::Future;
@@ -45,10 +45,10 @@ pub fn loop_operation(mut dbe: DBE, sing_reg: SingleRegistrar) {
     let ip_plus_port : String = str0 + "." + &str1 + "." + &str2 + "." + &str3 + ":" + &str4;
 //    let ip_plus_port = sing_reg.ip_address[0].to_string + "."
     //
-    let addr: SocketAddr = ip_plus_port.parse().expect("Could not parse as SocketAddr");
-    let addr = addr.parse::<SocketAddr>();
+    let addr: SocketAddr = ip_plus_port.parse().expect("Could not parse ip_plus_port as SocketAddr");
+//    let addr = addr.parse::<SocketAddr>();
     //
-    let socket = TcpListener::bind(&addr);
+    let socket = TcpListener::bind(&addr).unwrap();
     //
     let srv = socket.incoming()
         .map_err(|e| {println!("failed to accept socket; error = {:?}", e); e})
