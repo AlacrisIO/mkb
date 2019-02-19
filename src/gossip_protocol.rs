@@ -1,6 +1,9 @@
 use types::*;
 use merkle_data_tree::*;
 
+use jsonrpc_client_http::HttpTransport;
+
+
 #[derive(Debug, Serialize, Deserialize)]
 pub struct SimpleGossipProtocol {
     pub list_neighbor: Vec<usize>
@@ -18,14 +21,6 @@ pub struct GossipProtocol {
     pub initial_address: String
 }
 
-pub struct Message {
-}
-
-
-
-
-
-
 
 pub fn compute_simple_gossip_protocol(common_init: CommonInit, address: String) -> SimpleGossipProtocol {
     let nb_reg = common_init.registrars.len();
@@ -40,18 +35,51 @@ pub fn compute_simple_gossip_protocol(common_init: CommonInit, address: String) 
 }
 
 
-fn check_transaction(registrar: SingleRegistrar) -> bool {
+
+jsonrpc_client!(pub struct InternalClient {
+    /// Returns the fizz-buzz string for the given number.
+    pub fn internal_check(&mut self, transmission: String) -> RpcRequest<String>;
+});
+
+
+fn check_transaction_kernel(mesg: Message) -> String {
+    let lnk : String = "https://".to_string() + &mesg.ip_plus_port;
+    let transport = HttpTransport::new().standalone().unwrap();
+    let transport_handle = transport.handle(&lnk).unwrap();
+    let mut client = InternalClient::new(transport_handle);
+    let result1 = client.internal_check(mesg.message).call().unwrap();
+    result1
+}
+
+
+
+
+
+fn check_transaction(registrar: SingleRegistrar, ereq: &SumTypeRequest) -> bool {
+    let str0 : String = registrar.ip_address[0].to_string();
+    let str1 : String = registrar.ip_address[1].to_string();
+    let str2 : String = registrar.ip_address[2].to_string();
+    let str3 : String = registrar.ip_address[3].to_string();
+    let str4 : String = registrar.port_ext.to_string();
+    let ip_plus_port : String = str0 + "." + &str1 + "." + &str2 + "." + &str3 + ":" + &str4;
+    //
+    let ereq_str = serde_json::to_string(ereq).unwrap();
+    let mesg = Message { ip_plus_port: ip_plus_port, message: ereq_str };
+    //
+    let reply = check_transaction_kernel(mesg);
+    //
     true
 }
 
 
 
 
-pub fn propagate_info(common_init: CommonInit, sgp: SimpleGossipProtocol) -> bool {
+
+pub fn check_mkb_operation(common_init: CommonInit, sgp: SimpleGossipProtocol, ereq: &SumTypeRequest) -> bool {
     let nb_neigh = sgp.list_neighbor.len();
     for i_neigh in 0..nb_neigh {
         let i_reg = sgp.list_neighbor[i_neigh];
-        let eval = check_transaction(common_init.registrars[i_reg].clone());
+        let eval = check_transaction(common_init.registrars[i_reg].clone(), ereq);
         if eval == false {
             return false;
         }

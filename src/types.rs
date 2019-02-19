@@ -124,7 +124,7 @@ pub struct TransmissionRequest {
 #[derive(Clone, Serialize, Deserialize)]
 pub struct Message {
     pub ip_plus_port: String,
-    pub sender: String,
+//    pub sender: String,
     pub message: String,
 }
 

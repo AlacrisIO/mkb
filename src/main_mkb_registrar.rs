@@ -27,9 +27,9 @@ extern crate futures;
 //extern crate tokio_core;
 //extern crate tokio_io;
 
-//#[macro_use]
-//extern crate jsonrpc_client_core;
-//extern crate jsonrpc_client_http;
+#[macro_use]
+extern crate jsonrpc_client_core;
+extern crate jsonrpc_client_http;
 
 //The Merkle trees from CBT.
 extern crate merkle_cbt;
@@ -59,8 +59,8 @@ mod infinite_loop;
 mod gossip_protocol;
 mod merkle_data_tree;
 
-mod rpc_server;
-mod rpc_client;
+//mod rpc_server;
+//mod rpc_client;
 
 fn main() {
     println!("Beginning MKB");

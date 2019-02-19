@@ -73,26 +73,16 @@ pub fn loop_operation(mut dbe: DBE, sing_reg: SingleRegistrar) -> Result<(), Box
             let framed = BytesCodec::new().framed(socket);
             let (writer, reader) = framed.split();
 
-            let processor = reader
-                .for_each(|bytes| {
-                    println!("bytes: {:?}", bytes);
-                    Ok(())
-                })
-                // After our copy operation is complete we just print out some helpful
-                // information.
-                .and_then(|()| {
-                    println!("Socket received FIN packet and closed connection");
-                    Ok(())
-                })
-                .or_else(|err| {
-                    println!("Socket closed with error: {:?}", err);
-                    // We have to return the error to catch it in the next ``.then` call
-                    Err(err)
-                })
-                .then(|result| {
-                    println!("Socket closed with result: {:?}", result);
-                    Ok(())
-                });
+
+            let processor = move || {
+                let reader_b = BufReader::new(reader);
+                return future::ok(());
+            };
+
+
+
+            
+//                .fold(Vec::<u8>::new(), |acc, x| [acc, x.to_vec()].concat());
             // And this is where much of the magic of this server happens. We
             // crucially want all clients to make progress concurrently, rather than
             // blocking one on completion of another. To achieve this we use the
