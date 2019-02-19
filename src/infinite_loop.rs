@@ -2,6 +2,7 @@
 use jsonrpc_core::*;
 //use jsonrpc_core::futures::Future;
 use std::sync::{Arc, Mutex};
+use jsonrpc_core::{Error as JsonRpcError};
 
 //use std::sync::RwLock;
 
@@ -50,10 +51,18 @@ pub fn inf_loop(mut dbe: DBE, common_init: CommonInit, local_init: LocalInit)
     //    let for_io = server_handle.clone();
 
     let lk = Arc::new(Mutex::<DBE>::new(dbe));
+    let check_correctness = move |esumreq: SumTypeRequest| {
+        true
+    };
+    let check_correctness_0 = check_correctness.clone();
+    let check_correctness_1 = check_correctness.clone();
+    
     let process_request = move |esumreq: SumTypeRequest| {
         let mut w : std::sync::MutexGuard<DBE> = lk.lock().unwrap();
         database_update(w, esumreq);
     };
+
+    
     let process_request_0 = process_request.clone();
     let process_request_1 = process_request.clone();
     let process_request_2 = process_request.clone();
@@ -86,7 +95,8 @@ pub fn inf_loop(mut dbe: DBE, common_init: CommonInit, local_init: LocalInit)
                 process_request_1(esumreq);
                 return Ok(Value::String("deposit operation".into()));
             },
-            _ => Ok(Value::String("failed deposit operation".into())),
+            _ => Err(JsonRpcError::invalid_params("failed deposit operation".to_string())),
+//            _ => Ok(Value::String("failed deposit operation".into())),
         }
     });
     io.add_method("payment", move |params: Params| {
@@ -97,7 +107,7 @@ pub fn inf_loop(mut dbe: DBE, common_init: CommonInit, local_init: LocalInit)
                 process_request_2(esumreq);
                 return Ok(Value::String("payment operation".into()));
             },
-            _ => Ok(Value::String("failed payment operation".into())),
+            _ => Err(JsonRpcError::invalid_params("failed payment operation".to_string())),
         }
     });
     io.add_method("withdrawal", move |params: Params| {
@@ -108,7 +118,7 @@ pub fn inf_loop(mut dbe: DBE, common_init: CommonInit, local_init: LocalInit)
                 process_request_3(esumreq);
                 return Ok(Value::String("withdrawal operation".into()));
             },
-            _ => Ok(Value::String("failed withdrawal operation".into())),
+            _ => Err(JsonRpcError::invalid_params("failed withdrawal operation".to_string())),
         }
     });
     io.add_method("send_data", move |params: Params| {
@@ -119,7 +129,7 @@ pub fn inf_loop(mut dbe: DBE, common_init: CommonInit, local_init: LocalInit)
                 process_request_4(esumreq);
                 return Ok(Value::String("send data operation".into()));
             },
-            _ => Ok(Value::String("failed send data operation".into())),
+            _ => Err(JsonRpcError::invalid_params("failed send_data operation".to_string())),
         }
     });
     io.add_method("get_data", move |params: Params| {
@@ -130,9 +140,14 @@ pub fn inf_loop(mut dbe: DBE, common_init: CommonInit, local_init: LocalInit)
                 process_request_5(esumreq);
                 return Ok(Value::String("get data operation".into()));
             },
-            _ => Ok(Value::String("failed get data operation".into())),
+            _ => Err(JsonRpcError::invalid_params("failed get_data operation".to_string())),
         }
     });
+    io.add_method("internal_check", move |params: Params| {
+        println!("Doing an internal check");
+        Ok(Value::String("internal_check operation".into()))
+    });
+    
     //
     let my_reg = get_registrar_by_address(local_init.address, common_init).expect("Failed to find registrar");
     //
