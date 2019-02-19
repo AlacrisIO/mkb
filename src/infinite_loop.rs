@@ -3,13 +3,13 @@ use jsonrpc_core::*;
 //use jsonrpc_core::futures::Future;
 use std::sync::{Arc, Mutex};
 
-use std::sync::RwLock;
+//use std::sync::RwLock;
 
 //use futures::Future;
 //use futures::future::{self, Either};
 //use futures_cpupool::CpuPool;
 
-use rocksdb::DB;
+//use rocksdb::DB;
 //use types;
 use types::*;
 use db::*;
@@ -17,7 +17,7 @@ use db::*;
 use std::net::{IpAddr, Ipv4Addr, SocketAddr};
 
 use jsonrpc_http_server::{ServerBuilder};
-use jsonrpc_client_http::HttpTransport;
+//use jsonrpc_client_http::HttpTransport;
 
 
 
@@ -135,13 +135,11 @@ pub fn inf_loop(mut dbe: DBE, common_init: CommonInit, local_init: LocalInit)
     });
     //
     let my_reg = get_registrar_by_address(local_init.address, common_init).expect("Failed to find registrar");
-
+    //
     let my_hostname = IpAddr::V4(Ipv4Addr::new(my_reg.ip_address[0], my_reg.ip_address[1], my_reg.ip_address[2], my_reg.ip_address[3]));
     println!("We have the hostname");
-    let socket = SocketAddr::new(my_hostname, my_reg.port);
+    let socket = SocketAddr::new(my_hostname, my_reg.port_ext);
     println!("We have the socket");
-
-
     //
     let server = ServerBuilder::new(io)
         .start_http(&socket)

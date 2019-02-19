@@ -19,9 +19,16 @@ extern crate rocksdb;
 // The ed25519 cryptography. VRF depends on it.
 extern crate ed25519_dalek;
 
-#[macro_use]
-extern crate jsonrpc_client_core;
-extern crate jsonrpc_client_http;
+// We apparently need to use tokio in order to have
+// asynchronous transmissions.
+extern crate tokio;
+extern crate futures;
+//extern crate tokio_core;
+//extern crate tokio_io;
+
+//#[macro_use]
+//extern crate jsonrpc_client_core;
+//extern crate jsonrpc_client_http;
 
 //The Merkle trees from CBT.
 extern crate merkle_cbt;
@@ -43,9 +50,6 @@ extern crate num_derive;
 //use self::serde::{Deserialize, Serialize};
 //use serde_json::Result;
 
-//static mut x : i32 = 3;  // it does compile.
-
-
 
 mod db;
 mod types;
@@ -53,6 +57,7 @@ mod parsing_input;
 mod infinite_loop;
 mod gossip_protocol;
 mod merkle_data_tree;
+mod rpc_server;
 
 fn main() {
     println!("Beginning MKB");

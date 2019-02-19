@@ -20,7 +20,8 @@ pub struct SingleRegistrar {
     pub address: String,
     pub public_key: String,
     pub ip_address: Vec<u8>,
-    pub port: u16
+    pub port_ext: u16,
+    pub port_int: u16
 }
 
 #[derive(Clone, Serialize, Deserialize)]
@@ -119,4 +120,11 @@ pub struct TransmissionRequest {
     pub sum_type_request: SumTypeRequest,
 }
 
+
+#[derive(Clone, Serialize, Deserialize)]
+pub struct Message {
+    pub ip_plus_port: String,
+    pub sender: String,
+    pub message: String,
+}
 
