@@ -85,7 +85,7 @@ fn check_transaction(registrar: SingleRegistrar, ereq: &SumTypeRequest) -> bool 
     let str1 : String = registrar.ip_address[1].to_string();
     let str2 : String = registrar.ip_address[2].to_string();
     let str3 : String = registrar.ip_address[3].to_string();
-    let str4 : String = registrar.port_ext.to_string();
+    let str4 : String = registrar.port.to_string();
     let ip_plus_port : String = str0 + "." + &str1 + "." + &str2 + "." + &str3 + ":" + &str4;
     //
     let ereq_str = serde_json::to_string(ereq).unwrap();

@@ -2,13 +2,13 @@
     "registrars": [
 	{"name": "Alice",
 	 "address": "0xc54e86dffb87b9736e2e35dd85c775358f1c31ce",
-	 "public_key": "045562695c85f88f6cbaec121d2a3da6666c5dc8540d86358bd569a1882bbe6ddcf45b76f5643133939c8e7a339947ca1b115290d577343023d79c256dbc54bc97",
+	 "public_key": "03cd03c8c012e55f2cc82839a55578222d47e69f3c1fb067a6600dfd79c0bd28b7", 
 	 "ip_address": [127, 0, 0, 1],
 	 "port": 8805
 	},
 	{"name": "Bob",
 	 "address": "0x9ccaed210ce8c0cb49c5ad1c4f583406c264ba69",
-	 "public_key": "049e0a7e3c05e3328c603b0c27fbfdfc5030c95d9ad179a431c14f81e30a64ce95f625447e182a8be718d45f9ab9723f9b8571dd5c5752daa66feb84938b095805",
+	 "public_key": "026389776a876f0b6f582164d5201fbd9f904e8c51ae7e78f276a2e3fb0a2bac19", 
 	 "ip_address": [127, 0, 0, 1],
 	 "port": 8806
 	}],

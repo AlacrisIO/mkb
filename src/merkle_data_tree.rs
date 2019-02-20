@@ -5,6 +5,7 @@ use numext_fixed_hash::H256;
 
 use types::*;
 
+//#[derive(Default)]
 pub struct AllDataMerkleTree {
     pub account_map : MerkleTree<H256>,
     pub token_map : MerkleTree<H256>,
@@ -17,7 +18,6 @@ pub struct AllDataMerkleTree {
 // If correct, the signature is returned to be checked.
 // If not correct, then the signature is sent in order to be checked.
 pub fn get_signature(eval: SumTypeRequest) -> MerkleVerification {
-    let str : String = "it is ok".to_string();
     let merkl = MerkleVerification { result: true, signature: None };
     merkl
 }

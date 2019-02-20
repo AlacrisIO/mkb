@@ -42,14 +42,10 @@ extern crate num_traits;
 extern crate num_derive;
 
 
+
 //#[macro_use]
 //extern crate log;
 //use log::{info, trace};
-
-
-//use serde::{Serialize, Serializer, Deserialize, Deserializer};
-//use self::serde::{Deserialize, Serialize};
-//use serde_json::Result;
 
 
 mod db;
@@ -87,6 +83,9 @@ fn main() {
     let mut dbe = db::open_database(&database_file);
     println!("We have opened db");
 
+//    let mut allmerkl = merkle_cbt::MerkleTree::<numext_fixed_hash::H256>::new();
+//    println!("We have the merkle database");
+    
     infinite_loop::inf_loop(dbe, common_init, local_init);
     println!("Normal termination of the MKB");
 }

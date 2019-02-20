@@ -148,7 +148,7 @@ pub fn inf_loop(mut dbe: DBE, common_init: CommonInit, local_init: LocalInit)
 
     io.add_method("internal_check", move |params: Params| {
         println!("Doing an internal check");
-        fn fct(emer: &MerkleVerification) -> Result<serde_json::Value> {
+        fn fct_signature(emer: &MerkleVerification) -> Result<serde_json::Value> {
             match emer.result {
                 true => {
                     let estr = serde_json::to_string(emer).unwrap();
@@ -158,16 +158,18 @@ pub fn inf_loop(mut dbe: DBE, common_init: CommonInit, local_init: LocalInit)
                 _ => Err(JsonRpcError::invalid_params("internal_check operation failed".to_string())),
             }
         };
-    
         match params.parse::<Message>() {
             Ok(eval) => {
                 let esumreq = serde_json::from_str(&eval.message).unwrap();
                 let emerkl = get_signature(esumreq);
-                return fct(&emerkl);
+                return fct_signature(&emerkl);
             },
-//            _ => Err(JsonRpcError::invalid_params("parse of internal_check failed".to_string())),
-            _ => Ok(Value::String("get data operation".into())),
+            _ => Err(JsonRpcError::invalid_params("parse of internal_check failed".to_string())),
+//            _ => Ok(Value::String("get data operation".into())),
         }
+    });
+    io.add_method("retrieve_proof", move |params: Params| {
+        Ok(Value::String("rerieve_proof operation".into()))
     });
     
     //
@@ -175,7 +177,7 @@ pub fn inf_loop(mut dbe: DBE, common_init: CommonInit, local_init: LocalInit)
     //
     let my_hostname = IpAddr::V4(Ipv4Addr::new(my_reg.ip_address[0], my_reg.ip_address[1], my_reg.ip_address[2], my_reg.ip_address[3]));
     println!("We have the hostname");
-    let socket = SocketAddr::new(my_hostname, my_reg.port_ext);
+    let socket = SocketAddr::new(my_hostname, my_reg.port);
     println!("We have the socket");
     //
     let server = ServerBuilder::new(io)

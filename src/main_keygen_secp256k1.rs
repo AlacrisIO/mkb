@@ -10,8 +10,8 @@ fn main()
     let mut rng = OsRng::new().expect("OsRng");
     let (secret_key, public_key) : (secp256k1::SecretKey, secp256k1::PublicKey) = secp.generate_keypair(&mut rng);
 
-    println!("secret_key = {}", secret_key);
     println!("public_key = {}", public_key);
+    println!("secret_key = {}", secret_key);
 
 
 

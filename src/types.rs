@@ -11,7 +11,7 @@ use num_bigint::BigUint;
 use serde::Deserialize;
 //use serde_json::Value;
 
-
+use merkle_data_tree;
 
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -20,8 +20,7 @@ pub struct SingleRegistrar {
     pub address: String,
     pub public_key: String,
     pub ip_address: Vec<u8>,
-    pub port_ext: u16,
-    pub port_int: u16
+    pub port: u16,
 }
 
 #[derive(Clone, Serialize, Deserialize)]
@@ -37,7 +36,7 @@ pub struct LocalInit {
     pub name: String,
     pub address: String,
     pub public_key: String,
-    pub private_key: String,
+    pub secret_key: String,
     pub password: String,
     pub database_file: String
 }
@@ -50,7 +49,7 @@ pub struct LocalInit {
 pub struct AccountInfo {
     account_name: String,
     public_key: String,
-    private_key: String
+    secret_key: String
 }
 
 impl Merge for AccountInfo {

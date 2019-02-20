@@ -1,8 +1,8 @@
 {
     "name": "Bob",
     "address": "0x9ccaed210ce8c0cb49c5ad1c4f583406c264ba69",
-    "public_key": "049e0a7e3c05e3328c603b0c27fbfdfc5030c95d9ad179a431c14f81e30a64ce95f625447e182a8be718d45f9ab9723f9b8571dd5c5752daa66feb84938b095805",
-    "private_key": "9b21b9b06ba77824b8ba6a815f5a075229a708ae88ba7fd935c968fe2c3df172",
+    "public_key": "026389776a876f0b6f582164d5201fbd9f904e8c51ae7e78f276a2e3fb0a2bac19", 
+    "secret_key": "97615fdadd5a65cfed9e9342c60ce1fd820bd4f7837fc2c938395bc3cae702bd", 
     "password": "",
     "database_file": "/tmp/Bob/"
 }
