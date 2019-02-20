@@ -60,6 +60,7 @@ pub fn inf_loop(mut dbe: DBE, common_init: CommonInit, local_init: LocalInit)
     
     let process_request = move |esumreq: SumTypeRequest| {
         let w : std::sync::MutexGuard<DBE> = lk.lock().unwrap();
+        
         database_update(w, esumreq);
     };
 
@@ -70,6 +71,15 @@ pub fn inf_loop(mut dbe: DBE, common_init: CommonInit, local_init: LocalInit)
     let process_request_3 = process_request.clone();
     let process_request_4 = process_request.clone();
     let process_request_5 = process_request.clone();
+
+    let fct_error = |e : jsonrpc_core::Error, oper: String| {
+        println!("Error during parsing {:?}", e);
+        let str0 = "failed".to_string();
+        let str1 = "operation".to_string();
+        let strOut = str0 + &oper + &str1;
+        return Err(JsonRpcError::invalid_params(strOut));
+    };
+
     
     
     let mut io = IoHandler::new();
@@ -86,10 +96,7 @@ pub fn inf_loop(mut dbe: DBE, common_init: CommonInit, local_init: LocalInit)
                 process_request_0(esumreq);
                 return Ok(Value::String("adding account to the system".into()));
             },
-            Err(e) => {
-                println!("Error during parsing {:?}", e);
-                return Err(JsonRpcError::invalid_params("failed add_count operation".to_string()));
-            },
+            Err(e) => fct_error(e, "add_account".to_string()),
         }
     });
 
@@ -101,7 +108,7 @@ pub fn inf_loop(mut dbe: DBE, common_init: CommonInit, local_init: LocalInit)
                 process_request_1(esumreq);
                 return Ok(Value::String("deposit operation".into()));
             },
-            _ => Err(JsonRpcError::invalid_params("failed deposit operation".to_string())),
+            Err(e) => fct_error(e, "deposit".to_string()),
         }
     });
     io.add_method("payment", move |params: Params| {
@@ -112,7 +119,7 @@ pub fn inf_loop(mut dbe: DBE, common_init: CommonInit, local_init: LocalInit)
                 process_request_2(esumreq);
                 return Ok(Value::String("payment operation".into()));
             },
-            _ => Err(JsonRpcError::invalid_params("failed payment operation".to_string())),
+            Err(e) => fct_error(e, "deposit".to_string()),
         }
     });
     io.add_method("withdrawal", move |params: Params| {
@@ -123,7 +130,7 @@ pub fn inf_loop(mut dbe: DBE, common_init: CommonInit, local_init: LocalInit)
                 process_request_3(esumreq);
                 return Ok(Value::String("withdrawal operation".into()));
             },
-            _ => Err(JsonRpcError::invalid_params("failed withdrawal operation".to_string())),
+            Err(e) => fct_error(e, "withdrawal".to_string()),
         }
     });
     io.add_method("send_data", move |params: Params| {
@@ -134,7 +141,7 @@ pub fn inf_loop(mut dbe: DBE, common_init: CommonInit, local_init: LocalInit)
                 process_request_4(esumreq);
                 return Ok(Value::String("send data operation".into()));
             },
-            _ => Err(JsonRpcError::invalid_params("failed send_data operation".to_string())),
+            Err(e) => fct_error(e, "send_data".to_string()),
         }
     });
     io.add_method("get_data", move |params: Params| {
@@ -145,7 +152,7 @@ pub fn inf_loop(mut dbe: DBE, common_init: CommonInit, local_init: LocalInit)
                 process_request_5(esumreq);
                 return Ok(Value::String("get data operation".into()));
             },
-            _ => Err(JsonRpcError::invalid_params("failed get_data operation".to_string())),
+            Err(e) => fct_error(e, "get_data".to_string()),
         }
     });
 
@@ -168,7 +175,7 @@ pub fn inf_loop(mut dbe: DBE, common_init: CommonInit, local_init: LocalInit)
                 let emerkl = get_signature(esumreq);
                 return fct_signature(&emerkl);
             },
-            _ => Err(JsonRpcError::invalid_params("parse of internal_check failed".to_string())),
+            Err(e) => fct_error(e, "internel_check".to_string()),
         }
     });
     io.add_method("retrieve_proof", move |params: Params| {
