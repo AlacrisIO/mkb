@@ -4,18 +4,17 @@ use merkle_data_tree::*;
 use jsonrpc_client_http::HttpTransport;
 
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct SimpleGossipProtocol {
     pub list_neighbor: Vec<usize>
 }
 
-
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct RoutingLine {
     pub list_direct_neighbor: Vec<String>
 }
 
-
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct GossipProtocol {
     pub list_routing_line: Vec<RoutingLine>,
     pub initial_address: String
@@ -47,7 +46,7 @@ pub fn compute_gossip_protocol(common_init: CommonInit, address: String) -> Goss
 
 
 
-pub fn compute_simple_gossip_protocol(common_init: CommonInit, address: String) -> SimpleGossipProtocol {
+pub fn compute_simple_gossip_protocol(common_init: &CommonInit, address: String) -> SimpleGossipProtocol {
     let nb_reg = common_init.registrars.len();
     let mut the_vect = Vec::<usize>::new();
     for i_reg in 0..nb_reg {
@@ -98,11 +97,11 @@ fn check_transaction(registrar: SingleRegistrar, ereq: &SumTypeRequest) -> bool 
 
 
 
-pub fn check_mkb_operation(common_init: CommonInit, sgp: SimpleGossipProtocol, ereq: &SumTypeRequest) -> bool {
+pub fn check_mkb_operation(common_init: CommonInit, sgp: SimpleGossipProtocol, ereq: SumTypeRequest) -> bool {
     let nb_neigh = sgp.list_neighbor.len();
     for i_neigh in 0..nb_neigh {
         let i_reg = sgp.list_neighbor[i_neigh];
-        let eval = check_transaction(common_init.registrars[i_reg].clone(), ereq);
+        let eval = check_transaction(common_init.registrars[i_reg].clone(), &ereq.clone());
         if eval == false {
             return false;
         }

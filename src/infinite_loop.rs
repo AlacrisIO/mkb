@@ -15,6 +15,7 @@ use jsonrpc_core::{Error as JsonRpcError};
 use types::*;
 use db::*;
 use merkle_data_tree::*;
+use gossip_protocol::*;
 
 use std::net::{IpAddr, Ipv4Addr, SocketAddr};
 
@@ -32,10 +33,10 @@ use jsonrpc_http_server::{ServerBuilder};
 
 
 
-fn get_registrar_by_address(address: String, common_init: CommonInit) -> Option<SingleRegistrar> {
-    for e_rec in common_init.registrars {
+fn get_registrar_by_address(address: String, common_init: &CommonInit) -> Option<SingleRegistrar> {
+    for e_rec in &common_init.registrars {
         if e_rec.address == address {
-            return Some(e_rec);
+            return Some(e_rec.clone());
         }
     }
     None
@@ -51,33 +52,57 @@ pub fn inf_loop(mut dbe: DBE, common_init: CommonInit, local_init: LocalInit)
 //    let server_handle : Arc<Mutex<Option<ServerHandle>>>;
     //    let for_io = server_handle.clone();
 
+    
+    //
+    let my_reg = get_registrar_by_address(local_init.address, &common_init).expect("Failed to find registrar");
+
     let lk = Arc::new(Mutex::<DBE>::new(dbe));
     let check_correctness = move |esumreq: SumTypeRequest| {
         true
     };
     let check_correctness_0 = check_correctness.clone();
     let check_correctness_1 = check_correctness.clone();
-    
+/*    
     let process_request = move |esumreq: SumTypeRequest| {
         let w : std::sync::MutexGuard<DBE> = lk.lock().unwrap();
         
         database_update(w, esumreq);
     };
+*/
+    let sgp = compute_simple_gossip_protocol(&common_init, my_reg.address);
+
+
+    let complete_process_request = move |esumreq: SumTypeRequest| -> Result<serde_json::Value> {
+        let w : std::sync::MutexGuard<DBE> = lk.lock().unwrap();
+        let emerkl = get_signature(esumreq.clone());
+        if emerkl.result == false {
+            return Err(JsonRpcError::invalid_params("Error with the merkle database".to_string()));
+        }
+        let test = check_mkb_operation(common_init.clone(), sgp.clone(), esumreq.clone());
+        if test == false {
+            return Err(JsonRpcError::invalid_params("Error with remote merkle database".to_string()));
+        }
+        database_update(w, esumreq);
+        Ok(Value::String("Operation wetn correcly".into()))
+    };
+
+
 
     
-    let process_request_0 = process_request.clone();
-    let process_request_1 = process_request.clone();
-    let process_request_2 = process_request.clone();
-    let process_request_3 = process_request.clone();
-    let process_request_4 = process_request.clone();
-    let process_request_5 = process_request.clone();
+    
+    let process_request_0 = complete_process_request.clone();
+    let process_request_1 = complete_process_request.clone();
+    let process_request_2 = complete_process_request.clone();
+    let process_request_3 = complete_process_request.clone();
+    let process_request_4 = complete_process_request.clone();
+    let process_request_5 = complete_process_request.clone();
 
     let fct_error = |e : jsonrpc_core::Error, oper: String| {
         println!("Error during parsing {:?}", e);
         let str0 = "failed".to_string();
         let str1 = "operation".to_string();
-        let strOut = str0 + &oper + &str1;
-        return Err(JsonRpcError::invalid_params(strOut));
+        let str_out = str0 + &oper + &str1;
+        return Err(JsonRpcError::invalid_params(str_out));
     };
 
     
@@ -89,12 +114,10 @@ pub fn inf_loop(mut dbe: DBE, common_init: CommonInit, local_init: LocalInit)
     });
     io.add_method("add_account", move |params: Params| {
         println!("Processing a add_account command");
-//        Ok(Value::String("adding account to the system".into()))
         match params.parse::<AccountInfo>() {
             Ok(eval) => {
                 let esumreq = SumTypeRequest::Accountinfo(eval);
-                process_request_0(esumreq);
-                return Ok(Value::String("adding account to the system".into()));
+                return process_request_0(esumreq);
             },
             Err(e) => fct_error(e, "add_account".to_string()),
         }
@@ -105,8 +128,7 @@ pub fn inf_loop(mut dbe: DBE, common_init: CommonInit, local_init: LocalInit)
         match params.parse::<DepositRequest>() {
             Ok(eval) => {
                 let esumreq = SumTypeRequest::Depositrequest(eval);
-                process_request_1(esumreq);
-                return Ok(Value::String("deposit operation".into()));
+                return process_request_1(esumreq);
             },
             Err(e) => fct_error(e, "deposit".to_string()),
         }
@@ -116,8 +138,7 @@ pub fn inf_loop(mut dbe: DBE, common_init: CommonInit, local_init: LocalInit)
         match params.parse::<PaymentRequest>() {
             Ok(eval) => {
                 let esumreq = SumTypeRequest::Paymentrequest(eval);
-                process_request_2(esumreq);
-                return Ok(Value::String("payment operation".into()));
+                return process_request_2(esumreq);
             },
             Err(e) => fct_error(e, "deposit".to_string()),
         }
@@ -127,8 +148,7 @@ pub fn inf_loop(mut dbe: DBE, common_init: CommonInit, local_init: LocalInit)
         match params.parse::<WithdrawRequest>() {
             Ok(eval) => {
                 let esumreq = SumTypeRequest::Withdrawrequest(eval);
-                process_request_3(esumreq);
-                return Ok(Value::String("withdrawal operation".into()));
+                return process_request_3(esumreq);
             },
             Err(e) => fct_error(e, "withdrawal".to_string()),
         }
@@ -138,8 +158,7 @@ pub fn inf_loop(mut dbe: DBE, common_init: CommonInit, local_init: LocalInit)
         match params.parse::<SendDataRequest>() {
             Ok(eval) => {
                 let esumreq = SumTypeRequest::Senddatarequest(eval);
-                process_request_4(esumreq);
-                return Ok(Value::String("send data operation".into()));
+                return process_request_4(esumreq);
             },
             Err(e) => fct_error(e, "send_data".to_string()),
         }
@@ -149,8 +168,7 @@ pub fn inf_loop(mut dbe: DBE, common_init: CommonInit, local_init: LocalInit)
         match params.parse::<GetDataRequest>() {
             Ok(eval) => {
                 let esumreq = SumTypeRequest::Getdatarequest(eval);
-                process_request_5(esumreq);
-                return Ok(Value::String("get data operation".into()));
+                return process_request_5(esumreq);
             },
             Err(e) => fct_error(e, "get_data".to_string()),
         }
@@ -163,7 +181,6 @@ pub fn inf_loop(mut dbe: DBE, common_init: CommonInit, local_init: LocalInit)
             match emer.result {
                 true => {
                     let estr = serde_json::to_string(emer).unwrap();
-                    //                    return Ok(Value::String("get data operation".into()));
                     return Ok(Value::String(estr));
                 },
                 _ => Err(JsonRpcError::invalid_params("internal_check operation failed".to_string())),
@@ -183,8 +200,6 @@ pub fn inf_loop(mut dbe: DBE, common_init: CommonInit, local_init: LocalInit)
     });
 
     
-    //
-    let my_reg = get_registrar_by_address(local_init.address, common_init).expect("Failed to find registrar");
     //
     let my_hostname = IpAddr::V4(Ipv4Addr::new(my_reg.ip_address[0], my_reg.ip_address[1], my_reg.ip_address[2], my_reg.ip_address[3]));
     println!("We have the hostname");
