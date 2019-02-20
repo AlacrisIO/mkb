@@ -69,22 +69,24 @@ jsonrpc_client!(pub struct InternalClient {
 
 fn check_transaction_kernel(mesg: Message) -> String {
     println!("check_transaction_kernel, step 1");
-    let lnk : String = "https://".to_string() + &mesg.ip_plus_port;
-    println!("check_transaction_kernel, step 2");
+    let lnk : String = "http://".to_string() + &mesg.ip_plus_port;
+    println!("check_transaction_kernel, step 2, lnk={}", lnk);
     let transport = HttpTransport::new().standalone().unwrap();
     println!("check_transaction_kernel, step 3");
     let transport_handle = transport.handle(&lnk).unwrap();
     println!("check_transaction_kernel, step 4");
     let mut client = InternalClient::new(transport_handle);
     println!("check_transaction_kernel, step 5");
-    let result1 = client.internal_check(mesg.message).call();
+    let result1 = client.internal_check(mesg.message).call().unwrap();
+    result1
+    /*
     match result1 {
         Ok(eval) => eval,
         Err(e) => {
             println!("Error at computation of result1 e={:?}", e);
             process::exit(0x0000);
         }
-    }
+    }*/
 //    println!("check_transaction_kernel, step 6");
 //    result1
 }

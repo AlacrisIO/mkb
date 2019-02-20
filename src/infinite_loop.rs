@@ -193,7 +193,7 @@ pub fn inf_loop(dbe: DBE, common_init: CommonInit, local_init: LocalInit)
             }
         };
         println!("fct_signature is defined");
-        match params.parse::<Message>() {
+        match params.parse::<MessageRed>() {
             Ok(eval) => {
                 println!("parsing eval, step 1");
                 let esumreq = serde_json::from_str(&eval.message).unwrap();

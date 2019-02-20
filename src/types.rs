@@ -122,6 +122,16 @@ pub struct Message {
 }
 
 #[derive(Clone, Serialize, Deserialize)]
+pub struct MessageRed {
+//    pub ip_plus_port: String,
+//    pub sender: String,
+    pub message: String,
+}
+
+
+
+
+#[derive(Clone, Serialize, Deserialize)]
 pub struct MerkleVerification {
     pub result: bool, 
     pub signature: Option<String>,
