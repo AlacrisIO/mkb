@@ -21,9 +21,9 @@ extern crate ed25519_dalek;
 
 // We apparently need to use tokio in order to have
 // asynchronous transmissions.
-extern crate tokio;
-extern crate tokio_codec;
-extern crate futures;
+//extern crate tokio;
+//extern crate tokio_codec;
+//extern crate futures;
 //extern crate tokio_core;
 //extern crate tokio_io;
 

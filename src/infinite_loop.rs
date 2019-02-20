@@ -79,15 +79,20 @@ pub fn inf_loop(mut dbe: DBE, common_init: CommonInit, local_init: LocalInit)
     });
     io.add_method("add_account", move |params: Params| {
         println!("Processing a add_account command");
+//        Ok(Value::String("adding account to the system".into()))
         match params.parse::<AccountInfo>() {
             Ok(eval) => {
                 let esumreq = SumTypeRequest::Accountinfo(eval);
                 process_request_0(esumreq);
                 return Ok(Value::String("adding account to the system".into()));
             },
-            _ => Ok(Value::String("failed adding account".into())),
+            Err(e) => {
+                println!("Error during parsing {:?}", e);
+                return Err(JsonRpcError::invalid_params("failed add_count operation".to_string()));
+            },
         }
     });
+
     io.add_method("deposit", move |params: Params| {
         println!("Processing a deposit command");
         match params.parse::<DepositRequest>() {
@@ -97,7 +102,6 @@ pub fn inf_loop(mut dbe: DBE, common_init: CommonInit, local_init: LocalInit)
                 return Ok(Value::String("deposit operation".into()));
             },
             _ => Err(JsonRpcError::invalid_params("failed deposit operation".to_string())),
-//            _ => Ok(Value::String("failed deposit operation".into())),
         }
     });
     io.add_method("payment", move |params: Params| {
@@ -165,12 +169,12 @@ pub fn inf_loop(mut dbe: DBE, common_init: CommonInit, local_init: LocalInit)
                 return fct_signature(&emerkl);
             },
             _ => Err(JsonRpcError::invalid_params("parse of internal_check failed".to_string())),
-//            _ => Ok(Value::String("get data operation".into())),
         }
     });
     io.add_method("retrieve_proof", move |params: Params| {
         Ok(Value::String("rerieve_proof operation".into()))
     });
+
     
     //
     let my_reg = get_registrar_by_address(local_init.address, common_init).expect("Failed to find registrar");
@@ -184,6 +188,7 @@ pub fn inf_loop(mut dbe: DBE, common_init: CommonInit, local_init: LocalInit)
         .start_http(&socket)
         .expect("Server must start with no issues");
     
+    println!("Before server.wait");
     server.wait()
 }
 

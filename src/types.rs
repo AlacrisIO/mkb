@@ -52,21 +52,15 @@ pub struct AccountInfo {
     secret_key: String
 }
 
-impl Merge for AccountInfo {
-    fn merge(left: &Self, right: &Self) -> Self {
-        right.clone()
-    }
-}
 
-
-
+/*
 #[derive(Clone, Serialize, Deserialize)]
 pub struct Account {
     account_info: AccountInfo,
     available_funds: BigUint
 //    available_funds: u64
 }
-
+*/
 
 #[derive(Clone, Serialize, Deserialize)]
 pub struct DepositRequest {

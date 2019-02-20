@@ -60,12 +60,10 @@ pub fn compute_simple_gossip_protocol(common_init: CommonInit, address: String) 
 }
 
 
-
 jsonrpc_client!(pub struct InternalClient {
     /// Returns the fizz-buzz string for the given number.
     pub fn internal_check(&mut self, transmission: String) -> RpcRequest<String>;
 });
-
 
 fn check_transaction_kernel(mesg: Message) -> String {
     let lnk : String = "https://".to_string() + &mesg.ip_plus_port;
