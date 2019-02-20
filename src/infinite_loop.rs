@@ -44,7 +44,7 @@ fn get_registrar_by_address(address: String, common_init: &CommonInit) -> Option
 
 
 
-pub fn inf_loop(mut dbe: DBE, common_init: CommonInit, local_init: LocalInit)
+pub fn inf_loop(dbe: DBE, common_init: CommonInit, local_init: LocalInit)
 {
 //    let server_handle : Arc<i32>;
 //    let server_handle : Arc<Mutex<i32>>;
@@ -57,11 +57,6 @@ pub fn inf_loop(mut dbe: DBE, common_init: CommonInit, local_init: LocalInit)
     let my_reg = get_registrar_by_address(local_init.address, &common_init).expect("Failed to find registrar");
 
     let lk = Arc::new(Mutex::<DBE>::new(dbe));
-    let check_correctness = move |esumreq: SumTypeRequest| {
-        true
-    };
-    let check_correctness_0 = check_correctness.clone();
-    let check_correctness_1 = check_correctness.clone();
 /*    
     let process_request = move |esumreq: SumTypeRequest| {
         let w : std::sync::MutexGuard<DBE> = lk.lock().unwrap();
@@ -73,16 +68,25 @@ pub fn inf_loop(mut dbe: DBE, common_init: CommonInit, local_init: LocalInit)
 
 
     let complete_process_request = move |esumreq: SumTypeRequest| -> Result<serde_json::Value> {
+        println!("complete_process_request, step 1");
         let w : std::sync::MutexGuard<DBE> = lk.lock().unwrap();
+        println!("complete_process_request, step 2");
         let emerkl = get_signature(esumreq.clone());
+        println!("complete_process_request, step 3");
         if emerkl.result == false {
+            println!("complete_process_request, step 4");
             return Err(JsonRpcError::invalid_params("Error with the merkle database".to_string()));
         }
+        println!("complete_process_request, step 5");
         let test = check_mkb_operation(common_init.clone(), sgp.clone(), esumreq.clone());
+        println!("complete_process_request, step 6");
         if test == false {
+        println!("complete_process_request, step 7");
             return Err(JsonRpcError::invalid_params("Error with remote merkle database".to_string()));
         }
+        println!("complete_process_request, step 8");
         database_update(w, esumreq);
+        println!("complete_process_request, step 9");
         Ok(Value::String("Operation wetn correcly".into()))
     };
 
@@ -116,7 +120,9 @@ pub fn inf_loop(mut dbe: DBE, common_init: CommonInit, local_init: LocalInit)
         println!("Processing a add_account command");
         match params.parse::<AccountInfo>() {
             Ok(eval) => {
+                println!("add_account, step 1");
                 let esumreq = SumTypeRequest::Accountinfo(eval);
+                println!("add_account, step 2");
                 return process_request_0(esumreq);
             },
             Err(e) => fct_error(e, "add_account".to_string()),
@@ -186,16 +192,20 @@ pub fn inf_loop(mut dbe: DBE, common_init: CommonInit, local_init: LocalInit)
                 _ => Err(JsonRpcError::invalid_params("internal_check operation failed".to_string())),
             }
         };
+        println!("fct_signature is defined");
         match params.parse::<Message>() {
             Ok(eval) => {
+                println!("parsing eval, step 1");
                 let esumreq = serde_json::from_str(&eval.message).unwrap();
+                println!("parsing eval, step 2");
                 let emerkl = get_signature(esumreq);
+                println!("parsing eval, step 3");
                 return fct_signature(&emerkl);
             },
             Err(e) => fct_error(e, "internel_check".to_string()),
         }
     });
-    io.add_method("retrieve_proof", move |params: Params| {
+    io.add_method("retrieve_proof", move |_: Params| {
         Ok(Value::String("rerieve_proof operation".into()))
     });
 

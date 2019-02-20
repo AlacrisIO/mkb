@@ -1,3 +1,6 @@
+use std::process;
+
+
 use types::*;
 use merkle_data_tree::*;
 
@@ -60,17 +63,30 @@ pub fn compute_simple_gossip_protocol(common_init: &CommonInit, address: String)
 
 
 jsonrpc_client!(pub struct InternalClient {
-    /// Returns the fizz-buzz string for the given number.
     pub fn internal_check(&mut self, transmission: String) -> RpcRequest<String>;
+    pub fn internal_check_b(&mut self, transmission: String, eval: u32) -> RpcRequest<String>;
 });
 
 fn check_transaction_kernel(mesg: Message) -> String {
+    println!("check_transaction_kernel, step 1");
     let lnk : String = "https://".to_string() + &mesg.ip_plus_port;
+    println!("check_transaction_kernel, step 2");
     let transport = HttpTransport::new().standalone().unwrap();
+    println!("check_transaction_kernel, step 3");
     let transport_handle = transport.handle(&lnk).unwrap();
+    println!("check_transaction_kernel, step 4");
     let mut client = InternalClient::new(transport_handle);
-    let result1 = client.internal_check(mesg.message).call().unwrap();
-    result1
+    println!("check_transaction_kernel, step 5");
+    let result1 = client.internal_check(mesg.message).call();
+    match result1 {
+        Ok(eval) => eval,
+        Err(e) => {
+            println!("Error at computation of result1 e={:?}", e);
+            process::exit(0x0000);
+        }
+    }
+//    println!("check_transaction_kernel, step 6");
+//    result1
 }
 
 
@@ -78,17 +94,22 @@ fn check_transaction_kernel(mesg: Message) -> String {
 
 
 fn check_transaction(registrar: SingleRegistrar, ereq: &SumTypeRequest) -> bool {
+    println!("check_transaction, step 1");
     let str0 : String = registrar.ip_address[0].to_string();
     let str1 : String = registrar.ip_address[1].to_string();
     let str2 : String = registrar.ip_address[2].to_string();
     let str3 : String = registrar.ip_address[3].to_string();
     let str4 : String = registrar.port.to_string();
     let ip_plus_port : String = str0 + "." + &str1 + "." + &str2 + "." + &str3 + ":" + &str4;
+    println!("check_transaction, step 2");
     //
     let ereq_str = serde_json::to_string(ereq).unwrap();
+    println!("check_transaction, step 3");
     let mesg = Message { ip_plus_port: ip_plus_port, message: ereq_str };
+    println!("check_transaction, step 4");
     //
-    let reply = check_transaction_kernel(mesg);
+    let _reply = check_transaction_kernel(mesg);
+    println!("check_transaction, step 5");
     //
     true
 }
@@ -99,8 +120,10 @@ fn check_transaction(registrar: SingleRegistrar, ereq: &SumTypeRequest) -> bool 
 
 pub fn check_mkb_operation(common_init: CommonInit, sgp: SimpleGossipProtocol, ereq: SumTypeRequest) -> bool {
     let nb_neigh = sgp.list_neighbor.len();
+    println!("nb_neigh={}", nb_neigh);
     for i_neigh in 0..nb_neigh {
         let i_reg = sgp.list_neighbor[i_neigh];
+        println!("i_neigh={} i_reg={}", i_neigh, i_reg);
         let eval = check_transaction(common_init.registrars[i_reg].clone(), &ereq.clone());
         if eval == false {
             return false;

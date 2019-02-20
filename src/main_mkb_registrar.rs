@@ -80,7 +80,7 @@ fn main() {
     let database_file : String = local_init.database_file.clone();
     println!("We have database_file = {}", database_file);
     
-    let mut dbe = db::open_database(&database_file);
+    let dbe = db::open_database(&database_file);
     println!("We have opened db");
 
 //    let mut allmerkl = merkle_cbt::MerkleTree::<numext_fixed_hash::H256>::new();
