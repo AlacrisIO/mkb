@@ -6,9 +6,12 @@
 //use merkle_cbt::Merge;
 
 //use num_bigint::BigUint;
-use serde::Deserialize;
+//use data_structure;
 
-use data_structure;
+
+use serde::Deserialize;
+use numext_fixed_hash::H256;
+
 
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -44,22 +47,11 @@ pub struct LocalInit {
 
 #[derive(Ord, PartialOrd, Eq, PartialEq, Clone, Hash, Serialize, Deserialize)]
 pub struct AccountInfo {
-    topic: String,
-    account_name: String,
-    public_key: String,
-    secret_key: String
+    pub topic: String,
+    pub account_name: String,
+    pub public_key: String,
+    pub secret_key: String
 }
-
-
-/*
-#[derive(Clone, Serialize, Deserialize)]
-pub struct Account {
-    account_info: AccountInfo,
-    available_funds: BigUint
-//    available_funds: u64
-}
-*/
-
 
 #[derive(Clone, Hash, Serialize, Deserialize)]
 pub struct TopicCreationRequest {
@@ -146,6 +138,6 @@ pub struct MessageRed {
 #[derive(Clone, Serialize, Deserialize)]
 pub struct MerkleVerification {
     pub result: bool, 
-    pub signature: Option<String>,
+    pub signature: Option<H256>,
 }
 
