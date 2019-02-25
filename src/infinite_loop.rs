@@ -59,6 +59,9 @@ pub fn inf_loop(dbe: DBE, tot_mkb: TopicAllInfo, common_init: CommonInit, local_
 
     let lk_dbe = Arc::new(Mutex::<DBE>::new(dbe));
     let lk_mkb = Arc::new(Mutex::<TopicAllInfo>::new(tot_mkb));
+    let lk_mkb_0 = lk_mkb.clone();
+    let lk_mkb_1 = lk_mkb.clone();
+    let lk_mkb_2 = lk_mkb.clone();
 /*    
     let process_request = move |esumreq: SumTypeRequest| {
         let w : std::sync::MutexGuard<DBE> = lk.lock().unwrap();
@@ -70,8 +73,9 @@ pub fn inf_loop(dbe: DBE, tot_mkb: TopicAllInfo, common_init: CommonInit, local_
 
 
     let complete_process_request = move |esumreq: SumTypeRequest| -> Result<serde_json::Value> {
-        let w : std::sync::MutexGuard<DBE> = lk_dbe.lock().unwrap();
-        let emerkl = get_signature(tot_mkb, esumreq.clone());
+        let w_dbe : std::sync::MutexGuard<DBE> = lk_dbe.lock().unwrap();
+        let w_mkb : std::sync::MutexGuard<TopicAllInfo> = lk_mkb_0.lock().unwrap();
+        let emerkl = get_signature(w_mkb, esumreq.clone());
         if emerkl.result == false {
             return Err(JsonRpcError::invalid_params("Error with the merkle database".to_string()));
         }
@@ -79,18 +83,18 @@ pub fn inf_loop(dbe: DBE, tot_mkb: TopicAllInfo, common_init: CommonInit, local_
         if test == false {
             return Err(JsonRpcError::invalid_params("Error with remote merkle database".to_string()));
         }
-        database_update(w, esumreq);
+        database_update(w_dbe, esumreq);
         Ok(Value::String("Operation done correcly".into()))
     };
 
+
     let request_data = move |topic: String, name: String| -> Result<serde_json::Value> {
-        let w : std::sync::MutexGuard<TopicAllInfo> = lk_mkb.lock().unwrap();
-        match query_info(w, topic, name) {
+        let w_mkb : std::sync::MutexGuard<TopicAllInfo> = lk_mkb_1.lock().unwrap();
+        match query_info(w_mkb, topic, name) {
             Ok(eval) => Ok(Value::String(serde_json::to_string(&eval).unwrap())),
             Err(e) => Err(JsonRpcError::invalid_params(e)),
         }
     };
-
 
 
         
@@ -103,7 +107,6 @@ pub fn inf_loop(dbe: DBE, tot_mkb: TopicAllInfo, common_init: CommonInit, local_
     let process_request_3 = complete_process_request.clone();
     let process_request_4 = complete_process_request.clone();
     let process_request_5 = complete_process_request.clone();
-    let process_request_6 = complete_process_request.clone();
 
     let fct_error = |e : jsonrpc_core::Error, oper: String| {
         println!("Error during parsing {:?}", e);
@@ -216,13 +219,15 @@ pub fn inf_loop(dbe: DBE, tot_mkb: TopicAllInfo, common_init: CommonInit, local_
                 println!("parsing eval, step 1");
                 let esumreq = serde_json::from_str(&eval.message).unwrap();
                 println!("parsing eval, step 2");
-                let emerkl = get_signature(tot_mkb, esumreq);
+                let w_mkb : std::sync::MutexGuard<TopicAllInfo> = lk_mkb_2.lock().unwrap();
+                let emerkl = get_signature(w_mkb, esumreq);
                 println!("parsing eval, step 3");
                 return fct_signature(&emerkl);
             },
             Err(e) => fct_error(e, "internel_check".to_string()),
         }
     });
+
     io.add_method("retrieve_proof", move |_: Params| {
         Ok(Value::String("rerieve_proof operation".into()))
     });
