@@ -98,7 +98,7 @@ pub fn get_signature(mut w_mkb: std::sync::MutexGuard<TopicAllInfo>, eval: SumTy
                             let new_data = "".to_string();
                             let new_account_curr = AccountCurrent { current_money: new_amnt, data_current: new_data, hash: new_hash.clone()};
                             edep_c.push(new_account_curr);
-                            MerkleVerification { result: false, signature: Some(new_hash) }
+                            MerkleVerification { result: true, signature: Some(new_hash) }
                         },
                         None => MerkleVerification { result: false, signature: None },
                     }
@@ -170,6 +170,52 @@ pub fn get_signature(mut w_mkb: std::sync::MutexGuard<TopicAllInfo>, eval: SumTy
             }
             
         },
-        _ => MerkleVerification { result: true, signature: None },
+        Withdrawrequest(ewith) => {
+            let mut x = (*w_mkb).all_topic_state.get_mut(&ewith.topic);
+            match x {
+                Some(mut ewith_b) => {
+                    let mut y = ewith_b.all_account_state.get_mut(&ewith.account_name);
+                    match y {
+                        Some(ewith_c) => {
+                            let len = ewith_c.len();
+                            if ewith_c[len-1].current_money > ewith.amount {
+                                let new_amnt = ewith_c[len-1].current_money - ewith.amount;
+                                let new_hash = ewith_c[len-1].hash.clone(); // Obviously wrong
+                                let new_data = "".to_string();
+                                let new_account_curr = AccountCurrent { current_money: new_amnt, data_current: new_data, hash: new_hash.clone()};
+                                ewith_c.push(new_account_curr);
+                                MerkleVerification { result: true, signature: Some(new_hash) }
+                            }
+                            else {
+                                MerkleVerification { result: false, signature: None }
+                            }
+                        },
+                        None => MerkleVerification { result: false, signature: None },
+                    }
+                },
+                None => MerkleVerification { result: false, signature: None },
+            }
+        },
+        Senddatarequest(edata) => {
+            let mut x = (*w_mkb).all_topic_state.get_mut(&edata.topic);
+            match x {
+                Some(mut edata_b) => {
+                    let mut y = edata_b.all_account_state.get_mut(&edata.account_name);
+                    match y {
+                        Some(edep_c) => {
+                            let len = edep_c.len();
+                            let new_amnt = edep_c[len-1].current_money;
+                            let new_hash = edep_c[len-1].hash.clone(); // Obviously wrong
+                            let new_data = edata.data;
+                            let new_account_curr = AccountCurrent { current_money: new_amnt, data_current: new_data, hash: new_hash.clone()};
+                            edep_c.push(new_account_curr);
+                            MerkleVerification { result: true, signature: Some(new_hash) }
+                        },
+                        None => MerkleVerification { result: false, signature: None },
+                    }
+                },
+                None => MerkleVerification { result: false, signature: None },
+             }
+        },
     }
 }
