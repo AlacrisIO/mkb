@@ -53,7 +53,7 @@ mod types;
 mod parsing_input;
 mod infinite_loop;
 mod gossip_protocol;
-mod merkle_data_tree;
+mod data_structure;
 
 //mod rpc_server;
 //mod rpc_client;
@@ -83,9 +83,12 @@ fn main() {
     let dbe = db::open_database(&database_file);
     println!("We have opened db");
 
+    let mut tot_mkb : data_structure::TopicAllInfo = Default::default();
+        //data_structure::TopicAllInfo{all_account_state:{}};
+    
 //    let mut allmerkl = merkle_cbt::MerkleTree::<numext_fixed_hash::H256>::new();
 //    println!("We have the merkle database");
     
-    infinite_loop::inf_loop(dbe, common_init, local_init);
+    infinite_loop::inf_loop(dbe, tot_mkb, common_init, local_init);
     println!("Normal termination of the MKB");
 }

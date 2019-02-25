@@ -1,17 +1,14 @@
-//extern crate serde;
-//extern crate serde_json;
 //use std::vec;
 
+//use std::collections::HashMap;
 
 //use merkle_cbt::merkle_tree::CBMT;
-use merkle_cbt::Merge;
+//use merkle_cbt::Merge;
 
-use num_bigint::BigUint;
-//use serde_json::Number;
+//use num_bigint::BigUint;
 use serde::Deserialize;
-//use serde_json::Value;
 
-use merkle_data_tree;
+use data_structure;
 
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -45,8 +42,9 @@ pub struct LocalInit {
 
 // RPC request from the users
 
-#[derive(Ord, PartialOrd, Eq, PartialEq, Clone, Serialize, Deserialize)]
+#[derive(Ord, PartialOrd, Eq, PartialEq, Clone, Hash, Serialize, Deserialize)]
 pub struct AccountInfo {
+    topic: String,
     account_name: String,
     public_key: String,
     secret_key: String
@@ -62,46 +60,60 @@ pub struct Account {
 }
 */
 
-#[derive(Clone, Serialize, Deserialize)]
+
+#[derive(Clone, Hash, Serialize, Deserialize)]
+pub struct TopicCreationRequest {
+    pub topic: String,
+}
+
+#[derive(Clone, Hash, Serialize, Deserialize)]
 pub struct DepositRequest {
-    account_name: String,
-    amount: f32
+    pub topic: String,
+    pub account_name: String,
+    pub amount: u64
 }
 
-#[derive(Clone, Serialize, Deserialize)]
+#[derive(Clone, Hash, Serialize, Deserialize)]
 pub struct PaymentRequest {
-    account_name_sender: String,
-    account_name_receiver: String,
-    amount: f32
+    pub topic: String,
+    pub account_name_sender: String,
+    pub account_name_receiver: String,
+    pub amount: u64
 }
 
-#[derive(Clone, Serialize, Deserialize)]
+#[derive(Clone, Hash, Serialize, Deserialize)]
 pub struct WithdrawRequest {
-    account_name: String,
-    amount: f32
+    pub topic: String,
+    pub account_name: String,
+    pub amount: u64
 }
 
-#[derive(Clone, Serialize, Deserialize)]
+#[derive(Clone, Hash, Serialize, Deserialize)]
 pub struct SendDataRequest {
-    account_name: String,
-    key: String,
-    data: String
+    pub topic: String,
+    pub account_name: String,
+    pub data: String
 }
 
-#[derive(Clone, Serialize, Deserialize)]
-pub struct GetDataRequest {
-    account_name: String,
-    key: String
+// Queries on the database
+
+#[derive(Clone, Hash, Serialize, Deserialize)]
+pub struct GetInfoRequest {
+    pub topic: String,
+    pub account_name: String,
 }
+
+
+
 
 #[derive(Clone, Serialize, Deserialize)]
 pub enum SumTypeRequest {
+    Topiccreationrequest(TopicCreationRequest),
     Accountinfo(AccountInfo),
     Depositrequest(DepositRequest),
     Paymentrequest(PaymentRequest),
     Withdrawrequest(WithdrawRequest),
     Senddatarequest(SendDataRequest),
-    Getdatarequest(GetDataRequest),
 }
 
 

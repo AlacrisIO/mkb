@@ -63,7 +63,7 @@ multi-party-schnorr = { git = "https://github.com/KZen-networks/multi-party-schn
 
 #cryto stuff
 #ring = "0.13.5"
-#keccak-hash = "0.1"
+keccak-hash = "0.1"
 
 #ed25519
 ed25519-dalek = { git = "https://github.com/dalek-cryptography/ed25519-dalek", features = [ "serde" ] }
