@@ -106,49 +106,70 @@ pub fn get_signature(mut w_mkb: std::sync::MutexGuard<TopicAllInfo>, eval: SumTy
                 None => MerkleVerification { result: false, signature: None },
              }
         },
-
-/*        
         Paymentrequest(epay) => {
             let mut x = (*w_mkb).all_topic_state.get_mut(&epay.topic);
             match x {
                 Some(mut epay_b) => {
-                    let mut y = epay_b.all_account_state.get_mut(&epay.account_name_sender);
-                    match y {
-                        Some(mut esend) => {
-                            let mut z = epay_b.all_account_state.get_mut(&epay.account_name_receiver);
-                            match z {
-                                Some(mut erecv) => {
-                                    let len1 = esend.len();
-                                    if esend[len1-1].current_money < epay.amount {
-                                        return MerkleVerification { result: false, signature: None };
-                                    }
-                                    else {
-                                        let new_amnt = esend[len1-1].current_money - epay.amount;
-                                        let new_hash1 = esend[len1-1].hash.clone(); // Obviously wrong
-                                        let new_data1 = "".to_string();
-                                        let new_account_send = AccountCurrent { current_money: new_amnt, data_current: new_data1, hash: new_hash1.clone()};
-                                        esend.push(new_account_send);
-                                        //
-                                        let len2 = erecv.len();
-                                        let new_amnt = erecv[len2-1].current_money + epay.amount;
-                                        let new_hash2 = erecv[len2-1].hash.clone(); // Obviously wrong
-                                        let new_data2 = "".to_string();
-                                        let new_account_send = AccountCurrent { current_money: new_amnt, data_current: new_data2, hash: new_hash2.clone()};
-                                        erecv.push(new_account_send);
-                                        MerkleVerification { result: true, signature: None }
-                                    }
-                                },
-                                None => MerkleVerification { result: false, signature: None },
-                            }
+                    let check_presence = |u: &SetOfAccount, addr: &String| -> bool {
+                        let y = u.all_account_state.get(addr);
+                        match y {
+                            Some(_) => true,
+                            None => false,
                         }
-                        None => MerkleVerification { result: false, signature: None },
+                    };
+                    let fct_corr = |u: &SetOfAccount, epayreq: &PaymentRequest| -> bool {
+                        if check_presence(u, &epayreq.account_name_sender) == false {
+                            return false;
+                        }
+                        if check_presence(u, &epayreq.account_name_receiver) == false {
+                            return false;
+                        }
+                        let stl = u.all_account_state.get(&epayreq.account_name_sender);
+                        match stl {
+                            Some(estl) => {
+                                let len1 = estl.len();
+                                return estl[len1-1].current_money > epayreq.amount;
+                            },
+                            None => false,
+                        }
+                    };
+                    if fct_corr(&epay_b, &epay) == false {
+                        return MerkleVerification { result: false, signature: None };
                     }
+                    {
+                        let mut y = epay_b.all_account_state.get_mut(&epay.account_name_sender);
+                        match y {
+                            Some(esend) => {
+                                let len = esend.len();
+                                let new_amnt = esend[len-1].current_money - epay.amount;
+                                let new_hash1 = esend[len-1].hash.clone(); // Obviously wrong
+                                let new_data1 = "".to_string();
+                                let new_account_send = AccountCurrent { current_money: new_amnt, data_current: new_data1, hash: new_hash1.clone()};
+                                esend.push(new_account_send);
+                            },
+                            None => {},
+                        }
+                    }
+                    {
+                        let mut y = epay_b.all_account_state.get_mut(&epay.account_name_receiver);
+                        match y {
+                            Some(erecv) => {
+                                let len = erecv.len();
+                                let new_amnt = erecv[len-1].current_money + epay.amount;
+                                let new_hash2 = erecv[len-1].hash.clone(); // Obviously wrong
+                                let new_data2 = "".to_string();
+                                let new_account_send = AccountCurrent { current_money: new_amnt, data_current: new_data2, hash: new_hash2.clone()};
+                                erecv.push(new_account_send);
+                            },
+                            None => {},
+                        }
+                    }
+                    return MerkleVerification { result: true, signature: None };
                 },
                 None => MerkleVerification { result: false, signature: None },
             }
             
         },
-*/
         _ => MerkleVerification { result: true, signature: None },
     }
 }
