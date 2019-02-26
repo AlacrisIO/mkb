@@ -16,6 +16,9 @@ extern crate jsonrpc_http_server;
 
 extern crate rocksdb;
 
+extern crate multihash;
+
+
 // The ed25519 cryptography. VRF depends on it.
 extern crate ed25519_dalek;
 

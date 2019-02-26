@@ -1,14 +1,27 @@
-//use merkle_cbt;
-//use merkle_cbt::Merge;
-//use merkle_cbt::MerkleTree;
-use numext_fixed_hash::H256;
+//use numext_fixed_hash::H256;
 
 use types::*;
 use types::SumTypeRequest::*;
-//use std::io;
 use std::collections::HashMap;
+use multihash::{encode, Hash};
+//use std::process;
+//use merkle_cbt;
+//use merkle_cbt::Merge;
+//use merkle_cbt::MerkleTree;
+
+//use std::io;
 //use std::sync::{Arc, Mutex};
 //use jsonrpc_core::{Error as JsonRpcError};
+
+/*
+#[derive(Default)]
+pub struct AllDataMerkleTree {
+    pub account_map : MerkleTree<H256>,
+    pub token_map : MerkleTree<H256>,
+    pub transaction_map : MerkleTree<H256>,
+}
+*/
+
 
 
 
@@ -16,7 +29,7 @@ use std::collections::HashMap;
 pub struct AccountCurrent {
     current_money: u64,
     data_current: String,
-    hash: H256
+    hash: Vec<u8>
 }
 
 #[derive(Clone,Default,Serialize,Deserialize)]
@@ -48,18 +61,12 @@ pub fn query_info(w: std::sync::MutexGuard<TopicAllInfo>, topic: String, name: S
 }
 
 
-/*
-#[derive(Default)]
-pub struct AllDataMerkleTree {
-    pub 
-    pub account_map : MerkleTree<H256>,
-    pub token_map : MerkleTree<H256>,
-    pub transaction_map : MerkleTree<H256>,
+pub fn compute_the_hash(econt: &ContainerTypeForHash) -> Vec<u8> {
+    let econt_str = serde_json::to_string(econt).unwrap();
+    let econt_str_u8 = econt_str.as_bytes();
+    let eret = encode(Hash::SHA3256, econt_str_u8).unwrap();
+    eret
 }
-*/
-
-
-
 
 
 
@@ -68,7 +75,7 @@ pub struct AllDataMerkleTree {
 // If correct, the signature is returned to be checked.
 // If not correct, then the signature is sent in order to be checked.
 pub fn get_signature(mut w_mkb: std::sync::MutexGuard<TopicAllInfo>, eval: SumTypeRequest) -> MerkleVerification {
-    match eval {
+    match eval.clone() {
         Topiccreationrequest(etop) => {
             let set_of_acct: SetOfAccount = Default::default();
             (*w_mkb).all_topic_state.insert(etop.topic, set_of_acct);
@@ -94,7 +101,8 @@ pub fn get_signature(mut w_mkb: std::sync::MutexGuard<TopicAllInfo>, eval: SumTy
                         Some(edep_c) => {
                             let len = edep_c.len();
                             let new_amnt = edep_c[len-1].current_money + edep.amount;
-                            let new_hash = edep_c[len-1].hash.clone(); // Obviously wrong
+                            let econt = ContainerTypeForHash { hash: edep_c[len-1].hash.clone(), esum: eval};
+                            let new_hash = compute_the_hash(&econt);
                             let new_data = "".to_string();
                             let new_account_curr = AccountCurrent { current_money: new_amnt, data_current: new_data, hash: new_hash.clone()};
                             edep_c.push(new_account_curr);
@@ -142,7 +150,8 @@ pub fn get_signature(mut w_mkb: std::sync::MutexGuard<TopicAllInfo>, eval: SumTy
                             Some(esend) => {
                                 let len = esend.len();
                                 let new_amnt = esend[len-1].current_money - epay.amount;
-                                let new_hash1 = esend[len-1].hash.clone(); // Obviously wrong
+                                let econt = ContainerTypeForHash { hash: esend[len-1].hash.clone(), esum: eval.clone()};
+                                let new_hash1 = compute_the_hash(&econt);
                                 let new_data1 = "".to_string();
                                 let new_account_send = AccountCurrent { current_money: new_amnt, data_current: new_data1, hash: new_hash1.clone()};
                                 esend.push(new_account_send);
@@ -156,7 +165,8 @@ pub fn get_signature(mut w_mkb: std::sync::MutexGuard<TopicAllInfo>, eval: SumTy
                             Some(erecv) => {
                                 let len = erecv.len();
                                 let new_amnt = erecv[len-1].current_money + epay.amount;
-                                let new_hash2 = erecv[len-1].hash.clone(); // Obviously wrong
+                                let econt = ContainerTypeForHash { hash: erecv[len-1].hash.clone(), esum: eval};
+                                let new_hash2 = compute_the_hash(&econt);
                                 let new_data2 = "".to_string();
                                 let new_account_send = AccountCurrent { current_money: new_amnt, data_current: new_data2, hash: new_hash2.clone()};
                                 erecv.push(new_account_send);
@@ -180,7 +190,8 @@ pub fn get_signature(mut w_mkb: std::sync::MutexGuard<TopicAllInfo>, eval: SumTy
                             let len = ewith_c.len();
                             if ewith_c[len-1].current_money > ewith.amount {
                                 let new_amnt = ewith_c[len-1].current_money - ewith.amount;
-                                let new_hash = ewith_c[len-1].hash.clone(); // Obviously wrong
+                                let econt = ContainerTypeForHash { hash: ewith_c[len-1].hash.clone(), esum: eval};
+                                let new_hash = compute_the_hash(&econt);
                                 let new_data = "".to_string();
                                 let new_account_curr = AccountCurrent { current_money: new_amnt, data_current: new_data, hash: new_hash.clone()};
                                 ewith_c.push(new_account_curr);
@@ -205,7 +216,9 @@ pub fn get_signature(mut w_mkb: std::sync::MutexGuard<TopicAllInfo>, eval: SumTy
                         Some(edep_c) => {
                             let len = edep_c.len();
                             let new_amnt = edep_c[len-1].current_money;
-                            let new_hash = edep_c[len-1].hash.clone(); // Obviously wrong
+                            let econt = ContainerTypeForHash { hash: edep_c[len-1].hash.clone(), esum: eval};
+                            let new_hash = compute_the_hash(&econt);
+//                            let new_hash = encode(edep_c[len-1].hash.clone(); // Obviously wrong
                             let new_data = edata.data;
                             let new_account_curr = AccountCurrent { current_money: new_amnt, data_current: new_data, hash: new_hash.clone()};
                             edep_c.push(new_account_curr);

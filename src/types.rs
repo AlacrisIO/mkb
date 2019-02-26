@@ -10,7 +10,7 @@
 
 
 use serde::Deserialize;
-use numext_fixed_hash::H256;
+//use numext_fixed_hash::H256;
 
 
 
@@ -98,7 +98,7 @@ pub struct GetInfoRequest {
 
 
 
-#[derive(Clone, Serialize, Deserialize)]
+#[derive(Clone, Hash, Serialize, Deserialize)]
 pub enum SumTypeRequest {
     Topiccreationrequest(TopicCreationRequest),
     Accountinfo(AccountInfo),
@@ -106,6 +106,12 @@ pub enum SumTypeRequest {
     Paymentrequest(PaymentRequest),
     Withdrawrequest(WithdrawRequest),
     Senddatarequest(SendDataRequest),
+}
+
+#[derive(Clone, Hash, Serialize, Deserialize)]
+pub struct ContainerTypeForHash {
+    pub hash: Vec<u8>,
+    pub esum: SumTypeRequest,
 }
 
 
@@ -138,6 +144,6 @@ pub struct MessageRed {
 #[derive(Clone, Serialize, Deserialize)]
 pub struct MerkleVerification {
     pub result: bool, 
-    pub signature: Option<H256>,
+    pub signature: Option<Vec<u8>>,
 }
 
