@@ -73,6 +73,7 @@ pub struct PaymentRequest {
     pub topic: String,
     pub account_name_sender: String,
     pub account_name_receiver: String,
+    pub hash: HashType,
     pub amount: u64
 }
 
@@ -80,6 +81,7 @@ pub struct PaymentRequest {
 pub struct WithdrawRequest {
     pub topic: String,
     pub account_name: String,
+    pub hash: HashType,
     pub amount: u64
 }
 
@@ -87,6 +89,7 @@ pub struct WithdrawRequest {
 pub struct SendDataRequest {
     pub topic: String,
     pub account_name: String,
+    pub hash: HashType,
     pub data: String
 }
 

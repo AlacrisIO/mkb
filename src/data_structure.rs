@@ -101,13 +101,18 @@ pub fn get_signature(mut w_mkb: std::sync::MutexGuard<TopicAllInfo>, eval: SumTy
                     match y {
                         Some(edep_c) => {
                             let len = edep_c.len();
-                            let new_amnt = edep_c[len-1].current_money + edep.amount;
-                            let econt = ContainerTypeForHash { hash: edep_c[len-1].hash.clone(), esum: eval};
-                            let new_hash = compute_the_hash(&econt);
-                            let new_data = "".to_string();
-                            let new_account_curr = AccountCurrent { current_money: new_amnt, data_current: new_data, hash: new_hash.clone()};
-                            edep_c.push(new_account_curr);
-                            MerkleVerification { result: true, signature: Some(new_hash) }
+                            if edep_c[len-1].hash == edep.hash {
+                                let new_amnt = edep_c[len-1].current_money + edep.amount;
+                                let econt = ContainerTypeForHash { hash: edep_c[len-1].hash.clone(), esum: eval};
+                                let new_hash = compute_the_hash(&econt);
+                                let new_data = "".to_string();
+                                let new_account_curr = AccountCurrent { current_money: new_amnt, data_current: new_data, hash: new_hash.clone()};
+                                edep_c.push(new_account_curr);
+                                MerkleVerification { result: true, signature: Some(new_hash) }
+                            }
+                            else {
+                                MerkleVerification { result: false, signature: None }
+                            }
                         },
                         None => MerkleVerification { result: false, signature: None },
                     }
@@ -137,7 +142,13 @@ pub fn get_signature(mut w_mkb: std::sync::MutexGuard<TopicAllInfo>, eval: SumTy
                         match stl {
                             Some(estl) => {
                                 let len1 = estl.len();
-                                return estl[len1-1].current_money > epayreq.amount;
+                                if estl[len1-1].current_money < epayreq.amount {
+                                    return false;
+                                }
+                                if estl[len1-1].hash != epayreq.hash {
+                                    return false;
+                                }
+                                return true;
                             },
                             None => false,
                         }
@@ -189,7 +200,7 @@ pub fn get_signature(mut w_mkb: std::sync::MutexGuard<TopicAllInfo>, eval: SumTy
                     match y {
                         Some(ewith_c) => {
                             let len = ewith_c.len();
-                            if ewith_c[len-1].current_money > ewith.amount {
+                            if ewith_c[len-1].current_money > ewith.amount && ewith_c[len-1].hash == ewith.hash {
                                 let new_amnt = ewith_c[len-1].current_money - ewith.amount;
                                 let econt = ContainerTypeForHash { hash: ewith_c[len-1].hash.clone(), esum: eval};
                                 let new_hash = compute_the_hash(&econt);
@@ -216,14 +227,19 @@ pub fn get_signature(mut w_mkb: std::sync::MutexGuard<TopicAllInfo>, eval: SumTy
                     match y {
                         Some(edep_c) => {
                             let len = edep_c.len();
-                            let new_amnt = edep_c[len-1].current_money;
-                            let econt = ContainerTypeForHash { hash: edep_c[len-1].hash.clone(), esum: eval};
-                            let new_hash = compute_the_hash(&econt);
-//                            let new_hash = encode(edep_c[len-1].hash.clone(); // Obviously wrong
-                            let new_data = edata.data;
-                            let new_account_curr = AccountCurrent { current_money: new_amnt, data_current: new_data, hash: new_hash.clone()};
-                            edep_c.push(new_account_curr);
-                            MerkleVerification { result: true, signature: Some(new_hash) }
+                            if edep_c[len-1].hash == edata.hash {
+                                let new_amnt = edep_c[len-1].current_money;
+                                let econt = ContainerTypeForHash { hash: edep_c[len-1].hash.clone(), esum: eval};
+                                let new_hash = compute_the_hash(&econt);
+                                //                            let new_hash = encode(edep_c[len-1].hash.clone(); // Obviously wrong
+                                let new_data = edata.data;
+                                let new_account_curr = AccountCurrent { current_money: new_amnt, data_current: new_data, hash: new_hash.clone()};
+                                edep_c.push(new_account_curr);
+                                MerkleVerification { result: true, signature: Some(new_hash) }
+                            }
+                            else {
+                                MerkleVerification { result: false, signature: None }
+                            }
                         },
                         None => MerkleVerification { result: false, signature: None },
                     }
