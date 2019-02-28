@@ -110,12 +110,17 @@ fn check_transaction(registrar: SingleRegistrar, ereq: &SumTypeRequest) -> bool 
 
 pub fn check_mkb_operation(common_init: CommonInit, sgp: SimpleGossipProtocol, ereq: SumTypeRequest) -> bool {
     let nb_neigh = sgp.list_neighbor.len();
+    let mut nb_true = 0;
     for i_neigh in 0..nb_neigh {
         let i_reg = sgp.list_neighbor[i_neigh];
         let eval = check_transaction(common_init.registrars[i_reg].clone(), &ereq.clone());
-        if eval == false {
-            return false;
+        if eval {
+            nb_true = nb_true + 1
         }
     }
-    return true;
+    let quot = (nb_true as f32) / (nb_neigh as f32);
+    if quot > common_init.consensus_fraction {
+        return true;
+    }
+    return false;
 }
