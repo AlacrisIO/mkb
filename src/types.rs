@@ -13,6 +13,8 @@ use serde::Deserialize;
 //use numext_fixed_hash::H256;
 
 
+pub type HashType = Vec<u8>;
+
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct SingleRegistrar {
@@ -62,6 +64,7 @@ pub struct TopicCreationRequest {
 pub struct DepositRequest {
     pub topic: String,
     pub account_name: String,
+    pub hash: HashType,
     pub amount: u64
 }
 
@@ -110,7 +113,7 @@ pub enum SumTypeRequest {
 
 #[derive(Clone, Hash, Serialize, Deserialize)]
 pub struct ContainerTypeForHash {
-    pub hash: Vec<u8>,
+    pub hash: HashType,
     pub esum: SumTypeRequest,
 }
 
@@ -144,6 +147,6 @@ pub struct MessageRed {
 #[derive(Clone, Serialize, Deserialize)]
 pub struct MerkleVerification {
     pub result: bool, 
-    pub signature: Option<Vec<u8>>,
+    pub signature: Option<HashType>,
 }
 

@@ -4,6 +4,7 @@ use types::*;
 use types::SumTypeRequest::*;
 use std::collections::HashMap;
 use multihash::{encode, Hash};
+use types::HashType;
 //use std::process;
 //use merkle_cbt;
 //use merkle_cbt::Merge;
@@ -29,7 +30,7 @@ pub struct AllDataMerkleTree {
 pub struct AccountCurrent {
     current_money: u64,
     data_current: String,
-    hash: Vec<u8>
+    hash: HashType
 }
 
 #[derive(Clone,Default,Serialize,Deserialize)]
@@ -61,7 +62,7 @@ pub fn query_info(w: std::sync::MutexGuard<TopicAllInfo>, topic: String, name: S
 }
 
 
-pub fn compute_the_hash(econt: &ContainerTypeForHash) -> Vec<u8> {
+pub fn compute_the_hash(econt: &ContainerTypeForHash) -> HashType {
     let econt_str = serde_json::to_string(econt).unwrap();
     let econt_str_u8 = econt_str.as_bytes();
     let eret = encode(Hash::SHA3256, econt_str_u8).unwrap();
