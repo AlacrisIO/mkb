@@ -52,6 +52,10 @@ pub fn inf_loop(dbe: DBE, tot_mkb: TopicAllInfo, common_init: CommonInit, local_
 //    let server_handle : Arc<Mutex<Option<i32>>>;
 //    let server_handle : Arc<Mutex<Option<ServerHandle>>>;
     //    let for_io = server_handle.clone();
+    
+//    let server_handle = Arc<Mutex<Option<ServerHandle>>>;
+//    let server_handle = Arc::new(Mutex::<i32>::new(0));
+    let server_handle : Arc<Mutex<Option<jsonrpc_http_server::ServerHandler>>> = Default::default();
 
     
     //
@@ -229,7 +233,7 @@ pub fn inf_loop(dbe: DBE, tot_mkb: TopicAllInfo, common_init: CommonInit, local_
     });
 
     io.add_method("retrieve_proof", move |_: Params| {
-        Ok(Value::String("rerieve_proof operation".into()))
+        Ok(Value::String("retrieve_proof operation".into()))
     });
 
     
@@ -246,4 +250,3 @@ pub fn inf_loop(dbe: DBE, tot_mkb: TopicAllInfo, common_init: CommonInit, local_
     println!("Before server.wait");
     server.wait()
 }
-

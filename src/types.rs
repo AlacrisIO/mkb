@@ -47,7 +47,18 @@ pub struct LocalInit {
 
 // RPC request from the users
 
-#[derive(Ord, PartialOrd, Eq, PartialEq, Clone, Hash, Serialize, Deserialize)]
+#[derive(Clone, Hash, Serialize, Deserialize)]
+pub struct TopicDescription {
+    pub name: String, // the name of the topic
+    pub capacity_per_sec: u32, // the number of allowed transactions per seconds. 0 for infinity
+    pub capacity_mem: u32, // the total allowed capacity. If 0 for infinity
+    pub retention_time: u32, // the retention policy of data. If 0, then not used.
+    pub retention_size: u32, // the maximum number of versions are kept. If 0 then all are used.
+    pub hash_method: String, // The hashing method used.
+}
+
+
+#[derive(Clone, Hash, Serialize, Deserialize)]
 pub struct AccountInfo {
     pub topic: String,
     pub account_name: String,
