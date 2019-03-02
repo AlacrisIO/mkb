@@ -47,7 +47,7 @@ pub struct LocalInit {
 
 // RPC request from the users
 
-#[derive(Clone, Hash, Serialize, Deserialize)]
+#[derive(Clone, Default, Hash, Serialize, Deserialize)]
 pub struct TopicDescription {
     pub name: String, // the name of the topic
     pub capacity_per_sec: u32, // the number of allowed transactions per seconds. 0 for infinity

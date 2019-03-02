@@ -21,11 +21,13 @@ pub struct AccountCurrent {
     current_money: u64,
     data_current: String,
     hash: HashType,
-    utc: DateTime<Utc>
+    utc: DateTime<Utc>,
+    nonce: u32
 }
 
 #[derive(Clone,Default,Serialize,Deserialize)]
 pub struct SetOfAccount {
+    pub topic_desc: TopicDescription,
     pub all_account_state: HashMap<String,Vec<AccountCurrent>>
 }
 
@@ -78,7 +80,7 @@ pub fn get_signature(mut w_mkb: std::sync::MutexGuard<TopicAllInfo>, eval: SumTy
             match x {
                 Some(mut eacc_b) => {
                     let hash: HashType = Default::default();
-                    let acct_start : AccountCurrent = AccountCurrent { current_money: 0, data_current: "".to_string(), hash: hash.clone(), utc: Utc::now()};
+                    let acct_start : AccountCurrent = AccountCurrent { current_money: 0, data_current: "".to_string(), hash: hash.clone(), utc: Utc::now(), nonce: 0};
                     eacc_b.all_account_state.insert(eacc.account_name, vec![acct_start.clone()]);
                     MerkleVerification { result: false, signature: Some(acct_start.hash) }
                 },
@@ -98,7 +100,8 @@ pub fn get_signature(mut w_mkb: std::sync::MutexGuard<TopicAllInfo>, eval: SumTy
                                 let econt = ContainerTypeForHash { hash: edep_c[len-1].hash.clone(), esum: eval};
                                 let new_hash = compute_the_hash(&econt);
                                 let new_data = "".to_string();
-                                let new_account_curr = AccountCurrent { current_money: new_amnt, data_current: new_data, hash: new_hash.clone(), utc: Utc::now()};
+                                let new_nonce = edep_c[len-1].nonce + 1;
+                                let new_account_curr = AccountCurrent { current_money: new_amnt, data_current: new_data, hash: new_hash.clone(), utc: Utc::now(), nonce: new_nonce};
                                 edep_c.push(new_account_curr);
                                 MerkleVerification { result: true, signature: Some(new_hash) }
                             }
@@ -157,7 +160,8 @@ pub fn get_signature(mut w_mkb: std::sync::MutexGuard<TopicAllInfo>, eval: SumTy
                                 let econt = ContainerTypeForHash { hash: esend[len-1].hash.clone(), esum: eval.clone()};
                                 let new_hash1 = compute_the_hash(&econt);
                                 let new_data1 = "".to_string();
-                                let new_account_send = AccountCurrent { current_money: new_amnt, data_current: new_data1, hash: new_hash1.clone(), utc: Utc::now()};
+                                let new_nonce = esend[len-1].nonce + 1;
+                                let new_account_send = AccountCurrent { current_money: new_amnt, data_current: new_data1, hash: new_hash1.clone(), utc: Utc::now(), nonce: new_nonce};
                                 esend.push(new_account_send);
                             },
                             None => {},
@@ -172,7 +176,8 @@ pub fn get_signature(mut w_mkb: std::sync::MutexGuard<TopicAllInfo>, eval: SumTy
                                 let econt = ContainerTypeForHash { hash: erecv[len-1].hash.clone(), esum: eval};
                                 let new_hash2 = compute_the_hash(&econt);
                                 let new_data2 = "".to_string();
-                                let new_account_send = AccountCurrent { current_money: new_amnt, data_current: new_data2, hash: new_hash2.clone(), utc: Utc::now()};
+                                let new_nonce = erecv[len-1].nonce + 1;
+                                let new_account_send = AccountCurrent { current_money: new_amnt, data_current: new_data2, hash: new_hash2.clone(), utc: Utc::now(), nonce: new_nonce};
                                 erecv.push(new_account_send);
                             },
                             None => {},
@@ -197,7 +202,8 @@ pub fn get_signature(mut w_mkb: std::sync::MutexGuard<TopicAllInfo>, eval: SumTy
                                 let econt = ContainerTypeForHash { hash: ewith_c[len-1].hash.clone(), esum: eval};
                                 let new_hash = compute_the_hash(&econt);
                                 let new_data = "".to_string();
-                                let new_account_curr = AccountCurrent { current_money: new_amnt, data_current: new_data, hash: new_hash.clone(), utc: Utc::now()};
+                                let new_nonce = ewith_c[len-1].nonce + 1;
+                                let new_account_curr = AccountCurrent { current_money: new_amnt, data_current: new_data, hash: new_hash.clone(), utc: Utc::now(), nonce: new_nonce};
                                 ewith_c.push(new_account_curr);
                                 MerkleVerification { result: true, signature: Some(new_hash) }
                             }
@@ -223,9 +229,9 @@ pub fn get_signature(mut w_mkb: std::sync::MutexGuard<TopicAllInfo>, eval: SumTy
                                 let new_amnt = edep_c[len-1].current_money;
                                 let econt = ContainerTypeForHash { hash: edep_c[len-1].hash.clone(), esum: eval};
                                 let new_hash = compute_the_hash(&econt);
-                                //                            let new_hash = encode(edep_c[len-1].hash.clone(); // Obviously wrong
                                 let new_data = edata.data;
-                                let new_account_curr = AccountCurrent { current_money: new_amnt, data_current: new_data, hash: new_hash.clone(), utc: Utc::now()};
+                                let new_nonce = edep_c[len-1].nonce + 1;
+                                let new_account_curr = AccountCurrent { current_money: new_amnt, data_current: new_data, hash: new_hash.clone(), utc: Utc::now(), nonce: new_nonce};
                                 edep_c.push(new_account_curr);
                                 MerkleVerification { result: true, signature: Some(new_hash) }
                             }
