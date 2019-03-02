@@ -51,18 +51,18 @@ pub struct LocalInit {
 #[derive(Clone, Default, Hash, Serialize, Deserialize)]
 pub struct TopicDescription {
     pub topic: String, // the name of the topic
-    pub capacity_per_sec: u32, // the number of allowed transactions per seconds. 0 for infinity
+    pub min_interval_insertion_micros: i64, // the number of allowed transactions per seconds. 0 for infinity
     pub capacity_mem: u32, // the total allowed capacity. If 0 for infinity
-    pub retention_time: u32, // the retention policy of data. If 0, then not used.
+    pub retention_time: i64, // the retention policy of data. If 0, then not used.
     pub retention_size: u32, // the maximum number of versions are kept. If 0 then all are used.
     pub hash_method: String, // The hashing method used.
 }
 
 #[derive(Clone)]
 pub struct TopicDescriptionEncode {
-    pub capacity_per_sec: u32, // the number of allowed transactions per seconds. 0 for infinity
+    pub min_interval_insertion_micros: i64, // the number of allowed transactions per seconds. 0 for infinity
     pub capacity_mem: u32, // the total allowed capacity. If 0 for infinity
-    pub retention_time: u32, // the retention policy of data. If 0, then not used.
+    pub retention_time: i64, // the retention policy of data. If 0, then not used.
     pub retention_size: u32, // the maximum number of versions are kept. If 0 then all are used.
     pub hash_method: multihash::Hash, // The hashing method used.
 }
@@ -90,7 +90,7 @@ pub fn get_topic_desc_encode(topic_desc: &TopicDescription) -> TopicDescriptionE
 	    process::exit(1);
         },
     };
-    TopicDescriptionEncode{capacity_per_sec: topic_desc.capacity_per_sec,
+    TopicDescriptionEncode{min_interval_insertion_micros: topic_desc.min_interval_insertion_micros,
                            capacity_mem: topic_desc.capacity_mem,
                            retention_time: topic_desc.retention_time,
                            retention_size: topic_desc.retention_size,

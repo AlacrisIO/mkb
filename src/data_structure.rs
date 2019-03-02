@@ -6,10 +6,8 @@ use std::collections::HashMap;
 use multihash::{encode};
 use types::HashType;
 use chrono::prelude::*;
+//use std::time::Duration;
 //use std::process;
-//use merkle_cbt;
-//use merkle_cbt::Merge;
-//use merkle_cbt::MerkleTree;
 
 //use std::io;
 //use std::sync::{Arc, Mutex};
@@ -35,6 +33,69 @@ pub struct FullTopicData {
 pub struct TopicAllInfo {
     pub all_topic_state: HashMap<String,FullTopicData>
 }
+
+
+
+
+pub fn func_insert_record(topic_desc: &TopicDescriptionEncode, listval: &mut Vec<AccountCurrent>, eval: AccountCurrent) -> MKBoperation {
+    if topic_desc.min_interval_insertion_micros > 0 {
+        let len = listval.len();
+        let dura = eval.utc.signed_duration_since(listval[len-1].utc);
+        let dura_micros = dura.num_microseconds();
+        match dura_micros {
+            Some(eval) => {
+                if eval < topic_desc.min_interval_insertion_micros {
+                    return MKBoperation { result: false, signature: None, text: "too near to last insertione".to_string() };
+                }
+            },
+            None => {},
+        }
+    }
+    listval.push(eval.clone());
+    let len = listval.len();
+    if topic_desc.capacity_mem > 0 || topic_desc.retention_time > 0 || topic_desc.retention_size > 0 {
+        let upper_bound_retention_size = if topic_desc.retention_size > 0 {topic_desc.retention_size as usize} else {len};
+        let upper_bound_retention_time = if topic_desc.retention_time > 0 {
+            let mut i_level = 0;
+            let dt_last = listval[len-1].utc;
+            while i_level<len {
+                let j_level = len - 1 - i_level;
+                let dt_prev = listval[j_level].utc;
+                let dura_micros = dt_last.signed_duration_since(dt_prev).num_microseconds();
+                match dura_micros {
+                    Some(eval) => {
+                        if eval > topic_desc.retention_time { break; }
+                    },
+                    None => {break;},
+                }
+                i_level += 1;
+            }
+            i_level
+        } else {len};
+        let upper_bound_capacity_mem = if topic_desc.capacity_mem > 0 {
+            let mut tot_size = 0;
+            let mut i_level = 0;
+            while i_level<len {
+                let len = listval[len - 1 - i_level].data_current.len();
+                tot_size += len;
+                if tot_size > (topic_desc.capacity_mem as usize) {break;}
+                i_level += 1;
+            }
+            i_level
+        } else {len};
+        let upper_bound = std::cmp::min(upper_bound_capacity_mem, std::cmp::min(upper_bound_retention_size, upper_bound_retention_time));
+        if upper_bound < len {
+            let nb_remove = len - upper_bound;
+            for _i in 0..nb_remove {
+                listval.remove(0);
+            }
+        }
+    }
+    MKBoperation { result: true, signature: Some(eval.hash), text: "success".to_string() }    
+}
+
+
+
 
 
 pub fn query_info(w: std::sync::MutexGuard<TopicAllInfo>, topic: String, name: String) -> Result<AccountCurrent, String> {
@@ -82,7 +143,7 @@ pub fn get_signature(mut w_mkb: std::sync::MutexGuard<TopicAllInfo>, eval: SumTy
                     let hash: HashType = Default::default();
                     let acct_start : AccountCurrent = AccountCurrent { current_money: 0, data_current: "".to_string(), hash: hash.clone(), utc: Utc::now(), nonce: 0};
                     eacc_b.all_account_state.insert(eacc.account_name, vec![acct_start.clone()]);
-                    MKBoperation { result: false, signature: Some(acct_start.hash), text: "success".to_string() }
+                    MKBoperation { result: true, signature: Some(acct_start.hash), text: "success".to_string() }
                 },
                 None => MKBoperation { result: false, signature: None, text: "topic absent".to_string() },
             }
@@ -93,7 +154,7 @@ pub fn get_signature(mut w_mkb: std::sync::MutexGuard<TopicAllInfo>, eval: SumTy
                 Some(mut edep_b) => {
                     let mut y = edep_b.all_account_state.get_mut(&edep.account_name);
                     match y {
-                        Some(edep_c) => {
+                        Some(mut edep_c) => {
                             let len = edep_c.len();
                             if edep_c[len-1].hash == edep.hash {
                                 let new_amnt = edep_c[len-1].current_money + edep.amount;
@@ -102,8 +163,7 @@ pub fn get_signature(mut w_mkb: std::sync::MutexGuard<TopicAllInfo>, eval: SumTy
                                 let new_data = "".to_string();
                                 let new_nonce = edep_c[len-1].nonce + 1;
                                 let new_account_curr = AccountCurrent { current_money: new_amnt, data_current: new_data, hash: new_hash.clone(), utc: Utc::now(), nonce: new_nonce};
-                                edep_c.push(new_account_curr);
-                                MKBoperation { result: true, signature: Some(new_hash), text: "success".to_string() }
+                                func_insert_record(&edep_b.topic_desc, &mut edep_c, new_account_curr)
                             }
                             else {
                                 MKBoperation { result: false, signature: None, text: "hash error".to_string() }
@@ -154,7 +214,7 @@ pub fn get_signature(mut w_mkb: std::sync::MutexGuard<TopicAllInfo>, eval: SumTy
                     {
                         let mut y = epay_b.all_account_state.get_mut(&epay.account_name_sender);
                         match y {
-                            Some(esend) => {
+                            Some(mut esend) => {
                                 let len = esend.len();
                                 let new_amnt = esend[len-1].current_money - epay.amount;
                                 let econt = ContainerTypeForHash { hash: esend[len-1].hash.clone(), esum: eval.clone()};
@@ -162,7 +222,10 @@ pub fn get_signature(mut w_mkb: std::sync::MutexGuard<TopicAllInfo>, eval: SumTy
                                 let new_data1 = "".to_string();
                                 let new_nonce = esend[len-1].nonce + 1;
                                 let new_account_send = AccountCurrent { current_money: new_amnt, data_current: new_data1, hash: new_hash1.clone(), utc: Utc::now(), nonce: new_nonce};
-                                esend.push(new_account_send);
+                                let ins = func_insert_record(&epay_b.topic_desc, &mut esend, new_account_send);
+                                if ins.result == false {
+                                    return ins;
+                                }
                             },
                             None => {},
                         }
@@ -170,15 +233,18 @@ pub fn get_signature(mut w_mkb: std::sync::MutexGuard<TopicAllInfo>, eval: SumTy
                     {
                         let mut y = epay_b.all_account_state.get_mut(&epay.account_name_receiver);
                         match y {
-                            Some(erecv) => {
+                            Some(mut erecv) => {
                                 let len = erecv.len();
                                 let new_amnt = erecv[len-1].current_money + epay.amount;
                                 let econt = ContainerTypeForHash { hash: erecv[len-1].hash.clone(), esum: eval};
                                 let new_hash2 = compute_the_hash(&epay_b.topic_desc, &econt);
                                 let new_data2 = "".to_string();
                                 let new_nonce = erecv[len-1].nonce + 1;
-                                let new_account_send = AccountCurrent { current_money: new_amnt, data_current: new_data2, hash: new_hash2.clone(), utc: Utc::now(), nonce: new_nonce};
-                                erecv.push(new_account_send);
+                                let new_account_recv = AccountCurrent { current_money: new_amnt, data_current: new_data2, hash: new_hash2.clone(), utc: Utc::now(), nonce: new_nonce};
+                                let ins = func_insert_record(&epay_b.topic_desc, &mut erecv, new_account_recv);
+                                if ins.result == false {
+                                    return ins;
+                                }
                             },
                             None => {},
                         }
@@ -195,7 +261,7 @@ pub fn get_signature(mut w_mkb: std::sync::MutexGuard<TopicAllInfo>, eval: SumTy
                 Some(mut ewith_b) => {
                     let mut y = ewith_b.all_account_state.get_mut(&ewith.account_name);
                     match y {
-                        Some(ewith_c) => {
+                        Some(mut ewith_c) => {
                             let len = ewith_c.len();
                             if ewith_c[len-1].current_money > ewith.amount && ewith_c[len-1].hash == ewith.hash {
                                 let new_amnt = ewith_c[len-1].current_money - ewith.amount;
@@ -204,8 +270,7 @@ pub fn get_signature(mut w_mkb: std::sync::MutexGuard<TopicAllInfo>, eval: SumTy
                                 let new_data = "".to_string();
                                 let new_nonce = ewith_c[len-1].nonce + 1;
                                 let new_account_curr = AccountCurrent { current_money: new_amnt, data_current: new_data, hash: new_hash.clone(), utc: Utc::now(), nonce: new_nonce};
-                                ewith_c.push(new_account_curr);
-                                MKBoperation { result: true, signature: Some(new_hash), text: "success".to_string() }
+                                func_insert_record(&ewith_b.topic_desc, &mut ewith_c, new_account_curr)
                             }
                             else {
                                 MKBoperation { result: false, signature: None, text: "amount or hash error".to_string() }
@@ -223,7 +288,7 @@ pub fn get_signature(mut w_mkb: std::sync::MutexGuard<TopicAllInfo>, eval: SumTy
                 Some(mut edata_b) => {
                     let mut y = edata_b.all_account_state.get_mut(&edata.account_name);
                     match y {
-                        Some(edep_c) => {
+                        Some(mut edep_c) => {
                             let len = edep_c.len();
                             if edep_c[len-1].hash == edata.hash {
                                 let new_amnt = edep_c[len-1].current_money;
@@ -232,8 +297,7 @@ pub fn get_signature(mut w_mkb: std::sync::MutexGuard<TopicAllInfo>, eval: SumTy
                                 let new_data = edata.data;
                                 let new_nonce = edep_c[len-1].nonce + 1;
                                 let new_account_curr = AccountCurrent { current_money: new_amnt, data_current: new_data, hash: new_hash.clone(), utc: Utc::now(), nonce: new_nonce};
-                                edep_c.push(new_account_curr);
-                                MKBoperation { result: true, signature: Some(new_hash), text: "success".to_string() }
+                                func_insert_record(&edata_b.topic_desc, &mut edep_c, new_account_curr)
                             }
                             else {
                                 MKBoperation { result: false, signature: None, text: "hash error".to_string() }
