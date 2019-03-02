@@ -68,12 +68,12 @@ pub fn compute_the_hash(topdesc: &TopicDescriptionEncode, econt: &ContainerTypeF
 // This function takes the request, check for correctness.
 // If correct, the signature is returned to be checked.
 // If not correct, then the signature is sent in order to be checked.
-pub fn get_signature(mut w_mkb: std::sync::MutexGuard<TopicAllInfo>, eval: SumTypeRequest) -> MerkleVerification {
+pub fn get_signature(mut w_mkb: std::sync::MutexGuard<TopicAllInfo>, eval: SumTypeRequest) -> MKBoperation {
     match eval.clone() {
         Topiccreationrequest(etop) => {
             let set_of_acct = FullTopicData { topic_desc: get_topic_desc_encode(&etop), all_account_state: HashMap::new()};
             (*w_mkb).all_topic_state.insert(etop.topic, set_of_acct);
-            MerkleVerification { result: true, signature: None }
+            MKBoperation { result: true, signature: None, text: "success".to_string() }
         },
         Accountinfo(eacc) => {
             let mut x = (*w_mkb).all_topic_state.get_mut(&eacc.topic);
@@ -82,9 +82,9 @@ pub fn get_signature(mut w_mkb: std::sync::MutexGuard<TopicAllInfo>, eval: SumTy
                     let hash: HashType = Default::default();
                     let acct_start : AccountCurrent = AccountCurrent { current_money: 0, data_current: "".to_string(), hash: hash.clone(), utc: Utc::now(), nonce: 0};
                     eacc_b.all_account_state.insert(eacc.account_name, vec![acct_start.clone()]);
-                    MerkleVerification { result: false, signature: Some(acct_start.hash) }
+                    MKBoperation { result: false, signature: Some(acct_start.hash), text: "success".to_string() }
                 },
-                None => MerkleVerification { result: false, signature: None },
+                None => MKBoperation { result: false, signature: None, text: "topic absent".to_string() },
             }
         },
         Depositrequest(edep) => {
@@ -103,16 +103,16 @@ pub fn get_signature(mut w_mkb: std::sync::MutexGuard<TopicAllInfo>, eval: SumTy
                                 let new_nonce = edep_c[len-1].nonce + 1;
                                 let new_account_curr = AccountCurrent { current_money: new_amnt, data_current: new_data, hash: new_hash.clone(), utc: Utc::now(), nonce: new_nonce};
                                 edep_c.push(new_account_curr);
-                                MerkleVerification { result: true, signature: Some(new_hash) }
+                                MKBoperation { result: true, signature: Some(new_hash), text: "success".to_string() }
                             }
                             else {
-                                MerkleVerification { result: false, signature: None }
+                                MKBoperation { result: false, signature: None, text: "hash error".to_string() }
                             }
                         },
-                        None => MerkleVerification { result: false, signature: None },
+                        None => MKBoperation { result: false, signature: None, text: "account error".to_string() },
                     }
                 },
-                None => MerkleVerification { result: false, signature: None },
+                None => MKBoperation { result: false, signature: None, text: "topic error".to_string() },
              }
         },
         Paymentrequest(epay) => {
@@ -149,7 +149,7 @@ pub fn get_signature(mut w_mkb: std::sync::MutexGuard<TopicAllInfo>, eval: SumTy
                         }
                     };
                     if fct_corr(&epay_b, &epay) == false {
-                        return MerkleVerification { result: false, signature: None };
+                        return MKBoperation { result: false, signature: None, text: "correctness error".to_string() };
                     }
                     {
                         let mut y = epay_b.all_account_state.get_mut(&epay.account_name_sender);
@@ -183,9 +183,9 @@ pub fn get_signature(mut w_mkb: std::sync::MutexGuard<TopicAllInfo>, eval: SumTy
                             None => {},
                         }
                     }
-                    return MerkleVerification { result: true, signature: None };
+                    return MKBoperation { result: true, signature: None, text: "success".to_string() };
                 },
-                None => MerkleVerification { result: false, signature: None },
+                None => MKBoperation { result: false, signature: None, text: "topic error".to_string() },
             }
             
         },
@@ -205,16 +205,16 @@ pub fn get_signature(mut w_mkb: std::sync::MutexGuard<TopicAllInfo>, eval: SumTy
                                 let new_nonce = ewith_c[len-1].nonce + 1;
                                 let new_account_curr = AccountCurrent { current_money: new_amnt, data_current: new_data, hash: new_hash.clone(), utc: Utc::now(), nonce: new_nonce};
                                 ewith_c.push(new_account_curr);
-                                MerkleVerification { result: true, signature: Some(new_hash) }
+                                MKBoperation { result: true, signature: Some(new_hash), text: "success".to_string() }
                             }
                             else {
-                                MerkleVerification { result: false, signature: None }
+                                MKBoperation { result: false, signature: None, text: "amount or hash error".to_string() }
                             }
                         },
-                        None => MerkleVerification { result: false, signature: None },
+                        None => MKBoperation { result: false, signature: None, text: "account error".to_string() },
                     }
                 },
-                None => MerkleVerification { result: false, signature: None },
+                None => MKBoperation { result: false, signature: None, text: "topic error".to_string() },
             }
         },
         Senddatarequest(edata) => {
@@ -233,16 +233,16 @@ pub fn get_signature(mut w_mkb: std::sync::MutexGuard<TopicAllInfo>, eval: SumTy
                                 let new_nonce = edep_c[len-1].nonce + 1;
                                 let new_account_curr = AccountCurrent { current_money: new_amnt, data_current: new_data, hash: new_hash.clone(), utc: Utc::now(), nonce: new_nonce};
                                 edep_c.push(new_account_curr);
-                                MerkleVerification { result: true, signature: Some(new_hash) }
+                                MKBoperation { result: true, signature: Some(new_hash), text: "success".to_string() }
                             }
                             else {
-                                MerkleVerification { result: false, signature: None }
+                                MKBoperation { result: false, signature: None, text: "hash error".to_string() }
                             }
                         },
-                        None => MerkleVerification { result: false, signature: None },
+                        None => MKBoperation { result: false, signature: None, text: "account error".to_string() },
                     }
                 },
-                None => MerkleVerification { result: false, signature: None },
+                None => MKBoperation { result: false, signature: None, text: "topic error".to_string() },
              }
         },
     }

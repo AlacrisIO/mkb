@@ -203,8 +203,9 @@ pub struct MessageRed {
 
 
 #[derive(Clone, Serialize, Deserialize)]
-pub struct MerkleVerification {
+pub struct MKBoperation {
     pub result: bool, 
     pub signature: Option<HashType>,
+    pub text: String,
 }
 

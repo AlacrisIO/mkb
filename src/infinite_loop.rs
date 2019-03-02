@@ -55,7 +55,7 @@ pub fn inf_loop(dbe: DBE, tot_mkb: TopicAllInfo, common_init: CommonInit, local_
     
 //    let server_handle = Arc<Mutex<Option<ServerHandle>>>;
 //    let server_handle = Arc::new(Mutex::<i32>::new(0));
-    let server_handle : Arc<Mutex<Option<jsonrpc_http_server::ServerHandler>>> = Default::default();
+//    let server_handle : Arc<Mutex<Option<jsonrpc_http_server::ServerHandler>>> = Default::default();
 
     
     //
@@ -208,7 +208,7 @@ pub fn inf_loop(dbe: DBE, tot_mkb: TopicAllInfo, common_init: CommonInit, local_
 
     io.add_method("internal_check", move |params: Params| {
         println!("Doing an internal check");
-        fn fct_signature(emer: &MerkleVerification) -> Result<serde_json::Value> {
+        fn fct_signature(emer: &MKBoperation) -> Result<serde_json::Value> {
             match emer.result {
                 true => {
                     let estr = serde_json::to_string(emer).unwrap();
