@@ -7,6 +7,7 @@
 
 //use num_bigint::BigUint;
 //use data_structure;
+use std::process;
 
 
 use serde::Deserialize;
@@ -49,13 +50,54 @@ pub struct LocalInit {
 
 #[derive(Clone, Default, Hash, Serialize, Deserialize)]
 pub struct TopicDescription {
-    pub name: String, // the name of the topic
+    pub topic: String, // the name of the topic
     pub capacity_per_sec: u32, // the number of allowed transactions per seconds. 0 for infinity
     pub capacity_mem: u32, // the total allowed capacity. If 0 for infinity
     pub retention_time: u32, // the retention policy of data. If 0, then not used.
     pub retention_size: u32, // the maximum number of versions are kept. If 0 then all are used.
     pub hash_method: String, // The hashing method used.
 }
+
+#[derive(Clone)]
+pub struct TopicDescriptionEncode {
+    pub capacity_per_sec: u32, // the number of allowed transactions per seconds. 0 for infinity
+    pub capacity_mem: u32, // the total allowed capacity. If 0 for infinity
+    pub retention_time: u32, // the retention policy of data. If 0, then not used.
+    pub retention_size: u32, // the maximum number of versions are kept. If 0 then all are used.
+    pub hash_method: multihash::Hash, // The hashing method used.
+}
+
+pub fn get_topic_desc_encode(topic_desc: &TopicDescription) -> TopicDescriptionEncode {
+    let hash_meth=match topic_desc.hash_method.as_ref() {
+        "SHA1" => multihash::Hash::SHA1,
+        "SHA2256" => multihash::Hash::SHA2256,
+        "SHA2512" => multihash::Hash::SHA2512,
+        
+        "SHA3512" => multihash::Hash::SHA3512,
+        "SHA3384" => multihash::Hash::SHA3384,
+        "SHA3256" => multihash::Hash::SHA3256,
+        "SHA3224" => multihash::Hash::SHA3224,
+        
+        "Keccak224" => multihash::Hash::Keccak224,
+        "Keccak256" => multihash::Hash::Keccak256,
+        "Keccak384" => multihash::Hash::Keccak384,
+        "Keccak512" => multihash::Hash::Keccak512,
+
+        "Blake2b" => multihash::Hash::Blake2b,
+        "Blake2s" => multihash::Hash::Blake2s,
+        _ => {
+            println!("Non matching hash algorithm");
+	    process::exit(1);
+        },
+    };
+    TopicDescriptionEncode{capacity_per_sec: topic_desc.capacity_per_sec,
+                           capacity_mem: topic_desc.capacity_mem,
+                           retention_time: topic_desc.retention_time,
+                           retention_size: topic_desc.retention_size,
+                           hash_method: hash_meth}
+}
+
+
 
 
 #[derive(Clone, Hash, Serialize, Deserialize)]
@@ -66,10 +108,12 @@ pub struct AccountInfo {
     pub secret_key: String
 }
 
+/*
 #[derive(Clone, Hash, Serialize, Deserialize)]
 pub struct TopicCreationRequest {
     pub topic: String,
 }
+*/
 
 #[derive(Clone, Hash, Serialize, Deserialize)]
 pub struct DepositRequest {
@@ -117,7 +161,7 @@ pub struct GetInfoRequest {
 
 #[derive(Clone, Hash, Serialize, Deserialize)]
 pub enum SumTypeRequest {
-    Topiccreationrequest(TopicCreationRequest),
+    Topiccreationrequest(TopicDescription),
     Accountinfo(AccountInfo),
     Depositrequest(DepositRequest),
     Paymentrequest(PaymentRequest),

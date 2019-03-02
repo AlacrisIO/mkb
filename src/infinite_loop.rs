@@ -129,7 +129,7 @@ pub fn inf_loop(dbe: DBE, tot_mkb: TopicAllInfo, common_init: CommonInit, local_
     });
     io.add_method("topic_creation", move |params: Params| {
         println!("Processing a topic_creation_request command");
-        match params.parse::<TopicCreationRequest>() {
+        match params.parse::<TopicDescription>() {
             Ok(eval) => {
                 let esumreq = SumTypeRequest::Topiccreationrequest(eval);
                 return process_request_0(esumreq);

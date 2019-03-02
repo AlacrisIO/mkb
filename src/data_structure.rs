@@ -3,7 +3,7 @@
 use types::*;
 use types::SumTypeRequest::*;
 use std::collections::HashMap;
-use multihash::{encode, Hash};
+use multihash::{encode};
 use types::HashType;
 use chrono::prelude::*;
 //use std::process;
@@ -25,15 +25,15 @@ pub struct AccountCurrent {
     nonce: u32
 }
 
-#[derive(Clone,Default,Serialize,Deserialize)]
-pub struct SetOfAccount {
-    pub topic_desc: TopicDescription,
+#[derive(Clone)]
+pub struct FullTopicData {
+    pub topic_desc: TopicDescriptionEncode,
     pub all_account_state: HashMap<String,Vec<AccountCurrent>>
 }
 
-#[derive(Clone,Default,Serialize,Deserialize)]
+#[derive(Clone,Default)]
 pub struct TopicAllInfo {
-    pub all_topic_state: HashMap<String,SetOfAccount>
+    pub all_topic_state: HashMap<String,FullTopicData>
 }
 
 
@@ -55,10 +55,10 @@ pub fn query_info(w: std::sync::MutexGuard<TopicAllInfo>, topic: String, name: S
 }
 
 
-pub fn compute_the_hash(econt: &ContainerTypeForHash) -> HashType {
+pub fn compute_the_hash(topdesc: &TopicDescriptionEncode, econt: &ContainerTypeForHash) -> HashType {
     let econt_str = serde_json::to_string(econt).unwrap();
     let econt_str_u8 = econt_str.as_bytes();
-    let eret = encode(Hash::SHA3256, econt_str_u8).unwrap();
+    let eret = encode(topdesc.hash_method, econt_str_u8).unwrap();
     eret
 }
 
@@ -71,7 +71,7 @@ pub fn compute_the_hash(econt: &ContainerTypeForHash) -> HashType {
 pub fn get_signature(mut w_mkb: std::sync::MutexGuard<TopicAllInfo>, eval: SumTypeRequest) -> MerkleVerification {
     match eval.clone() {
         Topiccreationrequest(etop) => {
-            let set_of_acct: SetOfAccount = Default::default();
+            let set_of_acct = FullTopicData { topic_desc: get_topic_desc_encode(&etop), all_account_state: HashMap::new()};
             (*w_mkb).all_topic_state.insert(etop.topic, set_of_acct);
             MerkleVerification { result: true, signature: None }
         },
@@ -98,7 +98,7 @@ pub fn get_signature(mut w_mkb: std::sync::MutexGuard<TopicAllInfo>, eval: SumTy
                             if edep_c[len-1].hash == edep.hash {
                                 let new_amnt = edep_c[len-1].current_money + edep.amount;
                                 let econt = ContainerTypeForHash { hash: edep_c[len-1].hash.clone(), esum: eval};
-                                let new_hash = compute_the_hash(&econt);
+                                let new_hash = compute_the_hash(&edep_b.topic_desc, &econt);
                                 let new_data = "".to_string();
                                 let new_nonce = edep_c[len-1].nonce + 1;
                                 let new_account_curr = AccountCurrent { current_money: new_amnt, data_current: new_data, hash: new_hash.clone(), utc: Utc::now(), nonce: new_nonce};
@@ -119,14 +119,14 @@ pub fn get_signature(mut w_mkb: std::sync::MutexGuard<TopicAllInfo>, eval: SumTy
             let mut x = (*w_mkb).all_topic_state.get_mut(&epay.topic);
             match x {
                 Some(mut epay_b) => {
-                    let check_presence = |u: &SetOfAccount, addr: &String| -> bool {
+                    let check_presence = |u: &FullTopicData, addr: &String| -> bool {
                         let y = u.all_account_state.get(addr);
                         match y {
                             Some(_) => true,
                             None => false,
                         }
                     };
-                    let fct_corr = |u: &SetOfAccount, epayreq: &PaymentRequest| -> bool {
+                    let fct_corr = |u: &FullTopicData, epayreq: &PaymentRequest| -> bool {
                         if check_presence(u, &epayreq.account_name_sender) == false {
                             return false;
                         }
@@ -158,7 +158,7 @@ pub fn get_signature(mut w_mkb: std::sync::MutexGuard<TopicAllInfo>, eval: SumTy
                                 let len = esend.len();
                                 let new_amnt = esend[len-1].current_money - epay.amount;
                                 let econt = ContainerTypeForHash { hash: esend[len-1].hash.clone(), esum: eval.clone()};
-                                let new_hash1 = compute_the_hash(&econt);
+                                let new_hash1 = compute_the_hash(&epay_b.topic_desc, &econt);
                                 let new_data1 = "".to_string();
                                 let new_nonce = esend[len-1].nonce + 1;
                                 let new_account_send = AccountCurrent { current_money: new_amnt, data_current: new_data1, hash: new_hash1.clone(), utc: Utc::now(), nonce: new_nonce};
@@ -174,7 +174,7 @@ pub fn get_signature(mut w_mkb: std::sync::MutexGuard<TopicAllInfo>, eval: SumTy
                                 let len = erecv.len();
                                 let new_amnt = erecv[len-1].current_money + epay.amount;
                                 let econt = ContainerTypeForHash { hash: erecv[len-1].hash.clone(), esum: eval};
-                                let new_hash2 = compute_the_hash(&econt);
+                                let new_hash2 = compute_the_hash(&epay_b.topic_desc, &econt);
                                 let new_data2 = "".to_string();
                                 let new_nonce = erecv[len-1].nonce + 1;
                                 let new_account_send = AccountCurrent { current_money: new_amnt, data_current: new_data2, hash: new_hash2.clone(), utc: Utc::now(), nonce: new_nonce};
@@ -200,7 +200,7 @@ pub fn get_signature(mut w_mkb: std::sync::MutexGuard<TopicAllInfo>, eval: SumTy
                             if ewith_c[len-1].current_money > ewith.amount && ewith_c[len-1].hash == ewith.hash {
                                 let new_amnt = ewith_c[len-1].current_money - ewith.amount;
                                 let econt = ContainerTypeForHash { hash: ewith_c[len-1].hash.clone(), esum: eval};
-                                let new_hash = compute_the_hash(&econt);
+                                let new_hash = compute_the_hash(&ewith_b.topic_desc, &econt);
                                 let new_data = "".to_string();
                                 let new_nonce = ewith_c[len-1].nonce + 1;
                                 let new_account_curr = AccountCurrent { current_money: new_amnt, data_current: new_data, hash: new_hash.clone(), utc: Utc::now(), nonce: new_nonce};
@@ -228,7 +228,7 @@ pub fn get_signature(mut w_mkb: std::sync::MutexGuard<TopicAllInfo>, eval: SumTy
                             if edep_c[len-1].hash == edata.hash {
                                 let new_amnt = edep_c[len-1].current_money;
                                 let econt = ContainerTypeForHash { hash: edep_c[len-1].hash.clone(), esum: eval};
-                                let new_hash = compute_the_hash(&econt);
+                                let new_hash = compute_the_hash(&edata_b.topic_desc, &econt);
                                 let new_data = edata.data;
                                 let new_nonce = edep_c[len-1].nonce + 1;
                                 let new_account_curr = AccountCurrent { current_money: new_amnt, data_current: new_data, hash: new_hash.clone(), utc: Utc::now(), nonce: new_nonce};
