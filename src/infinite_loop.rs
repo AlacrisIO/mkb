@@ -66,6 +66,7 @@ pub fn inf_loop(dbe: DBE, tot_mkb: TopicAllInfo, common_init: CommonInit, local_
     let lk_mkb_0 = lk_mkb.clone();
     let lk_mkb_1 = lk_mkb.clone();
     let lk_mkb_2 = lk_mkb.clone();
+    let lk_mkb_3 = lk_mkb.clone();
 /*    
     let process_request = move |esumreq: SumTypeRequest| {
         let w : std::sync::MutexGuard<DBE> = lk.lock().unwrap();
@@ -90,7 +91,8 @@ pub fn inf_loop(dbe: DBE, tot_mkb: TopicAllInfo, common_init: CommonInit, local_
         database_update(w_dbe, esumreq.clone());
         match get_topic(&esumreq.clone()) {
             Some(etopic) => {
-                send_info_to_registered(w_mkb, &etopic, &esumreq);
+                let w_mkb_3 : std::sync::MutexGuard<TopicAllInfo> = lk_mkb_3.lock().unwrap();
+                send_info_to_registered(w_mkb_3, &etopic, &esumreq);
             },
             None => {},
         }
