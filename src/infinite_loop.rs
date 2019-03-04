@@ -121,6 +121,8 @@ pub fn inf_loop(dbe: DBE, tot_mkb: TopicAllInfo, common_init: CommonInit, local_
     let process_request_5 = complete_process_request.clone();
     let process_request_6 = complete_process_request.clone();
     let process_request_7 = complete_process_request.clone();
+    let process_request_8 = complete_process_request.clone();
+    let process_request_9 = complete_process_request.clone();
 
     let fct_error = |e : jsonrpc_core::Error, oper: String| {
         println!("Error during parsing {:?}", e);
@@ -229,6 +231,26 @@ pub fn inf_loop(dbe: DBE, tot_mkb: TopicAllInfo, common_init: CommonInit, local_
                 return process_request_7(esumreq);
             },
             Err(e) => fct_error(e, "add_subscriber".to_string()),
+        }
+    });
+    io.add_method("add_registrar", move |params: Params| {
+        println!("Processing a add registrar request");
+        match params.parse::<AddRegistrar>() {
+            Ok(eval) => {
+                let esumreq = SumTypeRequest::Addregistrar(eval);
+                return process_request_8(esumreq);
+            },
+            Err(e) => fct_error(e, "add_registrar".to_string()),
+        }
+    });
+    io.add_method("remove_registrar", move |params: Params| {
+        println!("Processing a remove registrar request");
+        match params.parse::<RemoveRegistrar>() {
+            Ok(eval) => {
+                let esumreq = SumTypeRequest::Removeregistrar(eval);
+                return process_request_9(esumreq);
+            },
+            Err(e) => fct_error(e, "remove_registrar".to_string()),
         }
     });
 

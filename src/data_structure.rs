@@ -27,7 +27,7 @@ pub struct AccountCurrent {
 #[derive(Clone)]
 pub struct FullTopicData {
     pub topic_desc: TopicDescriptionEncode,
-    pub list_active_reg: Vec<String>,
+    pub list_active_reg: HashSet<String>,
     pub list_subscribed_node: HashSet<String>,
     pub all_account_state: HashMap<String,Vec<AccountCurrent>>
 }
@@ -136,7 +136,7 @@ pub fn get_signature(mut w_mkb: std::sync::MutexGuard<TopicAllInfo>, eval: SumTy
     match eval.clone() {
         Topiccreationrequest(etop) => {
             let set_of_acct = FullTopicData { topic_desc: get_topic_desc_encode(&etop),
-                                              list_active_reg: vec![], 
+                                              list_active_reg: HashSet::<String>::new(), 
                                               list_subscribed_node: HashSet::<String>::new(), 
                                               all_account_state: HashMap::new()};
             (*w_mkb).all_topic_state.insert(etop.topic, set_of_acct);
@@ -349,5 +349,38 @@ pub fn get_signature(mut w_mkb: std::sync::MutexGuard<TopicAllInfo>, eval: SumTy
                 None => MKBoperation { result: false, signature: None, text: "topic error".to_string() },
             }
         },
+        Addregistrar(ereg) => {
+            let mut x = (*w_mkb).all_topic_state.get_mut(&ereg.topic);
+            match x {
+                Some(mut etop_b) => {
+                    let test = etop_b.list_active_reg.contains(&ereg.registrar_name.clone());
+                    match test {
+                        true => MKBoperation { result: false, signature: None, text: "already_registered".to_string() },
+                        false => {
+                            etop_b.list_active_reg.insert(ereg.registrar_name);
+                            MKBoperation{result: true, signature: None, text: "successful subscriber insertion".to_string()}
+                        },
+                    }
+                },
+                None => MKBoperation { result: false, signature: None, text: "topic error".to_string() },
+            }
+        },
+        Removeregistrar(ereg) => {
+            let mut x = (*w_mkb).all_topic_state.get_mut(&ereg.topic);
+            match x {
+                Some(mut etop_b) => {
+                    let test = etop_b.list_active_reg.contains(&ereg.registrar_name);
+                    match test {
+                        false => MKBoperation{result: false, signature: None, text: "not_registered".to_string()},
+                        true => {
+                            etop_b.list_active_reg.remove(&ereg.registrar_name);
+                            MKBoperation{result: true, signature: None, text: "successful registrar removal".to_string()}
+                        },
+                    }
+                },
+                None => MKBoperation { result: false, signature: None, text: "topic error".to_string() },
+            }
+        },
+        
     }
 }

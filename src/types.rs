@@ -149,6 +149,8 @@ pub struct GetInfoRequest {
 
 
 
+
+
 #[derive(Clone, Hash, Serialize, Deserialize)]
 pub struct AddSubscriber {
     pub topic: String,
@@ -159,6 +161,20 @@ pub struct AddSubscriber {
 pub struct RemoveSubscriber {
     pub topic: String,
     pub subscriber_name: String,
+}
+
+
+
+#[derive(Clone, Hash, Serialize, Deserialize)]
+pub struct AddRegistrar {
+    pub topic: String,
+    pub registrar_name: String,
+}
+
+#[derive(Clone, Hash, Serialize, Deserialize)]
+pub struct RemoveRegistrar {
+    pub topic: String,
+    pub registrar_name: String,
 }
 
 
@@ -175,6 +191,8 @@ pub enum SumTypeRequest {
     Senddatarequest(SendDataRequest),
     Addsubscriber(AddSubscriber),
     Removesubscriber(RemoveSubscriber),
+    Addregistrar(AddRegistrar),
+    Removeregistrar(RemoveRegistrar),
 }
 
 #[derive(Clone, Hash, Serialize, Deserialize)]
