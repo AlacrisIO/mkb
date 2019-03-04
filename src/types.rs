@@ -1,17 +1,8 @@
-//use std::vec;
 
-//use std::collections::HashMap;
-
-//use merkle_cbt::merkle_tree::CBMT;
-//use merkle_cbt::Merge;
-
-//use num_bigint::BigUint;
-//use data_structure;
 use std::process;
 
 
 use serde::Deserialize;
-//use numext_fixed_hash::H256;
 
 
 pub type HashType = Vec<u8>;

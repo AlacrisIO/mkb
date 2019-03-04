@@ -87,7 +87,13 @@ pub fn inf_loop(dbe: DBE, tot_mkb: TopicAllInfo, common_init: CommonInit, local_
         if test == false {
             return Err(JsonRpcError::invalid_params("Error with remote merkle database".to_string()));
         }
-        database_update(w_dbe, esumreq);
+        database_update(w_dbe, esumreq.clone());
+        match get_topic(&esumreq.clone()) {
+            Some(etopic) => {
+                send_info_to_registered(w_mkb, &etopic, &esumreq);
+            },
+            None => {},
+        }
         Ok(Value::String("Operation done correcly".into()))
     };
 
@@ -139,9 +145,6 @@ pub fn inf_loop(dbe: DBE, tot_mkb: TopicAllInfo, common_init: CommonInit, local_
             Err(e) => fct_error(e, "add_account".to_string()),
         }
     });
-
-
-    
     io.add_method("add_account", move |params: Params| {
         println!("Processing a add_account command");
         match params.parse::<AccountInfo>() {

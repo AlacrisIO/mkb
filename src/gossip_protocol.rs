@@ -1,7 +1,9 @@
 //use std::process;
+//use std::collections::HashSet;
 
 
 use types::*;
+use data_structure::*;
 //use data_structure::*;
 
 use jsonrpc_client_http::HttpTransport;
@@ -64,7 +66,7 @@ pub fn compute_simple_gossip_protocol(common_init: &CommonInit, address: String)
 
 jsonrpc_client!(pub struct InternalClient {
     pub fn internal_check(&mut self, transmission: String) -> RpcRequest<String>;
-    pub fn internal_check_b(&mut self, transmission: String, eval: u32) -> RpcRequest<String>;
+    pub fn registration_info(&mut self, request: String) -> RpcRequest<String>;
 });
 
 fn check_transaction_kernel(mesg: Message) -> String {
@@ -74,6 +76,37 @@ fn check_transaction_kernel(mesg: Message) -> String {
     let mut client = InternalClient::new(transport_handle);
     let result1 = client.internal_check(mesg.message).call().unwrap();
     result1
+}
+
+
+pub fn get_topic(ereq: &SumTypeRequest) -> Option<String> {
+    use types::SumTypeRequest::*;
+    match ereq {
+        Accountinfo(eacct) => { Some(eacct.topic.clone()) },
+        Depositrequest(edep) => { Some(edep.topic.clone()) },
+        Paymentrequest(epay) => { Some(epay.topic.clone()) },
+        Withdrawrequest(ewith) => { Some(ewith.topic.clone()) },
+        Senddatarequest(esend) => { Some(esend.topic.clone()) },
+        _ => None,
+    }
+}
+
+
+
+pub fn send_info_to_registered(mut w_mkb: std::sync::MutexGuard<TopicAllInfo>, etopic: &String, ereq: &SumTypeRequest) {
+    let x = (*w_mkb).all_topic_state.get_mut(etopic);
+    match x {
+        Some(eval) => {
+            let ereq_str = serde_json::to_string(ereq).unwrap();
+            for lnk_subscribed in &eval.list_subscribed_node {
+                let transport = HttpTransport::new().standalone().unwrap();
+                let transport_handle = transport.handle(&lnk_subscribed).unwrap();
+                let mut client = InternalClient::new(transport_handle);
+                let _result1 = client.registration_info(ereq_str.clone()).call().unwrap();
+            }
+        },
+        None => {println!("send_info_to_registered error. The topic is missing which should not happen");},
+    }
 }
 
 
@@ -100,6 +133,12 @@ fn check_transaction(registrar: SingleRegistrar, ereq: &SumTypeRequest) -> bool 
         Err(e) => {println!("check_transaction error e={}", e); false},
     }
 }
+
+
+
+
+
+
 
 
 
