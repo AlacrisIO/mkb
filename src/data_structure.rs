@@ -26,6 +26,8 @@ pub struct AccountCurrent {
 #[derive(Clone)]
 pub struct FullTopicData {
     pub topic_desc: TopicDescriptionEncode,
+    pub list_active_reg: Vec<String>,
+    pub list_subscribed_node: Vec<String>,
     pub all_account_state: HashMap<String,Vec<AccountCurrent>>
 }
 
@@ -132,7 +134,10 @@ pub fn compute_the_hash(topdesc: &TopicDescriptionEncode, econt: &ContainerTypeF
 pub fn get_signature(mut w_mkb: std::sync::MutexGuard<TopicAllInfo>, eval: SumTypeRequest) -> MKBoperation {
     match eval.clone() {
         Topiccreationrequest(etop) => {
-            let set_of_acct = FullTopicData { topic_desc: get_topic_desc_encode(&etop), all_account_state: HashMap::new()};
+            let set_of_acct = FullTopicData { topic_desc: get_topic_desc_encode(&etop),
+                                              list_active_reg: vec![], 
+                                              list_subscribed_node: vec![], 
+                                              all_account_state: HashMap::new()};
             (*w_mkb).all_topic_state.insert(etop.topic, set_of_acct);
             MKBoperation { result: true, signature: None, text: "success".to_string() }
         },

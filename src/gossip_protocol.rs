@@ -74,14 +74,6 @@ fn check_transaction_kernel(mesg: Message) -> String {
     let mut client = InternalClient::new(transport_handle);
     let result1 = client.internal_check(mesg.message).call().unwrap();
     result1
-    /*
-    match result1 {
-        Ok(eval) => eval,
-        Err(e) => {
-            println!("Error at computation of result1 e={:?}", e);
-            process::exit(0x0000);
-        }
-    }*/
 }
 
 
@@ -99,9 +91,14 @@ fn check_transaction(registrar: SingleRegistrar, ereq: &SumTypeRequest) -> bool 
     let ereq_str = serde_json::to_string(ereq).unwrap();
     let mesg = Message { ip_plus_port: ip_plus_port, message: ereq_str };
     //
-    let _reply = check_transaction_kernel(mesg);
+    let reply = check_transaction_kernel(mesg);
+    println!("check_transaction result={}", reply);
     //
-    true
+    let res : Result<MKBoperation,_> = serde_json::from_str(&reply);
+    match res {
+        Ok(eval) => {eval.result},
+        Err(e) => {println!("check_transaction error e={}", e); false},
+    }
 }
 
 
