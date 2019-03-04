@@ -96,7 +96,7 @@ fn check_transaction(registrar: SingleRegistrar, ereq: &SumTypeRequest) -> bool 
     //
     let res : Result<MKBoperation,_> = serde_json::from_str(&reply);
     match res {
-        Ok(eval) => {eval.result},
+        Ok(eval) => {println!("check_transaction eval={:?}", eval); eval.result},
         Err(e) => {println!("check_transaction error e={}", e); false},
     }
 }

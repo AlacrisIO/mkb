@@ -3,6 +3,7 @@
 use types::*;
 use types::SumTypeRequest::*;
 use std::collections::HashMap;
+use std::collections::HashSet;
 use multihash::{encode};
 use types::HashType;
 use chrono::prelude::*;
@@ -27,7 +28,7 @@ pub struct AccountCurrent {
 pub struct FullTopicData {
     pub topic_desc: TopicDescriptionEncode,
     pub list_active_reg: Vec<String>,
-    pub list_subscribed_node: Vec<String>,
+    pub list_subscribed_node: HashSet<String>,
     pub all_account_state: HashMap<String,Vec<AccountCurrent>>
 }
 
@@ -136,7 +137,7 @@ pub fn get_signature(mut w_mkb: std::sync::MutexGuard<TopicAllInfo>, eval: SumTy
         Topiccreationrequest(etop) => {
             let set_of_acct = FullTopicData { topic_desc: get_topic_desc_encode(&etop),
                                               list_active_reg: vec![], 
-                                              list_subscribed_node: vec![], 
+                                              list_subscribed_node: HashSet::<String>::new(), 
                                               all_account_state: HashMap::new()};
             (*w_mkb).all_topic_state.insert(etop.topic, set_of_acct);
             MKBoperation { result: true, signature: None, text: "success".to_string() }
@@ -313,6 +314,40 @@ pub fn get_signature(mut w_mkb: std::sync::MutexGuard<TopicAllInfo>, eval: SumTy
                 },
                 None => MKBoperation { result: false, signature: None, text: "topic error".to_string() },
              }
+        },
+        Addsubscriber(eadd) => {
+            let mut x = (*w_mkb).all_topic_state.get_mut(&eadd.topic);
+            match x {
+                Some(mut etop_b) => {
+                    let test = etop_b.list_subscribed_node.contains(&eadd.subscriber_name.clone());
+                    match test {
+                        true => MKBoperation { result: false, signature: None, text: "already_registered".to_string() },
+                        false => {
+                            etop_b.list_subscribed_node.insert(eadd.subscriber_name);
+                            MKBoperation{result: true, signature: None, text: "successful insertion".to_string()}
+                        },
+                    }
+                },
+                None => MKBoperation { result: false, signature: None, text: "topic error".to_string() },
+            }
+            // TODO: We need a different channel for this kind of operation
+            // which are 
+        },
+        Removesubscriber(eremove) => {
+            let mut x = (*w_mkb).all_topic_state.get_mut(&eremove.topic);
+            match x {
+                Some(mut etop_b) => {
+                    let test = etop_b.list_subscribed_node.contains(&eremove.subscriber_name);
+                    match test {
+                        false => MKBoperation{result: false, signature: None, text: "not_registered".to_string()},
+                        true => {
+                            etop_b.list_subscribed_node.remove(&eremove.subscriber_name);
+                            MKBoperation{result: true, signature: None, text: "successful removal".to_string()}
+                        },
+                    }
+                },
+                None => MKBoperation { result: false, signature: None, text: "topic error".to_string() },
+            }
         },
     }
 }

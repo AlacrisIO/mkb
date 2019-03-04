@@ -158,6 +158,21 @@ pub struct GetInfoRequest {
 
 
 
+#[derive(Clone, Hash, Serialize, Deserialize)]
+pub struct AddSubscriber {
+    pub topic: String,
+    pub subscriber_name: String,
+}
+
+#[derive(Clone, Hash, Serialize, Deserialize)]
+pub struct RemoveSubscriber {
+    pub topic: String,
+    pub subscriber_name: String,
+}
+
+
+
+
 
 #[derive(Clone, Hash, Serialize, Deserialize)]
 pub enum SumTypeRequest {
@@ -167,6 +182,8 @@ pub enum SumTypeRequest {
     Paymentrequest(PaymentRequest),
     Withdrawrequest(WithdrawRequest),
     Senddatarequest(SendDataRequest),
+    Addsubscriber(AddSubscriber),
+    Removesubscriber(RemoveSubscriber),
 }
 
 #[derive(Clone, Hash, Serialize, Deserialize)]
@@ -202,7 +219,7 @@ pub struct MessageRed {
 
 
 
-#[derive(Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct MKBoperation {
     pub result: bool, 
     pub signature: Option<HashType>,

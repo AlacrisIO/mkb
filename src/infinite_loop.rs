@@ -111,6 +111,8 @@ pub fn inf_loop(dbe: DBE, tot_mkb: TopicAllInfo, common_init: CommonInit, local_
     let process_request_3 = complete_process_request.clone();
     let process_request_4 = complete_process_request.clone();
     let process_request_5 = complete_process_request.clone();
+    let process_request_6 = complete_process_request.clone();
+    let process_request_7 = complete_process_request.clone();
 
     let fct_error = |e : jsonrpc_core::Error, oper: String| {
         println!("Error during parsing {:?}", e);
@@ -204,8 +206,28 @@ pub fn inf_loop(dbe: DBE, tot_mkb: TopicAllInfo, common_init: CommonInit, local_
             Err(e) => fct_error(e, "get_info".to_string()),
         }
     });
+    io.add_method("add_subscriber", move |params: Params| {
+        println!("Processing a add subscriber request");
+        match params.parse::<AddSubscriber>() {
+            Ok(eval) => {
+                let esumreq = SumTypeRequest::Addsubscriber(eval);
+                return process_request_6(esumreq);
+            },
+            Err(e) => fct_error(e, "add_subscriber".to_string()),
+        }
+    });
+    io.add_method("remove_subscriber", move |params: Params| {
+        println!("Processing a remove subscriber request");
+        match params.parse::<RemoveSubscriber>() {
+            Ok(eval) => {
+                let esumreq = SumTypeRequest::Removesubscriber(eval);
+                return process_request_7(esumreq);
+            },
+            Err(e) => fct_error(e, "add_subscriber".to_string()),
+        }
+    });
 
-
+    
     io.add_method("internal_check", move |params: Params| {
         println!("Doing an internal check");
         fn fct_signature(emer: &MKBoperation) -> Result<serde_json::Value> {
