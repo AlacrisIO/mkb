@@ -14,7 +14,7 @@ use type_init::*;
 /// # Remarks
 ///
 /// The input file is in JSON format.
-pub fn read_common_init_ci<P: AsRef<Path>>(path: P) -> CommonInit {
+pub fn read_common_init_ci<P: AsRef<Path>>(path: P) -> CommonInitFinal {
     // Open the file in read-only mode with buffer.
     let file = File::open(path).expect("Error in opening path");
     println!("read_common_init_ci : After open statement");
@@ -26,7 +26,7 @@ pub fn read_common_init_ci<P: AsRef<Path>>(path: P) -> CommonInit {
     // Read the JSON contents of the file as an instance of `CommonInit`.
     let u : CommonInit = serde_json::from_reader(reader).expect("Error in parsing of input");
     println!("read_common_init_ci : We have read u");
-    u
+    retrieve_common_init_final(&u)
 }
 
 

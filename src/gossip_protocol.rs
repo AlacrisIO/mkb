@@ -27,7 +27,7 @@ pub struct GossipProtocol {
 }
 
 
-pub fn compute_gossip_protocol(common_init: CommonInit, address: String) -> GossipProtocol {
+pub fn compute_gossip_protocol(common_init: CommonInitFinal, address: String) -> GossipProtocol {
     let len = address.len();
     let mut the_vect = Vec::new();
     for i in 0..len {
@@ -52,7 +52,7 @@ pub fn compute_gossip_protocol(common_init: CommonInit, address: String) -> Goss
 
 
 
-pub fn compute_simple_gossip_protocol(common_init: &CommonInit, address: String) -> SimpleGossipProtocol {
+pub fn compute_simple_gossip_protocol(common_init: &CommonInitFinal, address: String) -> SimpleGossipProtocol {
     let nb_reg = common_init.registrars.len();
     let mut the_vect = Vec::<usize>::new();
     for i_reg in 0..nb_reg {
@@ -114,7 +114,7 @@ pub fn send_info_to_registered(mut w_mkb: std::sync::MutexGuard<TopicAllInfo>, e
 
 
 
-fn check_transaction(registrar: SingleRegistrar, ereq: &SumTypeRequest) -> bool {
+fn check_transaction(registrar: SingleRegistrarFinal, ereq: &SumTypeRequest) -> bool {
     let str0 : String = registrar.ip_address[0].to_string();
     let str1 : String = registrar.ip_address[1].to_string();
     let str2 : String = registrar.ip_address[2].to_string();
@@ -145,7 +145,7 @@ fn check_transaction(registrar: SingleRegistrar, ereq: &SumTypeRequest) -> bool 
 
 
 
-pub fn check_mkb_operation(common_init: CommonInit, sgp: SimpleGossipProtocol, ereq: SumTypeRequest) -> bool {
+pub fn check_mkb_operation(common_init: CommonInitFinal, sgp: SimpleGossipProtocol, ereq: SumTypeRequest) -> bool {
     let nb_neigh = sgp.list_neighbor.len();
     let mut nb_true = 0;
     for i_neigh in 0..nb_neigh {

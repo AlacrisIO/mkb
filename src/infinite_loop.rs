@@ -36,7 +36,7 @@ use jsonrpc_http_server::{ServerBuilder};
 
 
 
-fn get_registrar_by_address(address: String, common_init: &CommonInit) -> Option<SingleRegistrar> {
+fn get_registrar_by_address(address: String, common_init: &CommonInitFinal) -> Option<SingleRegistrarFinal> {
     for e_rec in &common_init.registrars {
         if e_rec.address == address {
             return Some(e_rec.clone());
@@ -47,7 +47,7 @@ fn get_registrar_by_address(address: String, common_init: &CommonInit) -> Option
 
 
 
-pub fn inf_loop(dbe: DBE, tot_mkb: TopicAllInfo, common_init: CommonInit, local_init: LocalInitFinal)
+pub fn inf_loop(dbe: DBE, tot_mkb: TopicAllInfo, common_init: CommonInitFinal, local_init: LocalInitFinal)
 {
 //    let server_handle : Arc<i32>;
 //    let server_handle : Arc<Mutex<i32>>;
@@ -112,7 +112,7 @@ pub fn inf_loop(dbe: DBE, tot_mkb: TopicAllInfo, common_init: CommonInit, local_
             Err(e) => Err(JsonRpcError::invalid_params(e)),
         }
     };
-    let signature_oper = move |estr: &String | -> SignedString {
+    let signature_oper_secp256k1 = move |estr: &String | -> SignedString {
         let estr_u8 : &[u8] = estr.as_bytes();
         let secp = Secp256k1::new();
         let message = Message::from_slice(&estr_u8).expect("Error in creation of message");
@@ -272,13 +272,11 @@ pub fn inf_loop(dbe: DBE, tot_mkb: TopicAllInfo, common_init: CommonInit, local_
     //
     io.add_method("internal_check", move |params: Params| {
         println!("Doing an internal check");
-//        let str: String = "str".to_string();
-//        let eval = signature_oper_0(&str);
         let fct_signature = move |emer: &MKBoperation| -> Result<serde_json::Value> {
             match emer.result {
                 true => {
                     let estr = serde_json::to_string(emer).unwrap();
-                    let str_sig = signature_oper(&estr);
+                    let str_sig = signature_oper_secp256k1(&estr);
                     let estr_b = serde_json::to_string(&str_sig).unwrap();
                     return Ok(Value::String(estr_b));
                 },
