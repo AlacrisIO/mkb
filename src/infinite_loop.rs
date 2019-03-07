@@ -148,7 +148,7 @@ pub fn inf_loop(dbe: DBE, tot_mkb: TopicAllInfo, common_init: CommonInit, local_
         match params.parse::<AccountInfo>() {
             Ok(eval) => {
                 println!("add_account, step 1");
-                let esumreq = SumTypeRequest::Accountinfo(eval);
+                let esumreq = SumTypeRequest::Accountinfo(get_accountinfo_final(&eval));
                 println!("add_account, step 2");
                 return process_request_1(esumreq);
             },

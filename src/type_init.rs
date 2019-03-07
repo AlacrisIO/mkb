@@ -46,11 +46,22 @@ fn hex_to_bytes(hex: &str) -> Vec<u8> {
 }
 
 
+pub fn retrieve_secret_key(ekey: &String) -> secp256k1::key::SecretKey {
+    secp256k1::key::SecretKey::from_slice(&hex_to_bytes(ekey)).expect("Error in reading secret key")
+}
+
+pub fn retrieve_public_key(ekey: &String) -> secp256k1::key::PublicKey {
+    secp256k1::key::PublicKey::from_slice(&hex_to_bytes(ekey)).expect("Error in reading public key")
+}
+
+
+
+
 pub fn get_localinit_final(local_init: &LocalInit) -> LocalInitFinal {
     println!("local_init.secret_key={}", local_init.secret_key);
     println!("local_init.public_key={}", local_init.public_key);
-    let secret_key_nat : secp256k1::key::SecretKey = secp256k1::key::SecretKey::from_slice(&hex_to_bytes(&local_init.secret_key.clone())).expect("Error in reading secret key");
-    let public_key_nat : secp256k1::key::PublicKey = secp256k1::key::PublicKey::from_slice(&hex_to_bytes(&local_init.public_key.clone())).expect("Error in reading public key");
+    let secret_key_nat : secp256k1::key::SecretKey = retrieve_secret_key(&local_init.secret_key.clone());
+    let public_key_nat : secp256k1::key::PublicKey = retrieve_public_key(&local_init.public_key.clone());
     //
     LocalInitFinal {name: local_init.name.clone(), address: local_init.address.clone(),
                     public_key: public_key_nat, secret_key: secret_key_nat,

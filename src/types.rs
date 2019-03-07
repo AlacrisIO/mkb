@@ -2,9 +2,10 @@ use std::process;
 
 
 use serde::Deserialize;
-
+use type_init::*;
 
 pub type HashType = Vec<u8>;
+
 
 
 
@@ -68,17 +69,27 @@ pub fn get_topic_desc_encode(topic_desc: &TopicDescription) -> TopicDescriptionE
 pub struct AccountInfo {
     pub topic: String,
     pub account_name: String,
-    pub public_key: String,
-    pub secret_key: String
+    pub public_key: String
 }
 
 
-/*
 #[derive(Clone, Hash, Serialize, Deserialize)]
-pub struct TopicCreationRequest {
+pub struct AccountInfoFinal {
     pub topic: String,
+    pub account_name: String,
+    pub public_key: secp256k1::key::PublicKey,
 }
-*/
+
+
+pub fn get_accountinfo_final(acct: &AccountInfo) -> AccountInfoFinal {
+    AccountInfoFinal{topic: acct.topic.clone(), account_name: acct.account_name.clone(), public_key: retrieve_public_key(&acct.public_key)}
+}
+
+
+
+
+
+
 
 #[derive(Clone, Hash, Serialize, Deserialize)]
 pub struct DepositRequest {
@@ -158,7 +169,7 @@ pub struct RemoveRegistrar {
 #[derive(Clone, Hash, Serialize, Deserialize)]
 pub enum SumTypeRequest {
     Topiccreationrequest(TopicDescription),
-    Accountinfo(AccountInfo),
+    Accountinfo(AccountInfoFinal),
     Depositrequest(DepositRequest),
     Paymentrequest(PaymentRequest),
     Withdrawrequest(WithdrawRequest),

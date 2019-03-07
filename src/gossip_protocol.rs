@@ -156,6 +156,7 @@ pub fn check_mkb_operation(common_init: CommonInit, sgp: SimpleGossipProtocol, e
         }
     }
     let quot = (nb_true as f32) / (nb_neigh as f32);
+    println!("check_mkb_operation, nb_true={} nb_neigh={} quot={}", nb_true, nb_neigh, quot);
     if quot > common_init.consensus_fraction {
         return true;
     }
