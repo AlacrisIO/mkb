@@ -1,19 +1,8 @@
-//use std::process;
-//use std::error::Error;
 use std::fs::File;
 use std::io::BufReader;
 use std::path::Path;
-//use serde::{Serialize, Serializer, Deserialize, Deserializer};
-
-//use serde::Deserializer;
-//use serde::de::DeserializeOwned;
-//use serde::Deserialize;
 use serde_json;
-//use serde::de::Deserialize;
-//use serde::ser::Serialize;
-
 use type_init::*;
-//use log::{info};
 
 
 /// Returns the common initialization file or an error.

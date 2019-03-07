@@ -72,6 +72,7 @@ pub struct AccountInfo {
     pub secret_key: String
 }
 
+
 /*
 #[derive(Clone, Hash, Serialize, Deserialize)]
 pub struct TopicCreationRequest {

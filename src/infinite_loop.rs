@@ -76,11 +76,11 @@ pub fn inf_loop(dbe: DBE, tot_mkb: TopicAllInfo, common_init: CommonInit, local_
         let w_mkb : std::sync::MutexGuard<TopicAllInfo> = lk_mkb_0.lock().unwrap();
         let emerkl = get_signature(w_mkb, esumreq.clone());
         if emerkl.result == false {
-            return Err(JsonRpcError::invalid_params("Error with the merkle database".to_string()));
+            return Err(JsonRpcError::invalid_params(emerkl.text));
         }
         let test = check_mkb_operation(common_init.clone(), sgp.clone(), esumreq.clone());
         if test == false {
-            return Err(JsonRpcError::invalid_params("Error with remote merkle database".to_string()));
+            return Err(JsonRpcError::invalid_params("Error with the other registrars".to_string()));
         }
         database_update(w_dbe, esumreq.clone());
         match get_topic(&esumreq.clone()) {
@@ -120,8 +120,8 @@ pub fn inf_loop(dbe: DBE, tot_mkb: TopicAllInfo, common_init: CommonInit, local_
 
     let fct_error = |e : jsonrpc_core::Error, oper: String| {
         println!("Error during parsing {:?}", e);
-        let str0 = "failed".to_string();
-        let str1 = "operation".to_string();
+        let str0 = "failed ".to_string();
+        let str1 = " operation".to_string();
         let str_out = str0 + &oper + &str1;
         return Err(JsonRpcError::invalid_params(str_out));
     };
