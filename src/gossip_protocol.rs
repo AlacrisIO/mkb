@@ -138,11 +138,11 @@ fn check_transaction(registrar: SingleRegistrarFinal, ereq: &SumTypeRequest) -> 
     println!("check_transaction result={}", reply);
     //
     let reply_b : SignedString = serde_json::from_str(&reply).expect("Error in signedstring");
-    println!("check_transaction, step 5");
+    println!("check_transaction, step 5, reply_b.result={}", reply_b.result);
     let estr_u8 : &[u8] = reply_b.result.as_bytes();
     println!("check_transaction, step 6");
     let estr_u8_b = get_vector_len_thirtytwo(estr_u8);
-    println!("check_transaction, step 7");
+    println!("check_transaction, step 7, estr_u8_b={:?}", estr_u8_b);
     let message = Message::from_slice(&estr_u8_b).expect("check_transaction : Error in creation of message");
     println!("check_transaction, step 8");
     let secp = Secp256k1::new();
@@ -151,7 +151,7 @@ fn check_transaction(registrar: SingleRegistrarFinal, ereq: &SumTypeRequest) -> 
     let esign : secp256k1::Signature = secp256k1::Signature::from_der(&reply_b.sig).expect("check_transaction : Error in extraction of signature");
     println!("check_transaction, step 10");
     let test : bool = secp.verify(&message, &esign, &registrar.public_key).is_ok();
-    println!("check_transaction, step 11");
+    println!("check_transaction, step 11, test={}", test);
 //    let test : bool = secp.verify(&message, &esign, &registrar.public_key).expect("Signature verification error");
     if test==false {
         println!("check_transaction error in the verification");
@@ -159,7 +159,7 @@ fn check_transaction(registrar: SingleRegistrarFinal, ereq: &SumTypeRequest) -> 
     }
     println!("check_transaction, step 12");
     //
-    let res : Result<MKBoperation,_> = serde_json::from_str(&reply);
+    let res : Result<MKBoperation,_> = serde_json::from_str(&reply_b.result);
     println!("check_transaction, step 13");
     match res {
         Ok(eval) => {println!("check_transaction eval={:?}", eval); eval.result},
