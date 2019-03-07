@@ -5,7 +5,7 @@
 use types::*;
 use type_init::*;
 use data_structure::*;
-//use data_structure::*;
+use secp256k1::{Secp256k1, Message};
 
 use jsonrpc_client_http::HttpTransport;
 
@@ -70,12 +70,18 @@ jsonrpc_client!(pub struct InternalClient {
     pub fn registration_info(&mut self, request: String) -> RpcRequest<String>;
 });
 
-fn check_transaction_kernel(mesg: Message) -> String {
+fn check_transaction_kernel(mesg: MessageTrans) -> String {
+    println!("check_transaction_kernel, step 1");
     let lnk : String = "http://".to_string() + &mesg.ip_plus_port;
-    let transport = HttpTransport::new().standalone().unwrap();
-    let transport_handle = transport.handle(&lnk).unwrap();
+    println!("check_transaction_kernel, step 2");
+    let transport = HttpTransport::new().standalone().expect("Error in creation of HttpTransport");
+    println!("check_transaction_kernel, step 3");
+    let transport_handle = transport.handle(&lnk).expect("Error in creation of transport_handle");
+    println!("check_transaction_kernel, step 4");
     let mut client = InternalClient::new(transport_handle);
-    let result1 = client.internal_check(mesg.message).call().unwrap();
+    println!("check_transaction_kernel, step 5");
+    let result1 = client.internal_check(mesg.message).call().expect("Error in calls of internal_check");
+    println!("check_transaction_kernel, step 6");
     result1
 }
 
@@ -98,12 +104,12 @@ pub fn send_info_to_registered(mut w_mkb: std::sync::MutexGuard<TopicAllInfo>, e
     let x = (*w_mkb).all_topic_state.get_mut(etopic);
     match x {
         Some(eval) => {
-            let ereq_str = serde_json::to_string(ereq).unwrap();
+            let ereq_str = serde_json::to_string(ereq).expect("Error in creation of ereq_str");
             for lnk_subscribed in &eval.list_subscribed_node {
-                let transport = HttpTransport::new().standalone().unwrap();
-                let transport_handle = transport.handle(&lnk_subscribed).unwrap();
+                let transport = HttpTransport::new().standalone().expect("Error in creation of transport");
+                let transport_handle = transport.handle(&lnk_subscribed).expect("Error in creation of transport_handle");
                 let mut client = InternalClient::new(transport_handle);
-                let _result1 = client.registration_info(ereq_str.clone()).call().unwrap();
+                let _result1 = client.registration_info(ereq_str.clone()).call().expect("Error in creation of _result1");
             }
         },
         None => {println!("send_info_to_registered error. The topic is missing which should not happen");},
@@ -113,22 +119,48 @@ pub fn send_info_to_registered(mut w_mkb: std::sync::MutexGuard<TopicAllInfo>, e
 
 
 
-
 fn check_transaction(registrar: SingleRegistrarFinal, ereq: &SumTypeRequest) -> bool {
+    println!("check_transaction, step 1");
     let str0 : String = registrar.ip_address[0].to_string();
     let str1 : String = registrar.ip_address[1].to_string();
     let str2 : String = registrar.ip_address[2].to_string();
     let str3 : String = registrar.ip_address[3].to_string();
     let str4 : String = registrar.port.to_string();
     let ip_plus_port : String = str0 + "." + &str1 + "." + &str2 + "." + &str3 + ":" + &str4;
+    println!("check_transaction, step 2");
     //
-    let ereq_str = serde_json::to_string(ereq).unwrap();
-    let mesg = Message { ip_plus_port: ip_plus_port, message: ereq_str };
+    let ereq_str = serde_json::to_string(ereq).expect("Errot in creation of ereq_str");
+    println!("check_transaction, step 3");
+    let mesg = MessageTrans { ip_plus_port: ip_plus_port, message: ereq_str };
+    println!("check_transaction, step 4");
     //
     let reply = check_transaction_kernel(mesg);
     println!("check_transaction result={}", reply);
     //
+    let reply_b : SignedString = serde_json::from_str(&reply).expect("Error in signedstring");
+    println!("check_transaction, step 5");
+    let estr_u8 : &[u8] = reply_b.result.as_bytes();
+    println!("check_transaction, step 6");
+    let estr_u8_b = get_vector_len_thirtytwo(estr_u8);
+    println!("check_transaction, step 7");
+    let message = Message::from_slice(&estr_u8_b).expect("check_transaction : Error in creation of message");
+    println!("check_transaction, step 8");
+    let secp = Secp256k1::new();
+    println!("check_transaction, step 9 reply_b.sig={:?}", reply_b.sig);
+    println!("check_transaction, step 9, |reply_b.sig|={}", reply_b.sig.len());
+    let esign : secp256k1::Signature = secp256k1::Signature::from_der(&reply_b.sig).expect("check_transaction : Error in extraction of signature");
+    println!("check_transaction, step 10");
+    let test : bool = secp.verify(&message, &esign, &registrar.public_key).is_ok();
+    println!("check_transaction, step 11");
+//    let test : bool = secp.verify(&message, &esign, &registrar.public_key).expect("Signature verification error");
+    if test==false {
+        println!("check_transaction error in the verification");
+        return false;
+    }
+    println!("check_transaction, step 12");
+    //
     let res : Result<MKBoperation,_> = serde_json::from_str(&reply);
+    println!("check_transaction, step 13");
     match res {
         Ok(eval) => {println!("check_transaction eval={:?}", eval); eval.result},
         Err(e) => {println!("check_transaction error e={}", e); false},

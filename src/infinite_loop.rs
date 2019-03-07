@@ -5,33 +5,15 @@ use jsonrpc_core::*;
 use std::sync::{Arc, Mutex};
 use jsonrpc_core::{Error as JsonRpcError};
 use secp256k1::{Secp256k1, Message};
+use std::net::{IpAddr, Ipv4Addr, SocketAddr};
+use jsonrpc_http_server::{ServerBuilder};
 
-//use std::sync::RwLock;
-
-//use futures::Future;
-//use futures::future::{self, Either};
-//use futures_cpupool::CpuPool;
-
-//use rocksdb::DB;
 //use types;
 use types::*;
 use type_init::*;
 use db::*;
 use data_structure::*;
 use gossip_protocol::*;
-
-use std::net::{IpAddr, Ipv4Addr, SocketAddr};
-
-use jsonrpc_http_server::{ServerBuilder};
-//use jsonrpc_client_http::HttpTransport;
-
-
-
-//use jsonrpc_tcp_server::ServerBuilder;
-//use jsonrpc_tcp_server::jsonrpc_core::*;
-
-
-
 
 
 
@@ -113,13 +95,26 @@ pub fn inf_loop(dbe: DBE, tot_mkb: TopicAllInfo, common_init: CommonInitFinal, l
         }
     };
     let signature_oper_secp256k1 = move |estr: &String | -> SignedString {
+        println!("signature_oper_secp256k1, step 1");
         let estr_u8 : &[u8] = estr.as_bytes();
+        println!("signature_oper_secp256k1, step 2, estr_u8={:?}", estr_u8);
+        let len=estr_u8.len();
+        println!("signature_oper_secp256k1, step 3, len={}", len);
+        let estr_u8_b = get_vector_len_thirtytwo(estr_u8);
+        println!("signature_oper_secp256k1, step 4, estr_u8_b={:?}", estr_u8_b);
+        let len_b=estr_u8_b.len();
+        println!("signature_oper_secp256k1, step 3, len_b={}", len_b);
+        let estr_u8_b_ref : &[u8] = &estr_u8_b;
         let secp = Secp256k1::new();
-        let message = Message::from_slice(&estr_u8).expect("Error in creation of message");
+        println!("signature_oper_secp256k1, step 4");
+        let message = Message::from_slice(estr_u8_b_ref).expect("Error in creation of message");
+        println!("signature_oper_secp256k1, step 5");
         
         let sig : secp256k1::Signature = secp.sign(&message, &secret_key_copy);
-        let sig_str : String = serde_json::to_string(&sig).expect("Failure serialization of signature");
-        SignedString {result: estr.to_string(), sig: sig_str}
+        println!("signature_oper_secp256k1, step 6");
+        let sig_vec : Vec<u8> = secp256k1::Signature::serialize_der(&sig);
+        println!("signature_oper_secp256k1, step 7");
+        SignedString {result: estr.to_string(), sig: sig_vec}
     };
 
 
@@ -284,7 +279,7 @@ pub fn inf_loop(dbe: DBE, tot_mkb: TopicAllInfo, common_init: CommonInitFinal, l
             }
         };
         println!("fct_signature is defined");
-        match params.parse::<MessageRed>() {
+        match params.parse::<MessageTransRed>() {
             Ok(eval) => {
                 println!("parsing eval, step 1");
                 let esumreq = serde_json::from_str(&eval.message).unwrap();

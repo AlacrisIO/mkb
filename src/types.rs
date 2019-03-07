@@ -179,14 +179,14 @@ pub struct TransmissionRequest {
 
 
 #[derive(Clone, Serialize, Deserialize)]
-pub struct Message {
+pub struct MessageTrans {
     pub ip_plus_port: String,
 //    pub sender: String,
     pub message: String,
 }
 
 #[derive(Clone, Serialize, Deserialize)]
-pub struct MessageRed {
+pub struct MessageTransRed {
 //    pub ip_plus_port: String,
 //    pub sender: String,
     pub message: String,
@@ -205,6 +205,19 @@ pub struct MKBoperation {
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct SignedString {
     pub result: String,
-    pub sig: String,
+    pub sig: Vec<u8>,
 }
 
+pub fn get_vector_len_thirtytwo(v: &[u8]) -> Vec<u8> {
+    let len = v.len();
+    let mut vret = vec![0x00; 32];
+    let mut pos = 0;
+    for i in 0..len {
+        vret[pos] += v[i];
+        pos += 1;
+        if pos==32 {
+            pos=0;
+        }
+    }
+    vret
+}
