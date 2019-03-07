@@ -4,6 +4,7 @@ use jsonrpc_core::*;
 //use std::collections::HashMap;
 use std::sync::{Arc, Mutex};
 use jsonrpc_core::{Error as JsonRpcError};
+use secp256k1::{Secp256k1, Message};
 
 //use std::sync::RwLock;
 
@@ -61,6 +62,7 @@ pub fn inf_loop(dbe: DBE, tot_mkb: TopicAllInfo, common_init: CommonInit, local_
     
     //
     let my_reg = get_registrar_by_address(local_init.address, &common_init).expect("Failed to find registrar");
+    let secret_key_copy = local_init.secret_key.clone();
 
     let lk_dbe = Arc::new(Mutex::<DBE>::new(dbe));
     let lk_mkb = Arc::new(Mutex::<TopicAllInfo>::new(tot_mkb));
@@ -72,17 +74,25 @@ pub fn inf_loop(dbe: DBE, tot_mkb: TopicAllInfo, common_init: CommonInit, local_
 
 
     let complete_process_request = move |esumreq: SumTypeRequest| -> Result<serde_json::Value> {
+        println!("complete_process_request, step 1");
         let w_dbe : std::sync::MutexGuard<DBE> = lk_dbe.lock().unwrap();
+        println!("complete_process_request, step 2");
         let w_mkb : std::sync::MutexGuard<TopicAllInfo> = lk_mkb_0.lock().unwrap();
+        println!("complete_process_request, step 3");
         let emerkl = get_signature(w_mkb, esumreq.clone());
+        println!("complete_process_request, step 4");
         if emerkl.result == false {
             return Err(JsonRpcError::invalid_params(emerkl.text));
         }
+        println!("complete_process_request, step 5");
         let test = check_mkb_operation(common_init.clone(), sgp.clone(), esumreq.clone());
+        println!("complete_process_request, step 6");
         if test == false {
             return Err(JsonRpcError::invalid_params("Error with the other registrars".to_string()));
         }
+        println!("complete_process_request, step 7");
         database_update(w_dbe, esumreq.clone());
+        println!("complete_process_request, step 8");
         match get_topic(&esumreq.clone()) {
             Some(etopic) => {
                 let w_mkb_3 : std::sync::MutexGuard<TopicAllInfo> = lk_mkb_3.lock().unwrap();
@@ -90,6 +100,7 @@ pub fn inf_loop(dbe: DBE, tot_mkb: TopicAllInfo, common_init: CommonInit, local_
             },
             None => {},
         }
+        println!("complete_process_request, step 9");
         Ok(Value::String("Operation done correcly".into()))
     };
 
@@ -100,6 +111,15 @@ pub fn inf_loop(dbe: DBE, tot_mkb: TopicAllInfo, common_init: CommonInit, local_
             Ok(eval) => Ok(Value::String(serde_json::to_string(&eval).unwrap())),
             Err(e) => Err(JsonRpcError::invalid_params(e)),
         }
+    };
+    let signature_oper = move |estr: &String | -> SignedString {
+        let estr_u8 : &[u8] = estr.as_bytes();
+        let secp = Secp256k1::new();
+        let message = Message::from_slice(&estr_u8).expect("Error in creation of message");
+        
+        let sig : secp256k1::Signature = secp.sign(&message, &secret_key_copy);
+        let sig_str : String = serde_json::to_string(&sig).expect("Failure serialization of signature");
+        SignedString {result: estr.to_string(), sig: sig_str}
     };
 
 
@@ -148,7 +168,7 @@ pub fn inf_loop(dbe: DBE, tot_mkb: TopicAllInfo, common_init: CommonInit, local_
         match params.parse::<AccountInfo>() {
             Ok(eval) => {
                 println!("add_account, step 1");
-                let esumreq = SumTypeRequest::Accountinfo(get_accountinfo_final(&eval));
+                let esumreq = SumTypeRequest::Accountinfo(eval);
                 println!("add_account, step 2");
                 return process_request_1(esumreq);
             },
@@ -247,15 +267,20 @@ pub fn inf_loop(dbe: DBE, tot_mkb: TopicAllInfo, common_init: CommonInit, local_
             Err(e) => fct_error(e, "remove_registrar".to_string()),
         }
     });
-
-    
+    //
+    // internal operation of the system
+    //
     io.add_method("internal_check", move |params: Params| {
         println!("Doing an internal check");
-        fn fct_signature(emer: &MKBoperation) -> Result<serde_json::Value> {
+//        let str: String = "str".to_string();
+//        let eval = signature_oper_0(&str);
+        let fct_signature = move |emer: &MKBoperation| -> Result<serde_json::Value> {
             match emer.result {
                 true => {
                     let estr = serde_json::to_string(emer).unwrap();
-                    return Ok(Value::String(estr));
+                    let str_sig = signature_oper(&estr);
+                    let estr_b = serde_json::to_string(&str_sig).unwrap();
+                    return Ok(Value::String(estr_b));
                 },
                 _ => Err(JsonRpcError::invalid_params("internal_check operation failed".to_string())),
             }

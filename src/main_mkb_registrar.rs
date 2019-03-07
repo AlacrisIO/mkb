@@ -18,7 +18,7 @@ extern crate rocksdb;
 
 extern crate multihash;
 extern crate chrono;
-
+extern crate secp256k1;
 
 // The ed25519 cryptography. VRF depends on it.
 extern crate ed25519_dalek;
