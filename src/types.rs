@@ -1,4 +1,3 @@
-
 use std::process;
 
 
@@ -8,32 +7,6 @@ use serde::Deserialize;
 pub type HashType = Vec<u8>;
 
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct SingleRegistrar {
-    pub name: String,
-    pub address: String,
-    pub public_key: String,
-    pub ip_address: Vec<u8>,
-    pub port: u16,
-}
-
-#[derive(Clone, Serialize, Deserialize)]
-pub struct CommonInit {
-    pub registrars: Vec<SingleRegistrar>,
-    pub consensus_fraction: f32
-}
-
-
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct LocalInit {
-    pub name: String,
-    pub address: String,
-    pub public_key: String,
-    pub secret_key: String,
-    pub password: String,
-    pub database_file: String
-}
 
 // Internal types
 
@@ -235,3 +208,8 @@ pub struct MKBoperation {
     pub text: String,
 }
 
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct SignedString {
+    pub result: String,
+    pub sig: secp256k1::Signature,
+}

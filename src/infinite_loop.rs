@@ -14,6 +14,7 @@ use jsonrpc_core::{Error as JsonRpcError};
 //use rocksdb::DB;
 //use types;
 use types::*;
+use type_init::*;
 use db::*;
 use data_structure::*;
 use gossip_protocol::*;
@@ -45,7 +46,7 @@ fn get_registrar_by_address(address: String, common_init: &CommonInit) -> Option
 
 
 
-pub fn inf_loop(dbe: DBE, tot_mkb: TopicAllInfo, common_init: CommonInit, local_init: LocalInit)
+pub fn inf_loop(dbe: DBE, tot_mkb: TopicAllInfo, common_init: CommonInit, local_init: LocalInitFinal)
 {
 //    let server_handle : Arc<i32>;
 //    let server_handle : Arc<Mutex<i32>>;
@@ -67,13 +68,6 @@ pub fn inf_loop(dbe: DBE, tot_mkb: TopicAllInfo, common_init: CommonInit, local_
     let lk_mkb_1 = lk_mkb.clone();
     let lk_mkb_2 = lk_mkb.clone();
     let lk_mkb_3 = lk_mkb.clone();
-/*    
-    let process_request = move |esumreq: SumTypeRequest| {
-        let w : std::sync::MutexGuard<DBE> = lk.lock().unwrap();
-        
-        database_update(w, esumreq);
-    };
-*/
     let sgp = compute_simple_gossip_protocol(&common_init, my_reg.address);
 
 

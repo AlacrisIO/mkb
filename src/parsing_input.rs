@@ -12,7 +12,7 @@ use serde_json;
 //use serde::de::Deserialize;
 //use serde::ser::Serialize;
 
-use types::*;
+use type_init::*;
 //use log::{info};
 
 
@@ -42,13 +42,13 @@ pub fn read_common_init_ci<P: AsRef<Path>>(path: P) -> CommonInit {
 
 
 
-pub fn read_local_init<P: AsRef<Path>>(path: P) -> LocalInit {
+pub fn read_local_init<P: AsRef<Path>>(path: P) -> LocalInitFinal {
     // Open the file in read-only mode with buffer.
     let file = File::open(path).expect("Error read_local_init, operation");
     let reader = BufReader::new(file);
 
     let u : LocalInit = serde_json::from_reader(reader).expect("Error reading types::LocalInit");
-    u
+    get_localinit_final(&u)
 }
 
 

@@ -3,6 +3,7 @@
 
 
 use types::*;
+use type_init::*;
 use data_structure::*;
 //use data_structure::*;
 

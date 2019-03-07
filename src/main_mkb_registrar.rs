@@ -54,6 +54,7 @@ extern crate num_derive;
 
 mod db;
 mod types;
+mod type_init;
 mod parsing_input;
 mod infinite_loop;
 mod gossip_protocol;
@@ -75,10 +76,10 @@ fn main() {
     let str_file_common_init = &arguments[1];
     let str_file_local_init = &arguments[2];
     println!("CommonInit = {}     LocalInit = {}", str_file_common_init, str_file_local_init);
-    let common_init : types::CommonInit = parsing_input::read_common_init_ci(str_file_common_init);
+    let common_init : type_init::CommonInit = parsing_input::read_common_init_ci(str_file_common_init);
     println!("We have common_init");
 
-    let local_init : types::LocalInit = parsing_input::read_local_init(str_file_local_init);
+    let local_init : type_init::LocalInitFinal = parsing_input::read_local_init(str_file_local_init);
     println!("We have local_init");
     
     let database_file : String = local_init.database_file.clone();
