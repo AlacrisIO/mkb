@@ -1,7 +1,5 @@
 FROM debian:stretch
 
-MAINTAINER Liu Chong <mail@clojure.cn>
-
 WORKDIR /root
 
 # common packages
