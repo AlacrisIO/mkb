@@ -7,7 +7,7 @@ pub struct SingleRegistrar {
     pub name: String,
     pub address: String,
     pub public_key: String,
-    pub ip_address: Vec<u8>,
+    pub ip_addr: Vec<u8>,
     pub port: u16,
 }
 
@@ -23,7 +23,7 @@ pub struct SingleRegistrarFinal {
     pub name: String,
     pub address: String,
     pub public_key: secp256k1::key::PublicKey,
-    pub ip_address: Vec<u8>,
+    pub ip_addr: Vec<u8>,
     pub port: u16,
 }
 
@@ -38,7 +38,7 @@ pub struct CommonInitFinal {
 
 #[derive(Clone, Serialize, Deserialize)]
 pub struct SingleAddress {
-    pub ip_address: Vec<u8>,
+    pub ip_addr: Vec<u8>,
     pub port: u16,
 }
 
@@ -50,7 +50,7 @@ pub struct ListSingleAddress {
 pub fn retrieve_complete_list_registrar(common_init: CommonInitFinal) -> ListSingleAddress {
     let mut e_vect = Vec::<SingleAddress>::new();
     for e_rec in common_init.registrars {
-        let e_sing = SingleAddress { ip_address: e_rec.ip_address, port: e_rec.port};
+        let e_sing = SingleAddress { ip_addr: e_rec.ip_addr, port: e_rec.port};
         e_vect.push(e_sing);
     }
     ListSingleAddress { list_sing_addr: e_vect }
@@ -66,7 +66,7 @@ pub fn retrieve_common_init_final(common_init: &CommonInit) -> CommonInitFinal {
     for eval in common_init.registrars.clone() {
         let eval_b = SingleRegistrarFinal{name: eval.name.clone(), address: eval.address.clone(),
                                           public_key: retrieve_public_key(&eval.public_key.clone()),
-                                          ip_address: eval.ip_address, port: eval.port};
+                                          ip_addr: eval.ip_addr, port: eval.port};
         e_vect.push(eval_b);
         e_map.insert(eval.name.clone(), idx);
         idx +=1;

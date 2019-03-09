@@ -77,11 +77,20 @@ pub fn compute_simple_gossip_protocol_topic(common_init: &CommonInitFinal, addre
 }
 
 
-
+pub fn get_ip_plus_port(ip_addr: Vec<u8>, port: u16) -> String {
+    let str0 : String = ip_addr[0].to_string();
+    let str1 : String = ip_addr[1].to_string();
+    let str2 : String = ip_addr[2].to_string();
+    let str3 : String = ip_addr[3].to_string();
+    let str4 : String = port.to_string();
+    let ip_plus_port : String = str0 + "." + &str1 + "." + &str2 + "." + &str3 + ":" + &str4;
+    ip_plus_port    
+}
 
 jsonrpc_client!(pub struct InternalClient {
     pub fn internal_check(&mut self, transmission: String) -> RpcRequest<String>;
     pub fn registration_info(&mut self, request: String) -> RpcRequest<String>;
+    pub fn internal_request_for_topic_info(&mut self, request: String) -> RpcRequest<String>;
 });
 
 fn check_transaction_kernel(mesg: MessageTrans) -> String {
@@ -134,12 +143,7 @@ pub fn send_info_to_registered(mut w_mkb: std::sync::MutexGuard<TopicAllInfo>, e
 
 fn check_transaction(registrar: SingleRegistrarFinal, ereq: &SumTypeRequest) -> bool {
     println!("check_transaction, step 1");
-    let str0 : String = registrar.ip_address[0].to_string();
-    let str1 : String = registrar.ip_address[1].to_string();
-    let str2 : String = registrar.ip_address[2].to_string();
-    let str3 : String = registrar.ip_address[3].to_string();
-    let str4 : String = registrar.port.to_string();
-    let ip_plus_port : String = str0 + "." + &str1 + "." + &str2 + "." + &str3 + ":" + &str4;
+    let ip_plus_port = get_ip_plus_port(registrar.ip_addr, registrar.port);
     println!("check_transaction, step 2");
     //
     let ereq_str = serde_json::to_string(ereq).expect("Errot in creation of ereq_str");
@@ -182,6 +186,29 @@ fn check_transaction(registrar: SingleRegistrarFinal, ereq: &SumTypeRequest) -> 
 
 
 
+
+
+pub fn get_topic_info_sgp_kernel(sgp: SimpleGossipProtocol, topic: String) -> Option<ExportTopicInformation> {
+    for e_reg in sgp.list_neighbor {
+        println!("get_topic_info_sgp, step 1");
+        let lnk : String = "http://".to_string() + &get_ip_plus_port(e_reg.ip_addr, e_reg.port);
+        println!("get_topic_info_sgp, step 2");
+        let transport = HttpTransport::new().standalone().expect("Error in creation of HttpTransport");
+        println!("get_topic_info_sgp, step 3");
+        let transport_handle = transport.handle(&lnk).expect("Error in creation of transport_handle");
+        println!("get_topic_info_sgp, step 4");
+        let mut client = InternalClient::new(transport_handle);
+        println!("get_topic_info_sgp, step 5");
+        match client.internal_request_for_topic_info(topic.clone()).call() {
+            Err(_) => {},
+            Ok(eval) => {
+                let result1_b : ExportTopicInformation = serde_json::from_str(&eval).expect("Error extracting the string");
+                return Some(result1_b);
+            }
+        }
+    }
+    None
+}
 
 
 

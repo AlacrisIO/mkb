@@ -33,10 +33,10 @@ use db::*;
 
 
 pub fn loop_operation(mut dbe: DBE, sing_reg: SingleRegistrar) -> Result<(), Box<std::error::Error>> {
-    let str0 : String = sing_reg.ip_address[0].to_string();
-    let str1 : String = sing_reg.ip_address[1].to_string();
-    let str2 : String = sing_reg.ip_address[2].to_string();
-    let str3 : String = sing_reg.ip_address[3].to_string();
+    let str0 : String = sing_reg.ip_addr[0].to_string();
+    let str1 : String = sing_reg.ip_addr[1].to_string();
+    let str2 : String = sing_reg.ip_addr[2].to_string();
+    let str3 : String = sing_reg.ip_addr[3].to_string();
     let str4 : String = sing_reg.port_int.to_string();
     let ip_plus_port : String = str0 + "." + &str1 + "." + &str2 + "." + &str3 + ":" + &str4;
     let addr: SocketAddr = ip_plus_port.parse().expect("Could not parse ip_plus_port as SocketAddr");

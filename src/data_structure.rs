@@ -1,4 +1,8 @@
 //use numext_fixed_hash::H256;
+//use std::time::Duration;
+//use std::process;
+//use std::io;
+//use std::sync::{Arc, Mutex};
 
 use types::*;
 use types::SumTypeRequest::*;
@@ -9,15 +13,9 @@ use types::HashType;
 use chrono::prelude::*;
 use gossip_protocol::*;
 use type_init::*;
-//use std::time::Duration;
-//use std::process;
-
-//use std::io;
-//use std::sync::{Arc, Mutex};
-//use jsonrpc_core::{Error as JsonRpcError};
 
 
-#[derive(Clone,Serialize,Deserialize)]
+#[derive(Clone, Serialize, Deserialize)]
 pub struct AccountCurrent {
     current_money: u64,
     data_current: String,
@@ -127,6 +125,24 @@ pub fn compute_the_hash(topdesc: &TopicDescriptionEncode, econt: &ContainerTypeF
     let econt_str_u8 = econt_str.as_bytes();
     let eret = encode(topdesc.hash_method, econt_str_u8).unwrap();
     eret
+}
+
+
+pub fn get_topic_info_wmkb(w_mkb: std::sync::MutexGuard<TopicAllInfo>, my_reg: &SingleRegistrarFinal, topic: &String) -> Option<ExportTopicInformation> {
+    let x = (*w_mkb).all_topic_state.get(topic);
+    match x {
+        Some(eval) => {
+            Some(ExportTopicInformation {
+                min_interval_insertion_micros: eval.topic_desc.min_interval_insertion_micros,
+                capacity_mem: eval.topic_desc.capacity_mem,
+                retention_time: eval.topic_desc.retention_time,
+                retention_size: eval.topic_desc.retention_size,
+                one_registrar_ip_addr: my_reg.ip_addr.clone(),
+                one_registrar_port: my_reg.port})
+        },
+        None => None,
+    }
+    
 }
 
 
@@ -371,21 +387,29 @@ pub fn get_signature(mut w_mkb: std::sync::MutexGuard<TopicAllInfo>, my_reg: &Si
             }
         },
         Removeregistrar(ereg) => {
-            let mut x = (*w_mkb).all_topic_state.get_mut(&ereg.topic);
-            match x {
-                Some(mut etop_b) => {
-                    let test = etop_b.list_active_reg.contains(&ereg.registrar_name);
-                    match test {
-                        false => MKBoperation{result: false, signature: None, text: "not_registered".to_string()},
-                        true => {
-                            etop_b.list_active_reg.remove(&ereg.registrar_name);
-                            MKBoperation{result: true, signature: None, text: "successful registrar removal".to_string()}
-                        },
-                    }
-                },
-                None => MKBoperation { result: false, signature: None, text: "topic error".to_string() },
+            if ereg.registrar_name == my_reg.name {
+                let x = (*w_mkb).all_topic_state.remove(&ereg.topic);
+                match x {
+                    Some(_) => MKBoperation{result: false, signature: None, text: "error in registrar removal".to_string()},
+                    None => MKBoperation{result: true, signature: None, text: "successful registrar removal".to_string()}
+                }
             }
-        },
-        
+            else {
+                let mut x = (*w_mkb).all_topic_state.get_mut(&ereg.topic);
+                match x {
+                    Some(mut etop_b) => {
+                        let test = etop_b.list_active_reg.contains(&ereg.registrar_name);
+                        match test {
+                            false => MKBoperation{result: false, signature: None, text: "not_registered".to_string()},
+                            true => {
+                                etop_b.list_active_reg.remove(&ereg.registrar_name);
+                                MKBoperation{result: true, signature: None, text: "successful registrar removal".to_string()}
+                            },
+                        }
+                    },
+                    None => MKBoperation { result: false, signature: None, text: "topic error".to_string() },
+                }
+            }
+        }
     }
 }

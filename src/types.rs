@@ -59,6 +59,18 @@ pub fn get_topic_desc_encode(topic_desc: &TopicDescription) -> TopicDescriptionE
 }
 
 
+#[derive(Clone, Hash, Serialize, Deserialize)]
+pub struct ExportTopicInformation {
+    pub min_interval_insertion_micros: i64, // the number of allowed transactions per seconds. 0 for infinity
+    pub capacity_mem: u32, // the total allowed capacity. If 0 for infinity
+    pub retention_time: i64, // the retention policy of data. If 0, then not used.
+    pub retention_size: u32, // the maximum number of versions are kept. If 0 then all are used.
+    pub one_registrar_ip_addr: Vec<u8>,
+    pub one_registrar_port: u16
+}
+
+
+
 
 
 #[derive(Clone, Hash, Serialize, Deserialize)]
@@ -148,6 +160,12 @@ pub struct RemoveRegistrar {
 }
 
 
+#[derive(Clone, Hash, Serialize, Deserialize)]
+pub struct RequestInfoTopic {
+    pub topic: String,
+}
+
+
 
 
 
@@ -194,6 +212,9 @@ pub struct MessageTransRed {
 //    pub sender: String,
     pub message: String,
 }
+
+
+
 
 
 
