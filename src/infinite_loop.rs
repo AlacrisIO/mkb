@@ -18,15 +18,6 @@ use gossip_protocol::*;
 
 
 
-fn get_registrar_by_address(address: String, common_init: &CommonInitFinal) -> Option<SingleRegistrarFinal> {
-    for e_rec in &common_init.registrars {
-        if e_rec.address == address {
-            return Some(e_rec.clone());
-        }
-    }
-    None
-}
-
 
 
 pub fn inf_loop(dbe: DBE, tot_mkb: TopicAllInfo, common_init: CommonInitFinal, local_init: LocalInitFinal)
@@ -41,9 +32,12 @@ pub fn inf_loop(dbe: DBE, tot_mkb: TopicAllInfo, common_init: CommonInitFinal, l
 //    let server_handle = Arc::new(Mutex::<i32>::new(0));
 //    let server_handle : Arc<Mutex<Option<jsonrpc_http_server::ServerHandler>>> = Default::default();
 
-    
+    let common_init_0 = common_init.clone();
+    let common_init_1 = common_init.clone();
     //
-    let my_reg = get_registrar_by_address(local_init.address, &common_init).expect("Failed to find registrar");
+    let my_reg = get_registrar_by_address(local_init.address, &common_init_0).expect("Failed to find registrar");
+    let my_reg_0 = my_reg.clone();
+    let my_reg_1 = my_reg.clone();
     let secret_key_copy = local_init.secret_key.clone();
 
     let lk_dbe = Arc::new(Mutex::<DBE>::new(dbe));
@@ -52,7 +46,7 @@ pub fn inf_loop(dbe: DBE, tot_mkb: TopicAllInfo, common_init: CommonInitFinal, l
     let lk_mkb_1 = lk_mkb.clone();
     let lk_mkb_2 = lk_mkb.clone();
     let lk_mkb_3 = lk_mkb.clone();
-    let sgp = compute_simple_gossip_protocol(&common_init, my_reg.address);
+    let sgp = compute_simple_gossip_protocol(&common_init_0, my_reg.address.clone());
 
 
     let complete_process_request = move |esumreq: SumTypeRequest| -> Result<serde_json::Value> {
@@ -61,13 +55,13 @@ pub fn inf_loop(dbe: DBE, tot_mkb: TopicAllInfo, common_init: CommonInitFinal, l
         println!("complete_process_request, step 2");
         let w_mkb : std::sync::MutexGuard<TopicAllInfo> = lk_mkb_0.lock().unwrap();
         println!("complete_process_request, step 3");
-        let emerkl = get_signature(w_mkb, esumreq.clone());
+        let emerkl = get_signature(w_mkb, &my_reg_0, esumreq.clone());
         println!("complete_process_request, step 4");
         if emerkl.result == false {
             return Err(JsonRpcError::invalid_params(emerkl.text));
         }
         println!("complete_process_request, step 5");
-        let test = check_mkb_operation(common_init.clone(), sgp.clone(), esumreq.clone());
+        let test = check_mkb_operation(common_init_0.clone(), sgp.clone(), esumreq.clone());
         println!("complete_process_request, step 6");
         if test == false {
             return Err(JsonRpcError::invalid_params("Error with the other registrars".to_string()));
@@ -94,6 +88,12 @@ pub fn inf_loop(dbe: DBE, tot_mkb: TopicAllInfo, common_init: CommonInitFinal, l
             Err(e) => Err(JsonRpcError::invalid_params(e)),
         }
     };
+    let get_list_registrar = move || -> Result<serde_json::Value> {
+        let estr = serde_json::to_string(&retrieve_complete_list_registrar(common_init_1.clone())).unwrap();
+        return Ok(Value::String(estr));
+    };
+
+    
     let signature_oper_secp256k1 = move |estr: &String | -> SignedString {
         println!("signature_oper_secp256k1, step 1, estr={}", estr);
         let estr_u8 : &[u8] = estr.as_bytes();
@@ -264,6 +264,17 @@ pub fn inf_loop(dbe: DBE, tot_mkb: TopicAllInfo, common_init: CommonInitFinal, l
             Err(e) => fct_error(e, "remove_registrar".to_string()),
         }
     });
+    io.add_method("get_list_registrars", move |params: Params| {
+        println!("Providing the list of registrars");
+        match params.parse::<ListRegistrar>() {
+            Ok(eval) => {
+                return get_list_registrar();
+            },
+            Err(e) => fct_error(e, "get_list_registrars".to_string()),
+        }
+    });
+
+    
     //
     // internal operation of the system
     //
@@ -287,7 +298,7 @@ pub fn inf_loop(dbe: DBE, tot_mkb: TopicAllInfo, common_init: CommonInitFinal, l
                 let esumreq = serde_json::from_str(&eval.message).unwrap();
                 println!("parsing eval, step 2");
                 let w_mkb : std::sync::MutexGuard<TopicAllInfo> = lk_mkb_2.lock().unwrap();
-                let emerkl = get_signature(w_mkb, esumreq);
+                let emerkl = get_signature(w_mkb, &my_reg, esumreq);
                 println!("parsing eval, step 3");
                 return fct_signature(&emerkl);
             },
@@ -301,9 +312,9 @@ pub fn inf_loop(dbe: DBE, tot_mkb: TopicAllInfo, common_init: CommonInitFinal, l
 
     
     //
-    let my_hostname = IpAddr::V4(Ipv4Addr::new(my_reg.ip_address[0], my_reg.ip_address[1], my_reg.ip_address[2], my_reg.ip_address[3]));
+    let my_hostname = IpAddr::V4(Ipv4Addr::new(my_reg_1.ip_address[0], my_reg_1.ip_address[1], my_reg_1.ip_address[2], my_reg_1.ip_address[3]));
     println!("We have the hostname");
-    let socket = SocketAddr::new(my_hostname, my_reg.port);
+    let socket = SocketAddr::new(my_hostname, my_reg_1.port);
     println!("We have the socket");
     //
     let server = ServerBuilder::new(io)

@@ -9,7 +9,7 @@ use secp256k1::{Secp256k1, Message};
 use jsonrpc_client_http::HttpTransport;
 
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Default, Debug, Clone, Serialize, Deserialize)]
 pub struct SimpleGossipProtocol {
     pub list_neighbor: Vec<SingleRegistrarFinal>
 }
@@ -65,10 +65,13 @@ pub fn compute_simple_gossip_protocol(common_init: &CommonInitFinal, address: St
 
 pub fn compute_simple_gossip_protocol_topic(common_init: &CommonInitFinal, address: String, list_active_reg: HashSet<String>) -> SimpleGossipProtocol {
     let mut list_reg = Vec::<SingleRegistrarFinal>::new();
-    for e_list in list_active_reg {
-        
-
-        
+    for e_reg_addr in list_active_reg {
+        if e_reg_addr != address {
+            match get_registrar_by_address(e_reg_addr, common_init) {
+                Some(e_reg) => list_reg.push(e_reg),
+                None => {},
+            }
+        }
     }
     SimpleGossipProtocol { list_neighbor: list_reg }
 }
@@ -108,7 +111,6 @@ pub fn get_topic(ereq: &SumTypeRequest) -> Option<String> {
         _ => None,
     }
 }
-
 
 
 pub fn send_info_to_registered(mut w_mkb: std::sync::MutexGuard<TopicAllInfo>, etopic: &String, ereq: &SumTypeRequest) {
@@ -163,7 +165,6 @@ fn check_transaction(registrar: SingleRegistrarFinal, ereq: &SumTypeRequest) -> 
     println!("check_transaction, step 10");
     let test : bool = secp.verify(&message, &esign, &registrar.public_key).is_ok();
     println!("check_transaction, step 11, test={}", test);
-//    let test : bool = secp.verify(&message, &esign, &registrar.public_key).expect("Signature verification error");
     if test==false {
         println!("check_transaction error in the verification");
         return false;

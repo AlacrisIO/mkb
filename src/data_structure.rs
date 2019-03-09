@@ -7,6 +7,8 @@ use std::collections::HashSet;
 use multihash::{encode};
 use types::HashType;
 use chrono::prelude::*;
+use gossip_protocol::*;
+use type_init::*;
 //use std::time::Duration;
 //use std::process;
 
@@ -28,6 +30,7 @@ pub struct AccountCurrent {
 pub struct FullTopicData {
     pub topic_desc: TopicDescriptionEncode,
     pub list_active_reg: HashSet<String>,
+    pub sgp: SimpleGossipProtocol,
     pub list_subscribed_node: HashSet<String>,
     pub all_account_state: HashMap<String,Vec<AccountCurrent>>
 }
@@ -132,11 +135,13 @@ pub fn compute_the_hash(topdesc: &TopicDescriptionEncode, econt: &ContainerTypeF
 // This function takes the request, check for correctness.
 // If correct, the signature is returned to be checked.
 // If not correct, then the signature is sent in order to be checked.
-pub fn get_signature(mut w_mkb: std::sync::MutexGuard<TopicAllInfo>, eval: SumTypeRequest) -> MKBoperation {
+pub fn get_signature(mut w_mkb: std::sync::MutexGuard<TopicAllInfo>, my_reg: &SingleRegistrarFinal, eval: SumTypeRequest) -> MKBoperation {
     match eval.clone() {
         Topiccreationrequest(etop) => {
+            let sgp = Default::default();
             let set_of_acct = FullTopicData { topic_desc: get_topic_desc_encode(&etop),
-                                              list_active_reg: HashSet::<String>::new(), 
+                                              list_active_reg: HashSet::<String>::new(),
+                                              sgp: sgp,
                                               list_subscribed_node: HashSet::<String>::new(), 
                                               all_account_state: HashMap::new()};
             (*w_mkb).all_topic_state.insert(etop.topic, set_of_acct);

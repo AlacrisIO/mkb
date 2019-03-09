@@ -36,6 +36,29 @@ pub struct CommonInitFinal {
 }
 
 
+#[derive(Clone, Serialize, Deserialize)]
+pub struct SingleAddress {
+    pub ip_address: Vec<u8>,
+    pub port: u16,
+}
+
+#[derive(Clone, Serialize, Deserialize)]
+pub struct ListSingleAddress {
+    pub list_sing_addr: Vec<SingleAddress>,
+}
+
+pub fn retrieve_complete_list_registrar(common_init: CommonInitFinal) -> ListSingleAddress {
+    let mut e_vect = Vec::<SingleAddress>::new();
+    for e_rec in common_init.registrars {
+        let e_sing = SingleAddress { ip_address: e_rec.ip_address, port: e_rec.port};
+        e_vect.push(e_sing);
+    }
+    ListSingleAddress { list_sing_addr: e_vect }
+}
+
+
+
+
 pub fn retrieve_common_init_final(common_init: &CommonInit) -> CommonInitFinal {
     let mut e_vect = Vec::<SingleRegistrarFinal>::new();
     let mut e_map = HashMap::<String,usize>::new();
@@ -51,7 +74,7 @@ pub fn retrieve_common_init_final(common_init: &CommonInit) -> CommonInitFinal {
     CommonInitFinal{registrars: e_vect, map_name_idx: e_map, consensus_fraction: common_init.consensus_fraction}
 }
 
-fn get_registrar_by_address(address: String, common_init: &CommonInitFinal) -> Option<SingleRegistrarFinal> {
+pub fn get_registrar_by_address(address: String, common_init: &CommonInitFinal) -> Option<SingleRegistrarFinal> {
     let iter = common_init.map_name_idx.get(&address);
     match iter {
         None => None,

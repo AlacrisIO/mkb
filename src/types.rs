@@ -130,6 +130,9 @@ pub struct RemoveSubscriber {
     pub subscriber_name: String,
 }
 
+#[derive(Clone, Hash, Serialize, Deserialize)]
+pub struct ListRegistrar {
+}
 
 
 #[derive(Clone, Hash, Serialize, Deserialize)]
