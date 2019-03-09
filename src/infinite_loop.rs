@@ -34,7 +34,7 @@ pub fn inf_loop(dbe: DBE, tot_mkb: TopicAllInfo, common_init: CommonInitFinal, l
 
     let common_init_0 = common_init.clone();
     let common_init_1 = common_init.clone();
-    let common_init_2 = common_init.clone();
+//    let common_init_2 = common_init.clone();
     //
     let my_reg = get_registrar_by_address(local_init.address, &common_init_0).expect("Failed to find registrar");
     let my_reg_0 = my_reg.clone();
@@ -50,7 +50,7 @@ pub fn inf_loop(dbe: DBE, tot_mkb: TopicAllInfo, common_init: CommonInitFinal, l
     let lk_mkb_3 = lk_mkb.clone();
     let lk_mkb_4 = lk_mkb.clone();
     let sgp = compute_simple_gossip_protocol(&common_init_0, my_reg.address.clone());
-    let sgp_0 = sgp.clone();
+//    let sgp_0 = sgp.clone();
     let sgp_1 = sgp.clone();
 
     let complete_process_request = move |esumreq: SumTypeRequest| -> Result<serde_json::Value> {
@@ -152,7 +152,7 @@ pub fn inf_loop(dbe: DBE, tot_mkb: TopicAllInfo, common_init: CommonInitFinal, l
         SignedString {result: estr.to_string(), sig: sig_vec}
     };
     let signature_oper_secp256k1_0 = signature_oper_secp256k1.clone();
-    let signature_oper_secp256k1_1 = signature_oper_secp256k1.clone();
+//    let signature_oper_secp256k1_1 = signature_oper_secp256k1.clone();
 
         
 

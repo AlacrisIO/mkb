@@ -1,4 +1,5 @@
 use std::process;
+//use std::io;
 //use serde::Deserialize;
 use serde::*;
 pub type HashType = Vec<u8>;
@@ -33,28 +34,25 @@ pub struct TopicDescriptionEncode {
     pub hash_method: MultihashType, // The hashing method used.
 }
 
-fn map_string_to_hash_meth(hash_method: String) -> multihash::Hash {
+fn map_string_to_hash_meth(hash_method: String) -> Option<multihash::Hash> {
     match hash_method.as_ref() {
-        "SHA1" => multihash::Hash::SHA1,
-        "SHA2256" => multihash::Hash::SHA2256,
-        "SHA2512" => multihash::Hash::SHA2512,
+        "SHA1" => Some(multihash::Hash::SHA1),
+        "SHA2256" => Some(multihash::Hash::SHA2256),
+        "SHA2512" => Some(multihash::Hash::SHA2512),
         
-        "SHA3512" => multihash::Hash::SHA3512,
-        "SHA3384" => multihash::Hash::SHA3384,
-        "SHA3256" => multihash::Hash::SHA3256,
-        "SHA3224" => multihash::Hash::SHA3224,
+        "SHA3512" => Some(multihash::Hash::SHA3512),
+        "SHA3384" => Some(multihash::Hash::SHA3384),
+        "SHA3256" => Some(multihash::Hash::SHA3256),
+        "SHA3224" => Some(multihash::Hash::SHA3224),
         
-        "Keccak224" => multihash::Hash::Keccak224,
-        "Keccak256" => multihash::Hash::Keccak256,
-        "Keccak384" => multihash::Hash::Keccak384,
-        "Keccak512" => multihash::Hash::Keccak512,
+        "Keccak224" => Some(multihash::Hash::Keccak224),
+        "Keccak256" => Some(multihash::Hash::Keccak256),
+        "Keccak384" => Some(multihash::Hash::Keccak384),
+        "Keccak512" => Some(multihash::Hash::Keccak512),
 
-        "Blake2b" => multihash::Hash::Blake2b,
-        "Blake2s" => multihash::Hash::Blake2s,
-        _ => {
-            println!("Non matching hash algorithm");
-	    process::exit(1);
-        },
+        "Blake2b" => Some(multihash::Hash::Blake2b),
+        "Blake2s" => Some(multihash::Hash::Blake2s),
+        _ => None,
     }
 }
 
@@ -86,7 +84,48 @@ impl Serialize for MultihashType {
     }
 }
 
-//        serializer.serialize_str(MultihashType { hash_method: map_string_to_hash_meth(self.to_string())})
+
+/*
+impl Deserialize for MultihashType {
+    type Error = Error;
+    fn deserialize<R: io::Read>(reader: &mut R) -> Result<Self, Self::Error> {
+        let eval = read_entries(reader)?;
+        Ok(MultihashType { hash_method: map_string_to_hash_meth(eval)})
+    }
+}
+ */
+
+/*
+impl Deserialize for MultihashType {
+//    type Error = Error;
+    fn deserialize<R: io::Read>(reader: &mut R) -> Result<Self, Self::Error> {
+        let estr : String = String::deserialize(reader)?;
+        Ok(MultihashType { hash_method: map_string_to_hash_meth(estr)})
+    }
+}
+*/
+
+
+
+
+impl<'de> Deserialize<'de> for MultihashType {
+//    type Error = Error;
+    fn deserialize<D>(deserializer: D) -> Result<MultihashType, D::Error> where D: Deserializer<'de>,
+    {
+        let estr : String = String::deserialize(deserializer)?;
+        match map_string_to_hash_meth(estr) {
+            Some(eval) => Ok(MultihashType { hash_method: eval}),
+            None => Err(de::Error::custom("Cannot deserialize hash".to_string())),
+/*
+            {println!("Error to process");
+	             process::exit(1);
+            },*/
+        }
+        
+    }
+}
+
+
 
 
 
@@ -94,7 +133,13 @@ impl Serialize for MultihashType {
 
 
 pub fn get_topic_desc_encode(topic_desc: &TopicDescription) -> TopicDescriptionEncode {
-    let hash_meth = MultihashType { hash_method: map_string_to_hash_meth(topic_desc.hash_method.clone())};
+    let hash_meth = match map_string_to_hash_meth(topic_desc.hash_method.clone()) {
+        Some(eval) => {MultihashType { hash_method: eval }},
+        None => {
+            println!("Non matching hash algorithm");
+	    process::exit(1);
+        },
+    };
     TopicDescriptionEncode{min_interval_insertion_micros: topic_desc.min_interval_insertion_micros,
                            capacity_mem: topic_desc.capacity_mem,
                            retention_time: topic_desc.retention_time,
