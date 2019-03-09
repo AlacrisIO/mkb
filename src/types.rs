@@ -19,7 +19,7 @@ pub struct TopicDescription {
     pub hash_method: String, // The hashing method used.
 }
 
-#[derive(Clone)]
+#[derive(Clone, Serialize, Deserialize)]
 pub struct TopicDescriptionEncode {
     pub min_interval_insertion_micros: i64, // the number of allowed transactions per seconds. 0 for infinity
     pub capacity_mem: u32, // the total allowed capacity. If 0 for infinity
@@ -28,8 +28,8 @@ pub struct TopicDescriptionEncode {
     pub hash_method: multihash::Hash, // The hashing method used.
 }
 
-pub fn get_topic_desc_encode(topic_desc: &TopicDescription) -> TopicDescriptionEncode {
-    let hash_meth=match topic_desc.hash_method.as_ref() {
+fn map_string_to_hash_meth(hash_method: String) -> multihash::Hash {
+    match hash_method.as_ref() {
         "SHA1" => multihash::Hash::SHA1,
         "SHA2256" => multihash::Hash::SHA2256,
         "SHA2512" => multihash::Hash::SHA2512,
@@ -51,6 +51,37 @@ pub fn get_topic_desc_encode(topic_desc: &TopicDescription) -> TopicDescriptionE
 	    process::exit(1);
         },
     };
+}
+
+fn map_hash_method_to_string(hash_meth: multihash::Hash) -> String {
+    match hash_meth {
+        multihash::Hash::SHA1 => "SHA1".to_string(),
+        multihash::Hash::SHA2256 => "SHA2256".to_string(),
+        multihash::Hash::SHA2512 => "SHA2512".to_string(),
+
+        multihash::Hash::SHA3512 => "SHA3512".to_string(),
+        multihash::Hash::SHA3384 => "SHA3384".to_string(),
+        multihash::Hash::SHA3256 => "SHA3256".to_string(),
+        multihash::Hash::SHA3224 => "SHA3224".to_string(),
+            
+        multihash::Hash::Keccak224 => "Keccak224".to_string(),
+        multihash::Hash::Keccak256 => "Keccak256".to_string(),
+        multihash::Hash::Keccak384 => "Keccak384".to_string(),
+        multihash::Hash::Keccak512 => "Keccak512".to_string(),
+
+        multihash::Hash::Blake2b => "Blake2b".to_string(),
+        multihash::Hash::Blake2s => "Blake2s".to_string(),
+    };
+}
+
+impl 
+
+
+
+
+
+pub fn get_topic_desc_encode(topic_desc: &TopicDescription) -> TopicDescriptionEncode {
+    let has_meth = map_string_to_hash_meth(topic_desc.hash_method);
     TopicDescriptionEncode{min_interval_insertion_micros: topic_desc.min_interval_insertion_micros,
                            capacity_mem: topic_desc.capacity_mem,
                            retention_time: topic_desc.retention_time,

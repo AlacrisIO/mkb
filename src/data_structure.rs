@@ -24,7 +24,7 @@ pub struct AccountCurrent {
     nonce: u32
 }
 
-#[derive(Clone)]
+#[derive(Clone, Serialize, Deserialize)]
 pub struct FullTopicData {
     pub topic_desc: TopicDescriptionEncode,
     pub list_active_reg: HashSet<String>,
