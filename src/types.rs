@@ -1,8 +1,13 @@
 use std::process;
-use serde::Deserialize;
+//use serde::Deserialize;
+use serde::*;
 pub type HashType = Vec<u8>;
 
 
+#[derive(Clone)]
+pub struct MultihashType {
+    pub hash_method: multihash::Hash,
+}
 
 
 // Internal types
@@ -19,13 +24,13 @@ pub struct TopicDescription {
     pub hash_method: String, // The hashing method used.
 }
 
-#[derive(Clone, Serialize, Deserialize)]
+#[derive(Clone)]
 pub struct TopicDescriptionEncode {
     pub min_interval_insertion_micros: i64, // the number of allowed transactions per seconds. 0 for infinity
     pub capacity_mem: u32, // the total allowed capacity. If 0 for infinity
     pub retention_time: i64, // the retention policy of data. If 0, then not used.
     pub retention_size: u32, // the maximum number of versions are kept. If 0 then all are used.
-    pub hash_method: multihash::Hash, // The hashing method used.
+    pub hash_method: MultihashType, // The hashing method used.
 }
 
 fn map_string_to_hash_meth(hash_method: String) -> multihash::Hash {
@@ -50,7 +55,7 @@ fn map_string_to_hash_meth(hash_method: String) -> multihash::Hash {
             println!("Non matching hash algorithm");
 	    process::exit(1);
         },
-    };
+    }
 }
 
 fn map_hash_method_to_string(hash_meth: multihash::Hash) -> String {
@@ -71,17 +76,25 @@ fn map_hash_method_to_string(hash_meth: multihash::Hash) -> String {
 
         multihash::Hash::Blake2b => "Blake2b".to_string(),
         multihash::Hash::Blake2s => "Blake2s".to_string(),
-    };
+    }
 }
 
-impl 
+impl Serialize for MultihashType {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error> where S: Serializer,
+    {
+        serializer.serialize_str(&map_hash_method_to_string(self.hash_method))
+    }
+}
+
+//        serializer.serialize_str(MultihashType { hash_method: map_string_to_hash_meth(self.to_string())})
+
 
 
 
 
 
 pub fn get_topic_desc_encode(topic_desc: &TopicDescription) -> TopicDescriptionEncode {
-    let has_meth = map_string_to_hash_meth(topic_desc.hash_method);
+    let hash_meth = MultihashType { hash_method: map_string_to_hash_meth(topic_desc.hash_method.clone())};
     TopicDescriptionEncode{min_interval_insertion_micros: topic_desc.min_interval_insertion_micros,
                            capacity_mem: topic_desc.capacity_mem,
                            retention_time: topic_desc.retention_time,

@@ -24,7 +24,7 @@ pub struct AccountCurrent {
     nonce: u32
 }
 
-#[derive(Clone, Serialize, Deserialize)]
+#[derive(Clone)]
 pub struct FullTopicData {
     pub topic_desc: TopicDescriptionEncode,
     pub list_active_reg: HashSet<String>,
@@ -123,7 +123,7 @@ pub fn query_info(w: std::sync::MutexGuard<TopicAllInfo>, topic: String, name: S
 pub fn compute_the_hash(topdesc: &TopicDescriptionEncode, econt: &ContainerTypeForHash) -> HashType {
     let econt_str = serde_json::to_string(econt).unwrap();
     let econt_str_u8 = econt_str.as_bytes();
-    let eret = encode(topdesc.hash_method, econt_str_u8).unwrap();
+    let eret = encode(topdesc.hash_method.hash_method, econt_str_u8).unwrap();
     eret
 }
 
