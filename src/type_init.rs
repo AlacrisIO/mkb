@@ -1,4 +1,6 @@
 use serde::Deserialize;
+use std::collections::HashMap;
+
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct SingleRegistrar {
@@ -29,21 +31,33 @@ pub struct SingleRegistrarFinal {
 #[derive(Clone, Serialize, Deserialize)]
 pub struct CommonInitFinal {
     pub registrars: Vec<SingleRegistrarFinal>,
+    pub map_name_idx: HashMap<String,usize>,
     pub consensus_fraction: f32
 }
 
 
 pub fn retrieve_common_init_final(common_init: &CommonInit) -> CommonInitFinal {
     let mut e_vect = Vec::<SingleRegistrarFinal>::new();
+    let mut e_map = HashMap::<String,usize>::new();
+    let mut idx=0;
     for eval in common_init.registrars.clone() {
         let eval_b = SingleRegistrarFinal{name: eval.name.clone(), address: eval.address.clone(),
                                           public_key: retrieve_public_key(&eval.public_key.clone()),
                                           ip_address: eval.ip_address, port: eval.port};
         e_vect.push(eval_b);
+        e_map.insert(eval.name.clone(), idx);
+        idx +=1;
     }
-    CommonInitFinal{registrars: e_vect, consensus_fraction: common_init.consensus_fraction}
+    CommonInitFinal{registrars: e_vect, map_name_idx: e_map, consensus_fraction: common_init.consensus_fraction}
 }
 
+fn get_registrar_by_address(address: String, common_init: &CommonInitFinal) -> Option<SingleRegistrarFinal> {
+    let iter = common_init.map_name_idx.get(&address);
+    match iter {
+        None => None,
+        Some(eval) => Some(common_init.registrars[*eval].clone()),
+    }
+}
 
 
 

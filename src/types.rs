@@ -207,17 +207,3 @@ pub struct SignedString {
     pub result: String,
     pub sig: Vec<u8>,
 }
-
-pub fn get_vector_len_thirtytwo(v: &[u8]) -> Vec<u8> {
-    let len = v.len();
-    let mut vret = vec![0x00; 32];
-    let mut pos = 0;
-    for i in 0..len {
-        vret[pos] += v[i];
-        pos += 1;
-        if pos==32 {
-            pos=0;
-        }
-    }
-    vret
-}

@@ -1,18 +1,17 @@
 //use std::process;
-//use std::collections::HashSet;
+use std::collections::HashSet;
 
 
 use types::*;
 use type_init::*;
 use data_structure::*;
 use secp256k1::{Secp256k1, Message};
-
 use jsonrpc_client_http::HttpTransport;
 
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct SimpleGossipProtocol {
-    pub list_neighbor: Vec<usize>
+    pub list_neighbor: Vec<SingleRegistrarFinal>
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -54,15 +53,27 @@ pub fn compute_gossip_protocol(common_init: CommonInitFinal, address: String) ->
 
 pub fn compute_simple_gossip_protocol(common_init: &CommonInitFinal, address: String) -> SimpleGossipProtocol {
     let nb_reg = common_init.registrars.len();
-    let mut the_vect = Vec::<usize>::new();
+    let mut the_vect = Vec::<SingleRegistrarFinal>::new();
     for i_reg in 0..nb_reg {
-        let addr_reg = &common_init.registrars[i_reg];
+        let addr_reg = common_init.registrars[i_reg].clone();
         if addr_reg.address != address {
-            the_vect.push(i_reg);
+            the_vect.push(addr_reg);
         }
     }
     SimpleGossipProtocol { list_neighbor: the_vect }
 }
+
+pub fn compute_simple_gossip_protocol_topic(common_init: &CommonInitFinal, address: String, list_active_reg: HashSet<String>) -> SimpleGossipProtocol {
+    let mut list_reg = Vec::<SingleRegistrarFinal>::new();
+    for e_list in list_active_reg {
+        
+
+        
+    }
+    SimpleGossipProtocol { list_neighbor: list_reg }
+}
+
+
 
 
 jsonrpc_client!(pub struct InternalClient {
@@ -179,18 +190,33 @@ fn check_transaction(registrar: SingleRegistrarFinal, ereq: &SumTypeRequest) -> 
 
 pub fn check_mkb_operation(common_init: CommonInitFinal, sgp: SimpleGossipProtocol, ereq: SumTypeRequest) -> bool {
     let nb_neigh = sgp.list_neighbor.len();
-    let mut nb_true = 0;
-    for i_neigh in 0..nb_neigh {
-        let i_reg = sgp.list_neighbor[i_neigh];
-        let eval = check_transaction(common_init.registrars[i_reg].clone(), &ereq.clone());
+    let mut nb_true = 1; // because the main registrar is ok with that.
+    for e_reg in sgp.list_neighbor {
+        let eval = check_transaction(e_reg, &ereq.clone());
         if eval {
             nb_true = nb_true + 1
         }
     }
-    let quot = (nb_true as f32) / (nb_neigh as f32);
+    let nb_total_reg = nb_neigh + 1;
+    let quot = (nb_true as f32) / (nb_total_reg as f32);
     println!("check_mkb_operation, nb_true={} nb_neigh={} quot={}", nb_true, nb_neigh, quot);
     if quot > common_init.consensus_fraction {
         return true;
     }
     return false;
+}
+
+
+pub fn get_vector_len_thirtytwo(v: &[u8]) -> Vec<u8> {
+    let len = v.len();
+    let mut vret = vec![0x00; 32];
+    let mut pos = 0;
+    for i in 0..len {
+	vret[pos] += v[i];
+	pos += 1;
+	if pos==32 {
+            pos=0;
+	}
+    }
+    vret
 }
