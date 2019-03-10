@@ -1,30 +1,14 @@
 //use std::process;
 use std::collections::HashSet;
 
-
 use types::*;
 use types::SumTypeAnswer::*;
+use types::SumTypeRequest::*;
 use type_init::*;
 use data_structure::*;
 use secp256k1::{Secp256k1, Message};
 use jsonrpc_client_http::HttpTransport;
 
-
-#[derive(Default, Debug, Clone, Serialize, Deserialize)]
-pub struct SimpleGossipProtocol {
-    pub list_neighbor: Vec<SingleRegistrarFinal>
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct RoutingLine {
-    pub list_direct_neighbor: Vec<String>
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct GossipProtocol {
-    pub list_routing_line: Vec<RoutingLine>,
-    pub initial_address: String
-}
 
 
 pub fn compute_gossip_protocol(common_init: CommonInitFinal, address: String) -> GossipProtocol {
@@ -223,6 +207,63 @@ pub fn check_mkb_operation(common_init: CommonInitFinal, sgp: SimpleGossipProtoc
     }
     return false;
 }
+
+
+pub fn process_request_kernel(mut w_mkb: std::sync::MutexGuard<TopicAllInfo>, my_reg: &SingleRegistrarFinal, esumreq: SumTypeRequest, sgp: SimpleGossipProtocol, common_init: CommonInitFinal) -> Option<String> {
+    //
+    // The Add registrar require a specfic operation of sending data.
+    //
+    match esumreq {
+        Addregistrar(eadd) => {
+            let reg_send_opt = get_registrar_by_address(eadd.registrar_name, &common_init);
+            match reg_send_opt {
+                None => {
+                    return Some("Registrar is missing".to_string());
+                },
+                Some(reg_send) => {
+                    let eval = (*w_mkb).all_topic_state.get(&eadd.topic);
+                    match eval {
+                        None => {
+                            return Some("Error: Failed to find topic".to_string());
+                        },
+                        Some(eval_b) => {
+                            let etopexport = TopicExportation { topic: eadd.topic, topic_info: eval_b.clone()};
+                            let esumreq_b = SumTypeRequest::Fulltopicexport(etopexport);
+                            let ans_opt = send_transaction(reg_send, &esumreq_b);
+                            match ans_opt {
+                                None => {
+                                    return Some("Error operation".to_string());
+                                },
+                                Some(ans) => {
+                                    print!("Sending data went ok");
+                                },
+                            }
+                        },
+                    }
+                },
+            }
+            
+        },
+        _ => {},
+    }
+    //
+    // The other operations
+    //
+    let res_oper = process_operation(w_mkb, my_reg, esumreq.clone());
+    println!("process_request, step 4");
+    if res_oper.result == false {
+        return Some(res_oper.text);
+    }
+    println!("process_request, step 5");
+    let test = check_mkb_operation(common_init.clone(), sgp, esumreq.clone());
+    println!("process_request, step 6");
+    if test == false {
+        return Some("Error with the other registrars".to_string());
+    }
+    None
+}
+
+
 
 
 pub fn get_vector_len_thirtytwo(v: &[u8]) -> Vec<u8> {

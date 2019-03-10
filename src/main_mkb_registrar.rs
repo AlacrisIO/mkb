@@ -88,7 +88,7 @@ fn main() {
     let dbe = db::open_database(&database_file);
     println!("We have opened db");
 
-    let tot_mkb : data_structure::TopicAllInfo = Default::default();
+    let tot_mkb : types::TopicAllInfo = Default::default();
     //data_structure::TopicAllInfo{all_account_state:{}};
     
 //    let mut allmerkl = merkle_cbt::MerkleTree::<numext_fixed_hash::H256>::new();

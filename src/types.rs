@@ -2,6 +2,9 @@ use std::process;
 //use std::io;
 //use serde::Deserialize;
 use serde::*;
+use type_init::*;
+use chrono::prelude::*;
+use std::collections::{HashMap, HashSet};
 pub type HashType = Vec<u8>;
 
 
@@ -9,6 +12,53 @@ pub type HashType = Vec<u8>;
 pub struct MultihashType {
     pub val: multihash::Hash,
 }
+
+
+// Account and topics.
+
+#[derive(Clone, Serialize, Deserialize)]
+pub struct AccountCurrent {
+    pub current_money: u64,
+    pub data_current: String,
+    pub hash: HashType,
+    pub utc: DateTime<Utc>,
+    pub nonce: u32
+}
+
+#[derive(Clone, Serialize, Deserialize)]
+pub struct FullTopicData {
+    pub topic_desc: TopicDescriptionEncode,
+    pub list_active_reg: HashSet<String>,
+    pub sgp: SimpleGossipProtocol,
+    pub list_subscribed_node: HashSet<String>,
+    pub all_account_state: HashMap<String,Vec<AccountCurrent>>
+}
+
+#[derive(Clone,Default)]
+pub struct TopicAllInfo {
+    pub all_topic_state: HashMap<String,FullTopicData>
+}
+
+
+// Gossip protocol
+
+#[derive(Default, Debug, Clone, Serialize, Deserialize)]
+pub struct SimpleGossipProtocol {
+    pub list_neighbor: Vec<SingleRegistrarFinal>
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct RoutingLine {
+    pub list_direct_neighbor: Vec<String>
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct GossipProtocol {
+    pub list_routing_line: Vec<RoutingLine>,
+    pub initial_address: String
+}
+
+
 
 
 // Internal types
@@ -231,6 +281,19 @@ pub struct InternalRequestTopicInfo {
     pub topic: String,
 }
 
+#[derive(Clone, Serialize, Deserialize)]
+pub struct TopicExportation {
+    pub topic: String,
+    pub topic_info: FullTopicData,
+}
+
+#[derive(Debug, Clone, Hash, Serialize, Deserialize)]
+pub struct TrivialAnswer {
+}
+
+
+
+
 
 
 
@@ -248,7 +311,9 @@ pub fn get_topic(ereq: &SumTypeRequest) -> Option<String> {
 
 
 
-#[derive(Clone, Hash, Serialize, Deserialize)]
+
+
+#[derive(Clone, Serialize, Deserialize)]
 pub enum SumTypeRequest {
     Topiccreationrequest(TopicDescription),
     Accountinfo(AccountInfo),
@@ -261,6 +326,7 @@ pub enum SumTypeRequest {
     Addregistrar(AddRegistrar),
     Removeregistrar(RemoveRegistrar),
     Internalrequesttopicinfo(InternalRequestTopicInfo),
+    Fulltopicexport(TopicExportation),
 }
 
 
@@ -274,6 +340,7 @@ pub struct MKBoperation {
 pub enum SumTypeAnswer {
     Mkboperation(MKBoperation),
     Exporttopicinformation(ExportTopicInformation),
+    Trivialanswer(TrivialAnswer),
 }
 
 #[derive(Debug, Clone, Hash, Serialize, Deserialize)]
@@ -288,7 +355,7 @@ pub struct TypeAnswer {
 
 
 
-#[derive(Clone, Hash, Serialize, Deserialize)]
+#[derive(Clone, Serialize, Deserialize)]
 pub struct ContainerTypeForHash {
     pub hash: HashType,
     pub esum: SumTypeRequest,

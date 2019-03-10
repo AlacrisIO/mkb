@@ -53,26 +53,22 @@ pub fn inf_loop(dbe: DBE, tot_mkb: TopicAllInfo, common_init: CommonInitFinal, l
 //    let sgp_0 = sgp.clone();
     let sgp_1 = sgp.clone();
 
-    let complete_process_request = move |esumreq: SumTypeRequest| -> Result<serde_json::Value> {
-        println!("complete_process_request, step 1");
+    let process_request = move |esumreq: SumTypeRequest| -> Result<serde_json::Value> {
+        println!("process_request, step 1");
         let w_dbe : std::sync::MutexGuard<DBE> = lk_dbe.lock().unwrap();
-        println!("complete_process_request, step 2");
-        let w_mkb : std::sync::MutexGuard<TopicAllInfo> = lk_mkb_0.lock().unwrap();
-        println!("complete_process_request, step 3");
-        let res_oper = process_operation(w_mkb, &my_reg_0, esumreq.clone());
-        println!("complete_process_request, step 4");
-        if res_oper.result == false {
-            return Err(JsonRpcError::invalid_params(res_oper.text));
+        println!("process_request, step 2");
+        let mut w_mkb : std::sync::MutexGuard<TopicAllInfo> = lk_mkb_0.lock().unwrap();
+        println!("process_request, step 3");
+        let res_oper = process_request_kernel(w_mkb, &my_reg_0, esumreq.clone(), sgp, common_init_0.clone());
+        match res_oper {
+            Some(e) => {
+                return Err(JsonRpcError::invalid_params(e));
+            },
+            None => {},
         }
-        println!("complete_process_request, step 5");
-        let test = check_mkb_operation(common_init_0.clone(), sgp.clone(), esumreq.clone());
-        println!("complete_process_request, step 6");
-        if test == false {
-            return Err(JsonRpcError::invalid_params("Error with the other registrars".to_string()));
-        }
-        println!("complete_process_request, step 7");
+        println!("process_request, step 7");
         database_update(w_dbe, esumreq.clone());
-        println!("complete_process_request, step 8");
+        println!("process_request, step 8");
         match get_topic(&esumreq.clone()) {
             Some(etopic) => {
                 let w_mkb_3 : std::sync::MutexGuard<TopicAllInfo> = lk_mkb_1.lock().unwrap();
@@ -80,19 +76,19 @@ pub fn inf_loop(dbe: DBE, tot_mkb: TopicAllInfo, common_init: CommonInitFinal, l
             },
             None => {},
         }
-        println!("complete_process_request, step 9");
+        println!("process_request, step 9");
         Ok(Value::String("Operation done correcly".into()))
     };
-    let process_request_0 = complete_process_request.clone();
-    let process_request_1 = complete_process_request.clone();
-    let process_request_2 = complete_process_request.clone();
-    let process_request_3 = complete_process_request.clone();
-    let process_request_4 = complete_process_request.clone();
-    let process_request_5 = complete_process_request.clone();
-    let process_request_6 = complete_process_request.clone();
-    let process_request_7 = complete_process_request.clone();
-    let process_request_8 = complete_process_request.clone();
-    let process_request_9 = complete_process_request.clone();
+    let process_request_0 = process_request.clone();
+    let process_request_1 = process_request.clone();
+    let process_request_2 = process_request.clone();
+    let process_request_3 = process_request.clone();
+    let process_request_4 = process_request.clone();
+    let process_request_5 = process_request.clone();
+    let process_request_6 = process_request.clone();
+    let process_request_7 = process_request.clone();
+    let process_request_8 = process_request.clone();
+    let process_request_9 = process_request.clone();
 
 
     let request_data = move |topic: String, name: String| -> Result<serde_json::Value> {
@@ -114,8 +110,6 @@ pub fn inf_loop(dbe: DBE, tot_mkb: TopicAllInfo, common_init: CommonInitFinal, l
             None => Err(JsonRpcError::invalid_params("not present topic".to_string())),
         }
     };
-    let get_topic_info_0 = get_topic_info.clone();
-//    let get_topic_info_1 = get_topic_info.clone();
     let get_topic_info_sgp = move |topic: String| -> Result<serde_json::Value> {
         match get_topic_info_sgp_kernel(sgp_1.clone(), topic) {
             None => Err(JsonRpcError::invalid_params("Could not find topic in list".to_string())),
@@ -294,7 +288,7 @@ pub fn inf_loop(dbe: DBE, tot_mkb: TopicAllInfo, common_init: CommonInitFinal, l
         println!("Providing information of the topic");
         match params.parse::<RequestInfoTopic>() {
             Ok(eval) => {
-                let res = get_topic_info_0(eval.topic.clone());
+                let res = get_topic_info(eval.topic.clone());
                 match res {
                     Ok(eval_b) => {
                         return Ok(eval_b);

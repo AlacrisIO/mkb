@@ -9,34 +9,9 @@ use types::SumTypeRequest::*;
 use std::collections::HashMap;
 use std::collections::HashSet;
 use multihash::{encode};
-use types::HashType;
 use chrono::prelude::*;
-use gossip_protocol::*;
+use types::HashType;
 use type_init::*;
-
-
-#[derive(Clone, Serialize, Deserialize)]
-pub struct AccountCurrent {
-    current_money: u64,
-    data_current: String,
-    hash: HashType,
-    utc: DateTime<Utc>,
-    nonce: u32
-}
-
-#[derive(Clone, Serialize, Deserialize)]
-pub struct FullTopicData {
-    pub topic_desc: TopicDescriptionEncode,
-    pub list_active_reg: HashSet<String>,
-    pub sgp: SimpleGossipProtocol,
-    pub list_subscribed_node: HashSet<String>,
-    pub all_account_state: HashMap<String,Vec<AccountCurrent>>
-}
-
-#[derive(Clone,Default)]
-pub struct TopicAllInfo {
-    pub all_topic_state: HashMap<String,FullTopicData>
-}
 
 
 
@@ -413,7 +388,7 @@ pub fn process_operation(mut w_mkb: std::sync::MutexGuard<TopicAllInfo>, my_reg:
                     None => TypeAnswer { result: false, answer: mkb_oper_triv, text: "topic error".to_string() },
                 }
             }
-        }
+        },
         Internalrequesttopicinfo(eint) => {
             let eval = get_topic_info_wmkb(w_mkb, my_reg, &eint.topic);
             match eval {
@@ -426,6 +401,11 @@ pub fn process_operation(mut w_mkb: std::sync::MutexGuard<TopicAllInfo>, my_reg:
                     TypeAnswer { result: true, answer: export_topic_succ, text: "success".to_string() }
                 },
             }
-        }
+        },
+        Fulltopicexport(etopicexport) => {
+            (*w_mkb).all_topic_state.insert(etopicexport.topic, etopicexport.topic_info);
+            let triv_ans = SumTypeAnswer::Trivialanswer(TrivialAnswer{});
+            TypeAnswer { result: true, answer: triv_ans, text: "success".to_string() }
+        },
     }
 }
