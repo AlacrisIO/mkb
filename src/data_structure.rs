@@ -24,7 +24,7 @@ pub struct AccountCurrent {
     nonce: u32
 }
 
-#[derive(Clone)]
+#[derive(Clone, Serialize, Deserialize)]
 pub struct FullTopicData {
     pub topic_desc: TopicDescriptionEncode,
     pub list_active_reg: HashSet<String>,
@@ -41,7 +41,7 @@ pub struct TopicAllInfo {
 
 
 
-pub fn func_insert_record(topic_desc: &TopicDescriptionEncode, listval: &mut Vec<AccountCurrent>, eval: AccountCurrent) -> MKBoperation {
+pub fn func_insert_record(topic_desc: &TopicDescriptionEncode, listval: &mut Vec<AccountCurrent>, eval: AccountCurrent) -> TypeAnswer {
     if topic_desc.min_interval_insertion_micros > 0 {
         let len = listval.len();
         let dura = eval.utc.signed_duration_since(listval[len-1].utc);
@@ -49,7 +49,8 @@ pub fn func_insert_record(topic_desc: &TopicDescriptionEncode, listval: &mut Vec
         match dura_micros {
             Some(eval) => {
                 if eval < topic_desc.min_interval_insertion_micros {
-                    return MKBoperation { result: false, signature: None, text: "too near to last insertione".to_string() };
+                    let mkb_oper_triv = SumTypeAnswer::Mkboperation(MKBoperation {signature: None});
+                    return TypeAnswer { result: false, answer: mkb_oper_triv, text: "too near to last insertione".to_string() };
                 }
             },
             None => {},
@@ -95,7 +96,8 @@ pub fn func_insert_record(topic_desc: &TopicDescriptionEncode, listval: &mut Vec
             }
         }
     }
-    MKBoperation { result: true, signature: Some(eval.hash), text: "success".to_string() }    
+    let mkb_oper = SumTypeAnswer::Mkboperation(MKBoperation {signature: Some(eval.hash)});
+    TypeAnswer { result: true, answer: mkb_oper, text: "success".to_string() }
 }
 
 
@@ -123,7 +125,7 @@ pub fn query_info(w: std::sync::MutexGuard<TopicAllInfo>, topic: String, name: S
 pub fn compute_the_hash(topdesc: &TopicDescriptionEncode, econt: &ContainerTypeForHash) -> HashType {
     let econt_str = serde_json::to_string(econt).unwrap();
     let econt_str_u8 = econt_str.as_bytes();
-    let eret = encode(topdesc.hash_method.hash_method, econt_str_u8).unwrap();
+    let eret = encode(topdesc.hash_method.val, econt_str_u8).unwrap();
     eret
 }
 
@@ -142,7 +144,6 @@ pub fn get_topic_info_wmkb(w_mkb: std::sync::MutexGuard<TopicAllInfo>, my_reg: &
         },
         None => None,
     }
-    
 }
 
 
@@ -151,8 +152,9 @@ pub fn get_topic_info_wmkb(w_mkb: std::sync::MutexGuard<TopicAllInfo>, my_reg: &
 // This function takes the request, check for correctness.
 // If correct, the signature is returned to be checked.
 // If not correct, then the signature is sent in order to be checked.
-pub fn get_signature(mut w_mkb: std::sync::MutexGuard<TopicAllInfo>, my_reg: &SingleRegistrarFinal, eval: SumTypeRequest) -> MKBoperation {
-    match eval.clone() {
+pub fn process_operation(mut w_mkb: std::sync::MutexGuard<TopicAllInfo>, my_reg: &SingleRegistrarFinal, esumreq: SumTypeRequest) -> TypeAnswer {
+    let mkb_oper_triv = SumTypeAnswer::Mkboperation(MKBoperation {signature: None});
+    match esumreq.clone() {
         Topiccreationrequest(etop) => {
             let sgp = Default::default();
             let set_of_acct = FullTopicData { topic_desc: get_topic_desc_encode(&etop),
@@ -161,7 +163,7 @@ pub fn get_signature(mut w_mkb: std::sync::MutexGuard<TopicAllInfo>, my_reg: &Si
                                               list_subscribed_node: HashSet::<String>::new(), 
                                               all_account_state: HashMap::new()};
             (*w_mkb).all_topic_state.insert(etop.topic, set_of_acct);
-            MKBoperation { result: true, signature: None, text: "success".to_string() }
+            TypeAnswer { result: true, answer: mkb_oper_triv, text: "success".to_string() }
         },
         Accountinfo(eacc) => {
             let mut x = (*w_mkb).all_topic_state.get_mut(&eacc.topic);
@@ -170,9 +172,10 @@ pub fn get_signature(mut w_mkb: std::sync::MutexGuard<TopicAllInfo>, my_reg: &Si
                     let hash: HashType = Default::default();
                     let acct_start : AccountCurrent = AccountCurrent { current_money: 0, data_current: "".to_string(), hash: hash.clone(), utc: Utc::now(), nonce: 0};
                     eacc_b.all_account_state.insert(eacc.account_name, vec![acct_start.clone()]);
-                    MKBoperation { result: true, signature: Some(acct_start.hash), text: "success".to_string() }
+                    let mkb_oper = SumTypeAnswer::Mkboperation(MKBoperation {signature: Some(acct_start.hash)});
+                    TypeAnswer { result: true, answer: mkb_oper, text: "success".to_string() }
                 },
-                None => MKBoperation { result: false, signature: None, text: "topic absent".to_string() },
+                None => TypeAnswer { result: false, answer: mkb_oper_triv, text: "topic absent".to_string() },
             }
         },
         Depositrequest(edep) => {
@@ -185,7 +188,7 @@ pub fn get_signature(mut w_mkb: std::sync::MutexGuard<TopicAllInfo>, my_reg: &Si
                             let len = edep_c.len();
                             if edep_c[len-1].hash == edep.hash {
                                 let new_amnt = edep_c[len-1].current_money + edep.amount;
-                                let econt = ContainerTypeForHash { hash: edep_c[len-1].hash.clone(), esum: eval};
+                                let econt = ContainerTypeForHash { hash: edep_c[len-1].hash.clone(), esum: esumreq};
                                 let new_hash = compute_the_hash(&edep_b.topic_desc, &econt);
                                 let new_data = "".to_string();
                                 let new_nonce = edep_c[len-1].nonce + 1;
@@ -193,13 +196,13 @@ pub fn get_signature(mut w_mkb: std::sync::MutexGuard<TopicAllInfo>, my_reg: &Si
                                 func_insert_record(&edep_b.topic_desc, &mut edep_c, new_account_curr)
                             }
                             else {
-                                MKBoperation { result: false, signature: None, text: "hash error".to_string() }
+                                TypeAnswer { result: false, answer: mkb_oper_triv, text: "hash error".to_string() }
                             }
                         },
-                        None => MKBoperation { result: false, signature: None, text: "account error".to_string() },
+                        None => TypeAnswer { result: false, answer: mkb_oper_triv, text: "account error".to_string() },
                     }
                 },
-                None => MKBoperation { result: false, signature: None, text: "topic error".to_string() },
+                None => TypeAnswer { result: false, answer: mkb_oper_triv, text: "topic error".to_string() },
              }
         },
         Paymentrequest(epay) => {
@@ -236,7 +239,7 @@ pub fn get_signature(mut w_mkb: std::sync::MutexGuard<TopicAllInfo>, my_reg: &Si
                         }
                     };
                     if fct_corr(&epay_b, &epay) == false {
-                        return MKBoperation { result: false, signature: None, text: "correctness error".to_string() };
+                        return TypeAnswer { result: false, answer: mkb_oper_triv, text: "correctness error".to_string() };
                     }
                     {
                         let mut y = epay_b.all_account_state.get_mut(&epay.account_name_sender);
@@ -244,7 +247,7 @@ pub fn get_signature(mut w_mkb: std::sync::MutexGuard<TopicAllInfo>, my_reg: &Si
                             Some(mut esend) => {
                                 let len = esend.len();
                                 let new_amnt = esend[len-1].current_money - epay.amount;
-                                let econt = ContainerTypeForHash { hash: esend[len-1].hash.clone(), esum: eval.clone()};
+                                let econt = ContainerTypeForHash { hash: esend[len-1].hash.clone(), esum: esumreq.clone()};
                                 let new_hash1 = compute_the_hash(&epay_b.topic_desc, &econt);
                                 let new_data1 = "".to_string();
                                 let new_nonce = esend[len-1].nonce + 1;
@@ -263,7 +266,7 @@ pub fn get_signature(mut w_mkb: std::sync::MutexGuard<TopicAllInfo>, my_reg: &Si
                             Some(mut erecv) => {
                                 let len = erecv.len();
                                 let new_amnt = erecv[len-1].current_money + epay.amount;
-                                let econt = ContainerTypeForHash { hash: erecv[len-1].hash.clone(), esum: eval};
+                                let econt = ContainerTypeForHash { hash: erecv[len-1].hash.clone(), esum: esumreq};
                                 let new_hash2 = compute_the_hash(&epay_b.topic_desc, &econt);
                                 let new_data2 = "".to_string();
                                 let new_nonce = erecv[len-1].nonce + 1;
@@ -276,9 +279,9 @@ pub fn get_signature(mut w_mkb: std::sync::MutexGuard<TopicAllInfo>, my_reg: &Si
                             None => {},
                         }
                     }
-                    return MKBoperation { result: true, signature: None, text: "success".to_string() };
+                    return TypeAnswer { result: true, answer: mkb_oper_triv, text: "success".to_string() };
                 },
-                None => MKBoperation { result: false, signature: None, text: "topic error".to_string() },
+                None => TypeAnswer { result: false, answer: mkb_oper_triv, text: "topic error".to_string() },
             }
             
         },
@@ -292,7 +295,7 @@ pub fn get_signature(mut w_mkb: std::sync::MutexGuard<TopicAllInfo>, my_reg: &Si
                             let len = ewith_c.len();
                             if ewith_c[len-1].current_money > ewith.amount && ewith_c[len-1].hash == ewith.hash {
                                 let new_amnt = ewith_c[len-1].current_money - ewith.amount;
-                                let econt = ContainerTypeForHash { hash: ewith_c[len-1].hash.clone(), esum: eval};
+                                let econt = ContainerTypeForHash { hash: ewith_c[len-1].hash.clone(), esum: esumreq};
                                 let new_hash = compute_the_hash(&ewith_b.topic_desc, &econt);
                                 let new_data = "".to_string();
                                 let new_nonce = ewith_c[len-1].nonce + 1;
@@ -300,13 +303,13 @@ pub fn get_signature(mut w_mkb: std::sync::MutexGuard<TopicAllInfo>, my_reg: &Si
                                 func_insert_record(&ewith_b.topic_desc, &mut ewith_c, new_account_curr)
                             }
                             else {
-                                MKBoperation { result: false, signature: None, text: "amount or hash error".to_string() }
+                                TypeAnswer { result: false, answer: mkb_oper_triv, text: "amount or hash error".to_string() }
                             }
                         },
-                        None => MKBoperation { result: false, signature: None, text: "account error".to_string() },
+                        None => TypeAnswer { result: false, answer: mkb_oper_triv, text: "account error".to_string() },
                     }
                 },
-                None => MKBoperation { result: false, signature: None, text: "topic error".to_string() },
+                None => TypeAnswer { result: false, answer: mkb_oper_triv, text: "topic error".to_string() },
             }
         },
         Senddatarequest(edata) => {
@@ -319,7 +322,7 @@ pub fn get_signature(mut w_mkb: std::sync::MutexGuard<TopicAllInfo>, my_reg: &Si
                             let len = edep_c.len();
                             if edep_c[len-1].hash == edata.hash {
                                 let new_amnt = edep_c[len-1].current_money;
-                                let econt = ContainerTypeForHash { hash: edep_c[len-1].hash.clone(), esum: eval};
+                                let econt = ContainerTypeForHash { hash: edep_c[len-1].hash.clone(), esum: esumreq};
                                 let new_hash = compute_the_hash(&edata_b.topic_desc, &econt);
                                 let new_data = edata.data;
                                 let new_nonce = edep_c[len-1].nonce + 1;
@@ -327,13 +330,13 @@ pub fn get_signature(mut w_mkb: std::sync::MutexGuard<TopicAllInfo>, my_reg: &Si
                                 func_insert_record(&edata_b.topic_desc, &mut edep_c, new_account_curr)
                             }
                             else {
-                                MKBoperation { result: false, signature: None, text: "hash error".to_string() }
+                                TypeAnswer { result: false, answer: mkb_oper_triv, text: "hash error".to_string() }
                             }
                         },
-                        None => MKBoperation { result: false, signature: None, text: "account error".to_string() },
+                        None => TypeAnswer { result: false, answer: mkb_oper_triv, text: "account error".to_string() },
                     }
                 },
-                None => MKBoperation { result: false, signature: None, text: "topic error".to_string() },
+                None => TypeAnswer { result: false, answer: mkb_oper_triv, text: "topic error".to_string() },
              }
         },
         Addsubscriber(eadd) => {
@@ -342,14 +345,14 @@ pub fn get_signature(mut w_mkb: std::sync::MutexGuard<TopicAllInfo>, my_reg: &Si
                 Some(mut etop_b) => {
                     let test = etop_b.list_subscribed_node.contains(&eadd.subscriber_name.clone());
                     match test {
-                        true => MKBoperation { result: false, signature: None, text: "already_registered".to_string() },
+                        true => TypeAnswer { result: false, answer: mkb_oper_triv, text: "already_registered".to_string() },
                         false => {
                             etop_b.list_subscribed_node.insert(eadd.subscriber_name);
-                            MKBoperation{result: true, signature: None, text: "successful insertion".to_string()}
+                            TypeAnswer{result: true, answer: mkb_oper_triv, text: "successful insertion".to_string()}
                         },
                     }
                 },
-                None => MKBoperation { result: false, signature: None, text: "topic error".to_string() },
+                None => TypeAnswer { result: false, answer: mkb_oper_triv, text: "topic error".to_string() },
             }
             // TODO: We need a different channel for this kind of operation
             // which are 
@@ -360,14 +363,14 @@ pub fn get_signature(mut w_mkb: std::sync::MutexGuard<TopicAllInfo>, my_reg: &Si
                 Some(mut etop_b) => {
                     let test = etop_b.list_subscribed_node.contains(&eremove.subscriber_name);
                     match test {
-                        false => MKBoperation{result: false, signature: None, text: "not_registered".to_string()},
+                        false => TypeAnswer{result: false, answer: mkb_oper_triv, text: "not_registered".to_string()},
                         true => {
                             etop_b.list_subscribed_node.remove(&eremove.subscriber_name);
-                            MKBoperation{result: true, signature: None, text: "successful removal".to_string()}
+                            TypeAnswer{result: true, answer: mkb_oper_triv, text: "successful removal".to_string()}
                         },
                     }
                 },
-                None => MKBoperation { result: false, signature: None, text: "topic error".to_string() },
+                None => TypeAnswer { result: false, answer: mkb_oper_triv, text: "topic error".to_string() },
             }
         },
         Addregistrar(ereg) => {
@@ -376,22 +379,22 @@ pub fn get_signature(mut w_mkb: std::sync::MutexGuard<TopicAllInfo>, my_reg: &Si
                 Some(mut etop_b) => {
                     let test = etop_b.list_active_reg.contains(&ereg.registrar_name.clone());
                     match test {
-                        true => MKBoperation { result: false, signature: None, text: "already_registered".to_string() },
+                        true => TypeAnswer { result: false, answer: mkb_oper_triv, text: "already_registered".to_string() },
                         false => {
                             etop_b.list_active_reg.insert(ereg.registrar_name);
-                            MKBoperation{result: true, signature: None, text: "successful subscriber insertion".to_string()}
+                            TypeAnswer{result: true, answer: mkb_oper_triv, text: "successful subscriber insertion".to_string()}
                         },
                     }
                 },
-                None => MKBoperation { result: false, signature: None, text: "topic error".to_string() },
+                None => TypeAnswer { result: false, answer: mkb_oper_triv, text: "topic error".to_string() },
             }
         },
         Removeregistrar(ereg) => {
             if ereg.registrar_name == my_reg.name {
                 let x = (*w_mkb).all_topic_state.remove(&ereg.topic);
                 match x {
-                    Some(_) => MKBoperation{result: false, signature: None, text: "error in registrar removal".to_string()},
-                    None => MKBoperation{result: true, signature: None, text: "successful registrar removal".to_string()}
+                    Some(_) => TypeAnswer{result: false, answer: mkb_oper_triv, text: "error in registrar removal".to_string()},
+                    None => TypeAnswer{result: true, answer: mkb_oper_triv, text: "successful registrar removal".to_string()}
                 }
             }
             else {
@@ -400,15 +403,28 @@ pub fn get_signature(mut w_mkb: std::sync::MutexGuard<TopicAllInfo>, my_reg: &Si
                     Some(mut etop_b) => {
                         let test = etop_b.list_active_reg.contains(&ereg.registrar_name);
                         match test {
-                            false => MKBoperation{result: false, signature: None, text: "not_registered".to_string()},
+                            false => TypeAnswer{result: false, answer: mkb_oper_triv, text: "not_registered".to_string()},
                             true => {
                                 etop_b.list_active_reg.remove(&ereg.registrar_name);
-                                MKBoperation{result: true, signature: None, text: "successful registrar removal".to_string()}
+                                TypeAnswer{result: true, answer: mkb_oper_triv, text: "successful registrar removal".to_string()}
                             },
                         }
                     },
-                    None => MKBoperation { result: false, signature: None, text: "topic error".to_string() },
+                    None => TypeAnswer { result: false, answer: mkb_oper_triv, text: "topic error".to_string() },
                 }
+            }
+        }
+        Internalrequesttopicinfo(eint) => {
+            let eval = get_topic_info_wmkb(w_mkb, my_reg, &eint.topic);
+            match eval {
+                None => {
+                    let export_topic_fail = SumTypeAnswer::Exporttopicinformation(Default::default());
+                    TypeAnswer { result: false, answer: export_topic_fail, text: "topic is absent".to_string() }
+                },
+                Some(eval) => {
+                    let export_topic_succ = SumTypeAnswer::Exporttopicinformation(eval);
+                    TypeAnswer { result: true, answer: export_topic_succ, text: "success".to_string() }
+                },
             }
         }
     }

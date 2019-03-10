@@ -59,10 +59,10 @@ pub fn inf_loop(dbe: DBE, tot_mkb: TopicAllInfo, common_init: CommonInitFinal, l
         println!("complete_process_request, step 2");
         let w_mkb : std::sync::MutexGuard<TopicAllInfo> = lk_mkb_0.lock().unwrap();
         println!("complete_process_request, step 3");
-        let emerkl = get_signature(w_mkb, &my_reg_0, esumreq.clone());
+        let res_oper = process_operation(w_mkb, &my_reg_0, esumreq.clone());
         println!("complete_process_request, step 4");
-        if emerkl.result == false {
-            return Err(JsonRpcError::invalid_params(emerkl.text));
+        if res_oper.result == false {
+            return Err(JsonRpcError::invalid_params(res_oper.text));
         }
         println!("complete_process_request, step 5");
         let test = check_mkb_operation(common_init_0.clone(), sgp.clone(), esumreq.clone());
@@ -115,7 +115,7 @@ pub fn inf_loop(dbe: DBE, tot_mkb: TopicAllInfo, common_init: CommonInitFinal, l
         }
     };
     let get_topic_info_0 = get_topic_info.clone();
-    let get_topic_info_1 = get_topic_info.clone();
+//    let get_topic_info_1 = get_topic_info.clone();
     let get_topic_info_sgp = move |topic: String| -> Result<serde_json::Value> {
         match get_topic_info_sgp_kernel(sgp_1.clone(), topic) {
             None => Err(JsonRpcError::invalid_params("Could not find topic in list".to_string())),
@@ -147,15 +147,9 @@ pub fn inf_loop(dbe: DBE, tot_mkb: TopicAllInfo, common_init: CommonInitFinal, l
         println!("signature_oper_secp256k1, step 8");
         let sig_vec : Vec<u8> = secp256k1::Signature::serialize_der(&sig);
         println!("signature_oper_secp256k1, step 9, sig_vect={:?}", sig_vec);
-        println!("signature_oper_secp256k1, step 9, |sig_vect|={}", sig_vec.len());
-        
+        println!("signature_oper_secp256k1, step 9, |sig_vect|={}", sig_vec.len());        
         SignedString {result: estr.to_string(), sig: sig_vec}
     };
-    let signature_oper_secp256k1_0 = signature_oper_secp256k1.clone();
-//    let signature_oper_secp256k1_1 = signature_oper_secp256k1.clone();
-
-        
-
     
     
 
@@ -196,7 +190,6 @@ pub fn inf_loop(dbe: DBE, tot_mkb: TopicAllInfo, common_init: CommonInitFinal, l
             Err(e) => fct_parsing_error(e, "add_account".to_string()),
         }
     });
-
     io.add_method("deposit", move |params: Params| {
         println!("Processing a deposit command");
         match params.parse::<DepositRequest>() {
@@ -320,17 +313,17 @@ pub fn inf_loop(dbe: DBE, tot_mkb: TopicAllInfo, common_init: CommonInitFinal, l
     //
     // internal operation of the system
     //
-    io.add_method("internal_check", move |params: Params| {
+    io.add_method("internal_operation", move |params: Params| {
         println!("Doing an internal check");
-        let fct_signature = move |emer: &MKBoperation| -> Result<serde_json::Value> {
+        let fct_signature = move |emer: &TypeAnswer| -> Result<serde_json::Value> {
             match emer.result {
                 true => {
                     let estr = serde_json::to_string(emer).unwrap();
-                    let str_sig = signature_oper_secp256k1_0(&estr);
+                    let str_sig = signature_oper_secp256k1(&estr);
                     let estr_b = serde_json::to_string(&str_sig).unwrap();
                     return Ok(Value::String(estr_b));
                 },
-                _ => Err(JsonRpcError::invalid_params("internal_check operation failed".to_string())),
+                _ => Err(JsonRpcError::invalid_params("internal_operation failed e={}".to_string())),
             }
         };
         println!("fct_signature is defined");
@@ -340,20 +333,11 @@ pub fn inf_loop(dbe: DBE, tot_mkb: TopicAllInfo, common_init: CommonInitFinal, l
                 let esumreq = serde_json::from_str(&eval.message).unwrap();
                 println!("parsing eval, step 2");
                 let w_mkb : std::sync::MutexGuard<TopicAllInfo> = lk_mkb_4.lock().unwrap();
-                let emerkl = get_signature(w_mkb, &my_reg, esumreq);
+                let res_oper = process_operation(w_mkb, &my_reg, esumreq);
                 println!("parsing eval, step 3");
-                return fct_signature(&emerkl);
+                return fct_signature(&res_oper);
             },
             Err(e) => fct_parsing_error(e, "internel_check".to_string()),
-        }
-    });
-    io.add_method("internal_request_for_topic_info", move |params: Params| {
-        println!("Providing information of the topic");
-        match params.parse::<RequestInfoTopic>() {
-            Ok(eval) => {
-                return get_topic_info_1(eval.topic);
-            },
-            Err(e) => fct_parsing_error(e, "internal_request_for_topic_info".to_string()),
         }
     });
 

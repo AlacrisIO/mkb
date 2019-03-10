@@ -7,7 +7,7 @@ pub type HashType = Vec<u8>;
 
 #[derive(Clone)]
 pub struct MultihashType {
-    pub hash_method: multihash::Hash,
+    pub val: multihash::Hash,
 }
 
 
@@ -25,7 +25,7 @@ pub struct TopicDescription {
     pub hash_method: String, // The hashing method used.
 }
 
-#[derive(Clone)]
+#[derive(Clone, Serialize, Deserialize)]
 pub struct TopicDescriptionEncode {
     pub min_interval_insertion_micros: i64, // the number of allowed transactions per seconds. 0 for infinity
     pub capacity_mem: u32, // the total allowed capacity. If 0 for infinity
@@ -80,48 +80,20 @@ fn map_hash_method_to_string(hash_meth: multihash::Hash) -> String {
 impl Serialize for MultihashType {
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error> where S: Serializer,
     {
-        serializer.serialize_str(&map_hash_method_to_string(self.hash_method))
+        serializer.serialize_str(&map_hash_method_to_string(self.val))
     }
 }
-
-
-/*
-impl Deserialize for MultihashType {
-    type Error = Error;
-    fn deserialize<R: io::Read>(reader: &mut R) -> Result<Self, Self::Error> {
-        let eval = read_entries(reader)?;
-        Ok(MultihashType { hash_method: map_string_to_hash_meth(eval)})
-    }
-}
- */
-
-/*
-impl Deserialize for MultihashType {
-//    type Error = Error;
-    fn deserialize<R: io::Read>(reader: &mut R) -> Result<Self, Self::Error> {
-        let estr : String = String::deserialize(reader)?;
-        Ok(MultihashType { hash_method: map_string_to_hash_meth(estr)})
-    }
-}
-*/
-
 
 
 
 impl<'de> Deserialize<'de> for MultihashType {
-//    type Error = Error;
     fn deserialize<D>(deserializer: D) -> Result<MultihashType, D::Error> where D: Deserializer<'de>,
     {
         let estr : String = String::deserialize(deserializer)?;
         match map_string_to_hash_meth(estr) {
-            Some(eval) => Ok(MultihashType { hash_method: eval}),
+            Some(eval) => Ok(MultihashType { val: eval}),
             None => Err(de::Error::custom("Cannot deserialize hash".to_string())),
-/*
-            {println!("Error to process");
-	             process::exit(1);
-            },*/
         }
-        
     }
 }
 
@@ -134,7 +106,7 @@ impl<'de> Deserialize<'de> for MultihashType {
 
 pub fn get_topic_desc_encode(topic_desc: &TopicDescription) -> TopicDescriptionEncode {
     let hash_meth = match map_string_to_hash_meth(topic_desc.hash_method.clone()) {
-        Some(eval) => {MultihashType { hash_method: eval }},
+        Some(eval) => {MultihashType { val: eval }},
         None => {
             println!("Non matching hash algorithm");
 	    process::exit(1);
@@ -148,7 +120,7 @@ pub fn get_topic_desc_encode(topic_desc: &TopicDescription) -> TopicDescriptionE
 }
 
 
-#[derive(Clone, Hash, Serialize, Deserialize)]
+#[derive(Default, Debug, Clone, Hash, Serialize, Deserialize)]
 pub struct ExportTopicInformation {
     pub min_interval_insertion_micros: i64, // the number of allowed transactions per seconds. 0 for infinity
     pub capacity_mem: u32, // the total allowed capacity. If 0 for infinity
@@ -254,7 +226,25 @@ pub struct RequestInfoTopic {
     pub topic: String,
 }
 
+#[derive(Clone, Hash, Serialize, Deserialize)]
+pub struct InternalRequestTopicInfo {
+    pub topic: String,
+}
 
+
+
+
+pub fn get_topic(ereq: &SumTypeRequest) -> Option<String> {
+    use types::SumTypeRequest::*;
+    match ereq {
+        Accountinfo(eacct) => { Some(eacct.topic.clone()) },
+        Depositrequest(edep) => { Some(edep.topic.clone()) },
+	Paymentrequest(epay) => { Some(epay.topic.clone()) },
+	Withdrawrequest(ewith) => { Some(ewith.topic.clone()) },
+	Senddatarequest(esend) => { Some(esend.topic.clone()) },
+        _ => None,
+    }
+}
 
 
 
@@ -270,7 +260,33 @@ pub enum SumTypeRequest {
     Removesubscriber(RemoveSubscriber),
     Addregistrar(AddRegistrar),
     Removeregistrar(RemoveRegistrar),
+    Internalrequesttopicinfo(InternalRequestTopicInfo),
 }
+
+
+
+#[derive(Debug, Clone, Hash, Serialize, Deserialize)]
+pub struct MKBoperation {
+    pub signature: Option<HashType>,
+}
+
+#[derive(Debug, Clone, Hash, Serialize, Deserialize)]
+pub enum SumTypeAnswer {
+    Mkboperation(MKBoperation),
+    Exporttopicinformation(ExportTopicInformation),
+}
+
+#[derive(Debug, Clone, Hash, Serialize, Deserialize)]
+pub struct TypeAnswer {
+    pub result: bool, 
+    pub text: String,
+    pub answer: SumTypeAnswer,
+}
+
+
+
+
+
 
 #[derive(Clone, Hash, Serialize, Deserialize)]
 pub struct ContainerTypeForHash {
@@ -308,12 +324,6 @@ pub struct MessageTransRed {
 
 
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct MKBoperation {
-    pub result: bool, 
-    pub signature: Option<HashType>,
-    pub text: String,
-}
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct SignedString {

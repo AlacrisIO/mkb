@@ -3,6 +3,7 @@ use std::collections::HashSet;
 
 
 use types::*;
+use types::SumTypeAnswer::*;
 use type_init::*;
 use data_structure::*;
 use secp256k1::{Secp256k1, Message};
@@ -88,37 +89,23 @@ pub fn get_ip_plus_port(ip_addr: Vec<u8>, port: u16) -> String {
 }
 
 jsonrpc_client!(pub struct InternalClient {
-    pub fn internal_check(&mut self, transmission: String) -> RpcRequest<String>;
+    pub fn internal_operation(&mut self, transmission: String) -> RpcRequest<String>;
     pub fn registration_info(&mut self, request: String) -> RpcRequest<String>;
-    pub fn internal_request_for_topic_info(&mut self, request: String) -> RpcRequest<String>;
 });
 
-fn check_transaction_kernel(mesg: MessageTrans) -> String {
-    println!("check_transaction_kernel, step 1");
+fn send_transaction_kernel(mesg: MessageTrans) -> String {
+    println!("send_transaction_kernel, step 1");
     let lnk : String = "http://".to_string() + &mesg.ip_plus_port;
-    println!("check_transaction_kernel, step 2");
+    println!("send_transaction_kernel, step 2");
     let transport = HttpTransport::new().standalone().expect("Error in creation of HttpTransport");
-    println!("check_transaction_kernel, step 3");
+    println!("send_transaction_kernel, step 3");
     let transport_handle = transport.handle(&lnk).expect("Error in creation of transport_handle");
-    println!("check_transaction_kernel, step 4");
+    println!("send_transaction_kernel, step 4");
     let mut client = InternalClient::new(transport_handle);
-    println!("check_transaction_kernel, step 5");
-    let result1 = client.internal_check(mesg.message).call().expect("Error in calls of internal_check");
-    println!("check_transaction_kernel, step 6");
+    println!("send_transaction_kernel, step 5");
+    let result1 = client.internal_operation(mesg.message).call().expect("Error in calls of internal_check");
+    println!("send_transaction_kernel, step 6");
     result1
-}
-
-
-pub fn get_topic(ereq: &SumTypeRequest) -> Option<String> {
-    use types::SumTypeRequest::*;
-    match ereq {
-        Accountinfo(eacct) => { Some(eacct.topic.clone()) },
-        Depositrequest(edep) => { Some(edep.topic.clone()) },
-        Paymentrequest(epay) => { Some(epay.topic.clone()) },
-        Withdrawrequest(ewith) => { Some(ewith.topic.clone()) },
-        Senddatarequest(esend) => { Some(esend.topic.clone()) },
-        _ => None,
-    }
 }
 
 
@@ -141,45 +128,45 @@ pub fn send_info_to_registered(mut w_mkb: std::sync::MutexGuard<TopicAllInfo>, e
 
 
 
-fn check_transaction(registrar: SingleRegistrarFinal, ereq: &SumTypeRequest) -> bool {
-    println!("check_transaction, step 1");
+fn send_transaction(registrar: SingleRegistrarFinal, esumreq: &SumTypeRequest) -> Option<TypeAnswer> {
+    println!("send_transaction, step 1");
     let ip_plus_port = get_ip_plus_port(registrar.ip_addr, registrar.port);
-    println!("check_transaction, step 2");
+    println!("send_transaction, step 2");
     //
-    let ereq_str = serde_json::to_string(ereq).expect("Errot in creation of ereq_str");
-    println!("check_transaction, step 3");
-    let mesg = MessageTrans { ip_plus_port: ip_plus_port, message: ereq_str };
-    println!("check_transaction, step 4");
+    let esumreq_str = serde_json::to_string(esumreq).expect("Errot in creation of esumreq_str");
+    println!("send_transaction, step 3");
+    let mesg = MessageTrans { ip_plus_port: ip_plus_port, message: esumreq_str };
+    println!("send_transaction, step 4");
     //
-    let reply = check_transaction_kernel(mesg);
-    println!("check_transaction result={}", reply);
+    let reply = send_transaction_kernel(mesg);
+    println!("send_transaction result={}", reply);
     //
     let reply_b : SignedString = serde_json::from_str(&reply).expect("Error in signedstring");
-    println!("check_transaction, step 5, reply_b.result={}", reply_b.result);
+    println!("send_transaction, step 5, reply_b.result={}", reply_b.result);
     let estr_u8 : &[u8] = reply_b.result.as_bytes();
-    println!("check_transaction, step 6");
+    println!("send_transaction, step 6");
     let estr_u8_b = get_vector_len_thirtytwo(estr_u8);
-    println!("check_transaction, step 7, estr_u8_b={:?}", estr_u8_b);
-    let message = Message::from_slice(&estr_u8_b).expect("check_transaction : Error in creation of message");
-    println!("check_transaction, step 8");
+    println!("send_transaction, step 7, estr_u8_b={:?}", estr_u8_b);
+    let message = Message::from_slice(&estr_u8_b).expect("send_transaction : Error in creation of message");
+    println!("send_transaction, step 8");
     let secp = Secp256k1::new();
-    println!("check_transaction, step 9 reply_b.sig={:?}", reply_b.sig);
-    println!("check_transaction, step 9, |reply_b.sig|={}", reply_b.sig.len());
-    let esign : secp256k1::Signature = secp256k1::Signature::from_der(&reply_b.sig).expect("check_transaction : Error in extraction of signature");
-    println!("check_transaction, step 10");
+    println!("send_transaction, step 9 reply_b.sig={:?}", reply_b.sig);
+    println!("send_transaction, step 9, |reply_b.sig|={}", reply_b.sig.len());
+    let esign : secp256k1::Signature = secp256k1::Signature::from_der(&reply_b.sig).expect("send_transaction : Error in extraction of signature");
+    println!("send_transaction, step 10");
     let test : bool = secp.verify(&message, &esign, &registrar.public_key).is_ok();
-    println!("check_transaction, step 11, test={}", test);
+    println!("send_transaction, step 11, test={}", test);
     if test==false {
-        println!("check_transaction error in the verification");
-        return false;
+        println!("send_transaction: error in the verification of signature");
+        return None;
     }
-    println!("check_transaction, step 12");
+    println!("send_transaction, step 12");
     //
-    let res : Result<MKBoperation,_> = serde_json::from_str(&reply_b.result);
-    println!("check_transaction, step 13");
+    let res : Result<TypeAnswer,_> = serde_json::from_str(&reply_b.result);
+    println!("send_transaction, step 13");
     match res {
-        Ok(eval) => {println!("check_transaction eval={:?}", eval); eval.result},
-        Err(e) => {println!("check_transaction error e={}", e); false},
+        Ok(eval) => {println!("send_transaction: parsing success eval={:?}", eval); Some(eval)},
+        Err(e) => {println!("send_transaction: parsing error e={}", e); None},
     }
 }
 
@@ -190,20 +177,22 @@ fn check_transaction(registrar: SingleRegistrarFinal, ereq: &SumTypeRequest) -> 
 
 pub fn get_topic_info_sgp_kernel(sgp: SimpleGossipProtocol, topic: String) -> Option<ExportTopicInformation> {
     for e_reg in sgp.list_neighbor {
-        println!("get_topic_info_sgp, step 1");
-        let lnk : String = "http://".to_string() + &get_ip_plus_port(e_reg.ip_addr, e_reg.port);
-        println!("get_topic_info_sgp, step 2");
-        let transport = HttpTransport::new().standalone().expect("Error in creation of HttpTransport");
-        println!("get_topic_info_sgp, step 3");
-        let transport_handle = transport.handle(&lnk).expect("Error in creation of transport_handle");
-        println!("get_topic_info_sgp, step 4");
-        let mut client = InternalClient::new(transport_handle);
-        println!("get_topic_info_sgp, step 5");
-        match client.internal_request_for_topic_info(topic.clone()).call() {
-            Err(_) => {},
-            Ok(eval) => {
-                let result1_b : ExportTopicInformation = serde_json::from_str(&eval).expect("Error extracting the string");
-                return Some(result1_b);
+        let eval = InternalRequestTopicInfo { topic: topic.clone()};
+        let esumreq = SumTypeRequest::Internalrequesttopicinfo(eval);
+        let reply = send_transaction(e_reg, &esumreq);
+        match reply {
+            None => {},
+            Some(eval) => {
+                if eval.result {
+                    match eval.answer {
+                        Exporttopicinformation(eval_b) => {
+                            return Some(eval_b);
+                        },
+                        _ => {
+                            println!("That case should not happen at all");
+                        },
+                    }
+                }
             }
         }
     }
@@ -216,13 +205,14 @@ pub fn get_topic_info_sgp_kernel(sgp: SimpleGossipProtocol, topic: String) -> Op
 
 
 
-pub fn check_mkb_operation(common_init: CommonInitFinal, sgp: SimpleGossipProtocol, ereq: SumTypeRequest) -> bool {
+pub fn check_mkb_operation(common_init: CommonInitFinal, sgp: SimpleGossipProtocol, esumreq: SumTypeRequest) -> bool {
     let nb_neigh = sgp.list_neighbor.len();
     let mut nb_true = 1; // because the main registrar is ok with that.
     for e_reg in sgp.list_neighbor {
-        let eval = check_transaction(e_reg, &ereq.clone());
-        if eval {
-            nb_true = nb_true + 1
+        let eval = send_transaction(e_reg, &esumreq.clone());
+        match eval {
+            None => {},
+            Some(_) => {nb_true = nb_true + 1},
         }
     }
     let nb_total_reg = nb_neigh + 1;
