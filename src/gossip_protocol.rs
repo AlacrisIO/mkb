@@ -112,7 +112,7 @@ pub fn send_info_to_registered(mut w_mkb: std::sync::MutexGuard<TopicAllInfo>, e
 
 
 
-fn send_transaction(registrar: SingleRegistrarFinal, esumreq: &SumTypeRequest) -> Option<TypeAnswer> {
+fn send_transaction(registrar: SingleRegistrarFinal, esumreq: &SumTypeRequest) -> Option<TypeAnswerComplete> {
     println!("send_transaction, step 1");
     let ip_plus_port = get_ip_plus_port(registrar.ip_addr, registrar.port);
     println!("send_transaction, step 2");
@@ -139,6 +139,7 @@ fn send_transaction(registrar: SingleRegistrarFinal, esumreq: &SumTypeRequest) -
     let esign : secp256k1::Signature = secp256k1::Signature::from_der(&reply_b.sig).expect("send_transaction : Error in extraction of signature");
     println!("send_transaction, step 10");
     let test : bool = secp.verify(&message, &esign, &registrar.public_key).is_ok();
+    let esign_str : String = bytes_to_hex(secp256k1::Signature::serialize_der(&esign));
     println!("send_transaction, step 11, test={}", test);
     if test==false {
         println!("send_transaction: error in the verification of signature");
@@ -149,7 +150,9 @@ fn send_transaction(registrar: SingleRegistrarFinal, esumreq: &SumTypeRequest) -
     let res : Result<TypeAnswer,_> = serde_json::from_str(&reply_b.result);
     println!("send_transaction, step 13");
     match res {
-        Ok(eval) => {println!("send_transaction: parsing success eval={:?}", eval); Some(eval)},
+        Ok(ans) => {println!("send_transaction: parsing success ans={:?}", ans);
+                     let ans_compl = get_typeanswer_complete(ans, esign_str);
+                     Some(ans_compl)},
         Err(e) => {println!("send_transaction: parsing error e={}", e); None},
     }
 }
@@ -209,11 +212,11 @@ pub fn check_mkb_operation(common_init: CommonInitFinal, sgp: SimpleGossipProtoc
 }
 
 
-pub fn process_request_kernel(mut w_mkb: std::sync::MutexGuard<TopicAllInfo>, my_reg: &SingleRegistrarFinal, esumreq: SumTypeRequest, sgp: SimpleGossipProtocol, common_init: CommonInitFinal) -> Option<String> {
+pub fn process_request_kernel(w_mkb: std::sync::MutexGuard<TopicAllInfo>, my_reg: &SingleRegistrarFinal, esumreq: SumTypeRequest, sgp: SimpleGossipProtocol, common_init: CommonInitFinal) -> Option<String> {
     //
     // The Add registrar require a specfic operation of sending data.
     //
-    match esumreq {
+    match esumreq.clone() {
         Addregistrar(eadd) => {
             let reg_send_opt = get_registrar_by_address(eadd.registrar_name, &common_init);
             match reg_send_opt {
@@ -234,7 +237,7 @@ pub fn process_request_kernel(mut w_mkb: std::sync::MutexGuard<TopicAllInfo>, my
                                 None => {
                                     return Some("Error operation".to_string());
                                 },
-                                Some(ans) => {
+                                Some(_ans) => {
                                     print!("Sending data went ok");
                                 },
                             }

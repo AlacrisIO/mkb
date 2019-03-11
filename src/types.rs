@@ -350,6 +350,17 @@ pub struct TypeAnswer {
     pub answer: SumTypeAnswer,
 }
 
+#[derive(Debug, Clone, Hash, Serialize, Deserialize)]
+pub struct TypeAnswerComplete {
+    pub result: bool, 
+    pub text: String,
+    pub signature: String,
+    pub answer: SumTypeAnswer,
+}
+
+pub fn get_typeanswer_complete(ans: TypeAnswer, sign: String) -> TypeAnswerComplete {
+    TypeAnswerComplete { result: ans.result, text: ans.text, signature: sign, answer: ans.answer}
+}
 
 
 

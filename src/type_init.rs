@@ -105,13 +105,19 @@ pub struct LocalInitFinal {
     pub database_file: String,
 }
 
-fn hex_to_bytes(hex: &str) -> Vec<u8> {
+pub fn hex_to_bytes(hex: &str) -> Vec<u8> {
     hex.as_bytes()
         .chunks(2)
         .filter_map(|b| std::str::from_utf8(b).ok())
         .filter_map(|s| u8::from_str_radix(s, 16).ok())
         .collect()
 }
+
+pub fn bytes_to_hex(ev: Vec<u8>) -> String {
+    hex::encode(ev)
+}
+
+
 
 
 pub fn retrieve_secret_key(ekey: &String) -> secp256k1::key::SecretKey {

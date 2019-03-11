@@ -57,9 +57,10 @@ pub fn inf_loop(dbe: DBE, tot_mkb: TopicAllInfo, common_init: CommonInitFinal, l
         println!("process_request, step 1");
         let w_dbe : std::sync::MutexGuard<DBE> = lk_dbe.lock().unwrap();
         println!("process_request, step 2");
-        let mut w_mkb : std::sync::MutexGuard<TopicAllInfo> = lk_mkb_0.lock().unwrap();
+        let w_mkb : std::sync::MutexGuard<TopicAllInfo> = lk_mkb_0.lock().unwrap();
         println!("process_request, step 3");
-        let res_oper = process_request_kernel(w_mkb, &my_reg_0, esumreq.clone(), sgp, common_init_0.clone());
+//        let res_oper = process_request_kernel(esumreq.clone(), sgp, common_init_0.clone());
+        let res_oper = process_request_kernel(w_mkb, &my_reg_0.clone(), esumreq.clone(), sgp.clone(), common_init_0.clone());
         match res_oper {
             Some(e) => {
                 return Err(JsonRpcError::invalid_params(e));
