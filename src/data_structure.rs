@@ -98,9 +98,9 @@ pub fn query_info(w: std::sync::MutexGuard<TopicAllInfo>, topic: String, name: S
 
 
 pub fn compute_the_hash(topdesc: &TopicDescriptionEncode, econt: &ContainerTypeForHash) -> HashType {
-    let econt_str = serde_json::to_string(econt).unwrap();
+    let econt_str = serde_json::to_string(econt).expect("Error in compute_the_hash");
     let econt_str_u8 = econt_str.as_bytes();
-    let eret = encode(topdesc.hash_method.val, econt_str_u8).unwrap();
+    let eret = encode(topdesc.hash_method.val, econt_str_u8).expect("encoding failed");
     eret
 }
 
@@ -128,7 +128,7 @@ pub fn get_topic_info_wmkb(w_mkb: std::sync::MutexGuard<TopicAllInfo>, my_reg: &
 // If correct, the signature is returned to be checked.
 // If not correct, then the signature is sent in order to be checked.
 pub fn process_operation(mut w_mkb: std::sync::MutexGuard<TopicAllInfo>, my_reg: &SingleRegistrarFinal, esumreq: SumTypeRequest) -> TypeAnswer {
-    let mkb_oper_triv = SumTypeAnswer::Mkboperation(MKBoperation {signature: None});
+    let triv_answer = SumTypeAnswer::Trivialanswer(TrivialAnswer {});
     match esumreq.clone() {
         Topiccreationrequest(etop) => {
             let sgp = Default::default();
@@ -138,7 +138,7 @@ pub fn process_operation(mut w_mkb: std::sync::MutexGuard<TopicAllInfo>, my_reg:
                                               list_subscribed_node: HashSet::<String>::new(), 
                                               all_account_state: HashMap::new()};
             (*w_mkb).all_topic_state.insert(etop.topic, set_of_acct);
-            TypeAnswer { result: true, answer: mkb_oper_triv, text: "success".to_string() }
+            TypeAnswer { result: true, answer: triv_answer, text: "success".to_string() }
         },
         Accountinfo(eacc) => {
             let mut x = (*w_mkb).all_topic_state.get_mut(&eacc.topic);
@@ -150,7 +150,7 @@ pub fn process_operation(mut w_mkb: std::sync::MutexGuard<TopicAllInfo>, my_reg:
                     let mkb_oper = SumTypeAnswer::Mkboperation(MKBoperation {signature: Some(acct_start.hash)});
                     TypeAnswer { result: true, answer: mkb_oper, text: "success".to_string() }
                 },
-                None => TypeAnswer { result: false, answer: mkb_oper_triv, text: "topic absent".to_string() },
+                None => TypeAnswer { result: false, answer: triv_answer, text: "topic absent".to_string() },
             }
         },
         Depositrequest(edep) => {
@@ -171,13 +171,13 @@ pub fn process_operation(mut w_mkb: std::sync::MutexGuard<TopicAllInfo>, my_reg:
                                 func_insert_record(&edep_b.topic_desc, &mut edep_c, new_account_curr)
                             }
                             else {
-                                TypeAnswer { result: false, answer: mkb_oper_triv, text: "hash error".to_string() }
+                                TypeAnswer { result: false, answer: triv_answer, text: "hash error".to_string() }
                             }
                         },
-                        None => TypeAnswer { result: false, answer: mkb_oper_triv, text: "account error".to_string() },
+                        None => TypeAnswer { result: false, answer: triv_answer, text: "account error".to_string() },
                     }
                 },
-                None => TypeAnswer { result: false, answer: mkb_oper_triv, text: "topic error".to_string() },
+                None => TypeAnswer { result: false, answer: triv_answer, text: "topic error".to_string() },
              }
         },
         Paymentrequest(epay) => {
@@ -214,7 +214,7 @@ pub fn process_operation(mut w_mkb: std::sync::MutexGuard<TopicAllInfo>, my_reg:
                         }
                     };
                     if fct_corr(&epay_b, &epay) == false {
-                        return TypeAnswer { result: false, answer: mkb_oper_triv, text: "correctness error".to_string() };
+                        return TypeAnswer { result: false, answer: triv_answer, text: "correctness error".to_string() };
                     }
                     {
                         let mut y = epay_b.all_account_state.get_mut(&epay.account_name_sender);
@@ -254,9 +254,9 @@ pub fn process_operation(mut w_mkb: std::sync::MutexGuard<TopicAllInfo>, my_reg:
                             None => {},
                         }
                     }
-                    return TypeAnswer { result: true, answer: mkb_oper_triv, text: "success".to_string() };
+                    return TypeAnswer { result: true, answer: triv_answer, text: "success".to_string() };
                 },
-                None => TypeAnswer { result: false, answer: mkb_oper_triv, text: "topic error".to_string() },
+                None => TypeAnswer { result: false, answer: triv_answer, text: "topic error".to_string() },
             }
             
         },
@@ -278,13 +278,13 @@ pub fn process_operation(mut w_mkb: std::sync::MutexGuard<TopicAllInfo>, my_reg:
                                 func_insert_record(&ewith_b.topic_desc, &mut ewith_c, new_account_curr)
                             }
                             else {
-                                TypeAnswer { result: false, answer: mkb_oper_triv, text: "amount or hash error".to_string() }
+                                TypeAnswer { result: false, answer: triv_answer, text: "amount or hash error".to_string() }
                             }
                         },
-                        None => TypeAnswer { result: false, answer: mkb_oper_triv, text: "account error".to_string() },
+                        None => TypeAnswer { result: false, answer: triv_answer, text: "account error".to_string() },
                     }
                 },
-                None => TypeAnswer { result: false, answer: mkb_oper_triv, text: "topic error".to_string() },
+                None => TypeAnswer { result: false, answer: triv_answer, text: "topic error".to_string() },
             }
         },
         Senddatarequest(edata) => {
@@ -305,13 +305,13 @@ pub fn process_operation(mut w_mkb: std::sync::MutexGuard<TopicAllInfo>, my_reg:
                                 func_insert_record(&edata_b.topic_desc, &mut edep_c, new_account_curr)
                             }
                             else {
-                                TypeAnswer { result: false, answer: mkb_oper_triv, text: "hash error".to_string() }
+                                TypeAnswer { result: false, answer: triv_answer, text: "hash error".to_string() }
                             }
                         },
-                        None => TypeAnswer { result: false, answer: mkb_oper_triv, text: "account error".to_string() },
+                        None => TypeAnswer { result: false, answer: triv_answer, text: "account error".to_string() },
                     }
                 },
-                None => TypeAnswer { result: false, answer: mkb_oper_triv, text: "topic error".to_string() },
+                None => TypeAnswer { result: false, answer: triv_answer, text: "topic error".to_string() },
              }
         },
         Addsubscriber(eadd) => {
@@ -320,14 +320,14 @@ pub fn process_operation(mut w_mkb: std::sync::MutexGuard<TopicAllInfo>, my_reg:
                 Some(mut etop_b) => {
                     let test = etop_b.list_subscribed_node.contains(&eadd.subscriber_name.clone());
                     match test {
-                        true => TypeAnswer { result: false, answer: mkb_oper_triv, text: "already_registered".to_string() },
+                        true => TypeAnswer { result: false, answer: triv_answer, text: "already_registered".to_string() },
                         false => {
                             etop_b.list_subscribed_node.insert(eadd.subscriber_name);
-                            TypeAnswer{result: true, answer: mkb_oper_triv, text: "successful insertion".to_string()}
+                            TypeAnswer{result: true, answer: triv_answer, text: "successful insertion".to_string()}
                         },
                     }
                 },
-                None => TypeAnswer { result: false, answer: mkb_oper_triv, text: "topic error".to_string() },
+                None => TypeAnswer { result: false, answer: triv_answer, text: "topic error".to_string() },
             }
             // TODO: We need a different channel for this kind of operation
             // which are 
@@ -338,14 +338,14 @@ pub fn process_operation(mut w_mkb: std::sync::MutexGuard<TopicAllInfo>, my_reg:
                 Some(mut etop_b) => {
                     let test = etop_b.list_subscribed_node.contains(&eremove.subscriber_name);
                     match test {
-                        false => TypeAnswer{result: false, answer: mkb_oper_triv, text: "not_registered".to_string()},
+                        false => TypeAnswer{result: false, answer: triv_answer, text: "not_registered".to_string()},
                         true => {
                             etop_b.list_subscribed_node.remove(&eremove.subscriber_name);
-                            TypeAnswer{result: true, answer: mkb_oper_triv, text: "successful removal".to_string()}
+                            TypeAnswer{result: true, answer: triv_answer, text: "successful removal".to_string()}
                         },
                     }
                 },
-                None => TypeAnswer { result: false, answer: mkb_oper_triv, text: "topic error".to_string() },
+                None => TypeAnswer { result: false, answer: triv_answer, text: "topic error".to_string() },
             }
         },
         Addregistrar(ereg) => {
@@ -354,22 +354,22 @@ pub fn process_operation(mut w_mkb: std::sync::MutexGuard<TopicAllInfo>, my_reg:
                 Some(mut etop_b) => {
                     let test = etop_b.list_active_reg.contains(&ereg.registrar_name.clone());
                     match test {
-                        true => TypeAnswer { result: false, answer: mkb_oper_triv, text: "already_registered".to_string() },
+                        true => TypeAnswer { result: false, answer: triv_answer, text: "already_registered".to_string() },
                         false => {
                             etop_b.list_active_reg.insert(ereg.registrar_name);
-                            TypeAnswer{result: true, answer: mkb_oper_triv, text: "successful subscriber insertion".to_string()}
+                            TypeAnswer{result: true, answer: triv_answer, text: "successful subscriber insertion".to_string()}
                         },
                     }
                 },
-                None => TypeAnswer { result: false, answer: mkb_oper_triv, text: "topic error".to_string() },
+                None => TypeAnswer { result: false, answer: triv_answer, text: "topic error".to_string() },
             }
         },
         Removeregistrar(ereg) => {
             if ereg.registrar_name == my_reg.name {
                 let x = (*w_mkb).all_topic_state.remove(&ereg.topic);
                 match x {
-                    Some(_) => TypeAnswer{result: false, answer: mkb_oper_triv, text: "error in registrar removal".to_string()},
-                    None => TypeAnswer{result: true, answer: mkb_oper_triv, text: "successful registrar removal".to_string()}
+                    Some(_) => TypeAnswer{result: false, answer: triv_answer, text: "error in registrar removal".to_string()},
+                    None => TypeAnswer{result: true, answer: triv_answer, text: "successful registrar removal".to_string()}
                 }
             }
             else {
@@ -378,14 +378,14 @@ pub fn process_operation(mut w_mkb: std::sync::MutexGuard<TopicAllInfo>, my_reg:
                     Some(mut etop_b) => {
                         let test = etop_b.list_active_reg.contains(&ereg.registrar_name);
                         match test {
-                            false => TypeAnswer{result: false, answer: mkb_oper_triv, text: "not_registered".to_string()},
+                            false => TypeAnswer{result: false, answer: triv_answer, text: "not_registered".to_string()},
                             true => {
                                 etop_b.list_active_reg.remove(&ereg.registrar_name);
-                                TypeAnswer{result: true, answer: mkb_oper_triv, text: "successful registrar removal".to_string()}
+                                TypeAnswer{result: true, answer: triv_answer, text: "successful registrar removal".to_string()}
                             },
                         }
                     },
-                    None => TypeAnswer { result: false, answer: mkb_oper_triv, text: "topic error".to_string() },
+                    None => TypeAnswer { result: false, answer: triv_answer, text: "topic error".to_string() },
                 }
             }
         },
@@ -406,6 +406,29 @@ pub fn process_operation(mut w_mkb: std::sync::MutexGuard<TopicAllInfo>, my_reg:
             (*w_mkb).all_topic_state.insert(etopicexport.topic, etopicexport.topic_info);
             let triv_ans = SumTypeAnswer::Trivialanswer(TrivialAnswer{});
             TypeAnswer { result: true, answer: triv_ans, text: "success".to_string() }
+        },
+        Retrievehashforvrf(eret) => {
+            let x = (*w_mkb).all_topic_state.get(&eret.topic);
+            match x {
+                None => {
+                    TypeAnswer { result: false, answer: triv_answer, text: "topic error".to_string() }
+                },
+                Some(eval) => {
+                    let mut ev = Vec::<SinglePairUserHash>::new();
+                    for (name, seq) in &eval.all_account_state {
+                        let elen = seq.len();
+                        let esing = SinglePairUserHash { name: name.to_string(), hash: seq[elen-1].hash.clone() };
+                        ev.push(esing);
+                    }
+                    let econt = ComputeHashOfTopic { topic: eret.topic, topic_desc: eval.topic_desc.clone(), list_pair: ev };
+                    let econt_str = serde_json::to_string(&econt).expect("error in serialization");
+                    let econt_str_u8 = econt_str.as_bytes();
+                    let eret = encode(eval.topic_desc.hash_method.val, econt_str_u8).unwrap();
+                    let eret_str = bytes_to_hex(eret);
+                    let ans = SumTypeAnswer::Answerhashforvrf(AnswerHashForVRF { hash: eret_str});
+                    TypeAnswer { result: true, answer: ans, text: "successful topic extraction".to_string() }
+                },
+            }
         },
     }
 }

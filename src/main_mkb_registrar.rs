@@ -89,10 +89,6 @@ fn main() {
     println!("We have opened db");
 
     let tot_mkb : types::TopicAllInfo = Default::default();
-    //data_structure::TopicAllInfo{all_account_state:{}};
-    
-//    let mut allmerkl = merkle_cbt::MerkleTree::<numext_fixed_hash::H256>::new();
-//    println!("We have the merkle database");
     
     infinite_loop::inf_loop(dbe, tot_mkb, common_init, local_init);
     println!("Normal termination of the MKB");

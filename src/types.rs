@@ -40,6 +40,23 @@ pub struct TopicAllInfo {
 }
 
 
+
+#[derive(Serialize)]
+pub struct SinglePairUserHash {
+    pub name: String,
+    pub hash: HashType,
+}
+
+
+#[derive(Serialize)]
+pub struct ComputeHashOfTopic {
+    pub topic: String,
+    pub topic_desc: TopicDescriptionEncode,
+    pub list_pair: Vec<SinglePairUserHash>,
+}
+
+
+
 // Gossip protocol
 
 #[derive(Default, Debug, Clone, Serialize, Deserialize)]
@@ -287,8 +304,20 @@ pub struct TopicExportation {
     pub topic_info: FullTopicData,
 }
 
+#[derive(Clone, Serialize, Deserialize)]
+pub struct RetrieveHashForVRF {
+    pub topic: String,
+}
+
+
 #[derive(Debug, Clone, Hash, Serialize, Deserialize)]
 pub struct TrivialAnswer {
+}
+
+
+#[derive(Debug, Clone, Hash, Serialize, Deserialize)]
+pub struct AnswerHashForVRF {
+    pub hash: String,
 }
 
 
@@ -327,6 +356,7 @@ pub enum SumTypeRequest {
     Removeregistrar(RemoveRegistrar),
     Internalrequesttopicinfo(InternalRequestTopicInfo),
     Fulltopicexport(TopicExportation),
+    Retrievehashforvrf(RetrieveHashForVRF),
 }
 
 
@@ -340,6 +370,7 @@ pub struct MKBoperation {
 pub enum SumTypeAnswer {
     Mkboperation(MKBoperation),
     Exporttopicinformation(ExportTopicInformation),
+    Answerhashforvrf(AnswerHashForVRF),
     Trivialanswer(TrivialAnswer),
 }
 
@@ -371,8 +402,6 @@ pub struct ContainerTypeForHash {
     pub hash: HashType,
     pub esum: SumTypeRequest,
 }
-
-
 
 #[derive(Clone, Serialize, Deserialize)]
 pub struct TransmissionRequest {
