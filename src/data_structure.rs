@@ -80,8 +80,8 @@ pub fn func_insert_record(topic_desc: &TopicDescriptionEncode, listval: &mut Vec
 
 
 
-pub fn query_info(w: std::sync::MutexGuard<TopicAllInfo>, topic: String, name: String) -> Result<AccountCurrent, String> {
-    let iter = (*w).all_topic_state.get(&topic);
+pub fn query_info(w_mkb: std::sync::MutexGuard<TopicAllInfo>, topic: String, name: String) -> Result<AccountCurrent, String> {
+    let iter = (*w_mkb).all_topic_state.get(&topic);
     match iter {
         None => Err("Topic is not existent here".to_string()),
         Some(eval) => {

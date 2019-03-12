@@ -45,12 +45,10 @@ pub fn inf_loop(dbe: DBE, tot_mkb: TopicAllInfo, common_init: CommonInitFinal, l
     let lk_dbe = Arc::new(Mutex::<DBE>::new(dbe));
     let lk_mkb = Arc::new(Mutex::<TopicAllInfo>::new(tot_mkb));
     let lk_mkb_0 = lk_mkb.clone();
-    let lk_mkb_1 = lk_mkb.clone();
     let lk_mkb_2 = lk_mkb.clone();
     let lk_mkb_3 = lk_mkb.clone();
     let lk_mkb_4 = lk_mkb.clone();
     let sgp = compute_simple_gossip_protocol(&common_init_0, my_reg.address.clone());
-//    let sgp_0 = sgp.clone();
     let sgp_1 = sgp.clone();
 
     let process_request = move |esumreq: SumTypeRequest| -> Result<serde_json::Value> {
@@ -59,7 +57,6 @@ pub fn inf_loop(dbe: DBE, tot_mkb: TopicAllInfo, common_init: CommonInitFinal, l
         println!("process_request, step 2");
         let mut w_mkb : std::sync::MutexGuard<TopicAllInfo> = lk_mkb_0.lock().unwrap();
         println!("process_request, step 3");
-//        let res_oper = process_request_kernel(esumreq.clone(), sgp, common_init_0.clone());
         let res_oper = process_request_kernel(&mut w_mkb, &my_reg_0.clone(), esumreq.clone(), sgp.clone(), common_init_0.clone());
         match res_oper {
             Some(e) => {
@@ -72,8 +69,7 @@ pub fn inf_loop(dbe: DBE, tot_mkb: TopicAllInfo, common_init: CommonInitFinal, l
         println!("process_request, step 8");
         match get_topic(&esumreq.clone()) {
             Some(etopic) => {
-                let w_mkb_1 : std::sync::MutexGuard<TopicAllInfo> = lk_mkb_1.lock().unwrap();
-                send_info_to_registered(w_mkb_1, &etopic, &esumreq);
+                send_info_to_registered(w_mkb, &etopic, &esumreq);
             },
             None => {},
         }
