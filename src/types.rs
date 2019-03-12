@@ -1,4 +1,4 @@
-use std::process;
+//use std::process;
 //use std::io;
 //use serde::Deserialize;
 use serde::*;
@@ -6,7 +6,9 @@ use type_init::*;
 use chrono::prelude::*;
 use std::collections::{HashMap, HashSet};
 pub type HashType = Vec<u8>;
-
+use std::fmt;
+use std::fmt::Debug;
+use std::fmt::Formatter;
 
 #[derive(Clone)]
 pub struct MultihashType {
@@ -82,22 +84,16 @@ pub struct GossipProtocol {
 
 // RPC request from the users
 
-#[derive(Clone, Default, Hash, Serialize, Deserialize)]
-pub struct TopicDescription {
+#[derive(Clone, Debug, Default, Serialize, Deserialize)]
+pub struct TopicDescriptionEncode {
     pub topic: String, // the name of the topic
     pub min_interval_insertion_micros: i64, // the number of allowed transactions per seconds. 0 for infinity
-    pub capacity_mem: u32, // the total allowed capacity. If 0 for infinity
+    pub total_capacity_mem: u64, // the total allowed capacity. If 0 for infinity
+    pub instant_capacity_mem: u64, // the total allowed capacity. If 0 for infinity
+    pub total_throughput_per_min: u64, // 
+    pub total_throughput_per_sec: u64, // 
     pub retention_time: i64, // the retention policy of data. If 0, then not used.
-    pub retention_size: u32, // the maximum number of versions are kept. If 0 then all are used.
-    pub hash_method: String, // The hashing method used.
-}
-
-#[derive(Clone, Serialize, Deserialize)]
-pub struct TopicDescriptionEncode {
-    pub min_interval_insertion_micros: i64, // the number of allowed transactions per seconds. 0 for infinity
-    pub capacity_mem: u32, // the total allowed capacity. If 0 for infinity
-    pub retention_time: i64, // the retention policy of data. If 0, then not used.
-    pub retention_size: u32, // the maximum number of versions are kept. If 0 then all are used.
+    pub retention_size: u32, // the maximum number of versions are kept. If 0 then all are kept.
     pub hash_method: MultihashType, // The hashing method used.
 }
 
@@ -164,35 +160,26 @@ impl<'de> Deserialize<'de> for MultihashType {
     }
 }
 
+impl Default for MultihashType {
+    fn default() -> MultihashType {
+        MultihashType { val: multihash::Hash::Keccak256 }
+    }
+}
 
+impl Debug for MultihashType {
+    fn fmt(&self, formatter: &mut Formatter) -> fmt::Result {
+        write!(formatter, "Node({})", map_hash_method_to_string(self.val))
+    }
 
-
-
-
-
-
-pub fn get_topic_desc_encode(topic_desc: &TopicDescription) -> TopicDescriptionEncode {
-    let hash_meth = match map_string_to_hash_meth(topic_desc.hash_method.clone()) {
-        Some(eval) => {MultihashType { val: eval }},
-        None => {
-            println!("Non matching hash algorithm");
-	    process::exit(1);
-        },
-    };
-    TopicDescriptionEncode{min_interval_insertion_micros: topic_desc.min_interval_insertion_micros,
-                           capacity_mem: topic_desc.capacity_mem,
-                           retention_time: topic_desc.retention_time,
-                           retention_size: topic_desc.retention_size,
-                           hash_method: hash_meth}
 }
 
 
-#[derive(Default, Debug, Clone, Hash, Serialize, Deserialize)]
+
+
+
+#[derive(Default, Debug, Clone, Serialize, Deserialize)]
 pub struct ExportTopicInformation {
-    pub min_interval_insertion_micros: i64, // the number of allowed transactions per seconds. 0 for infinity
-    pub capacity_mem: u32, // the total allowed capacity. If 0 for infinity
-    pub retention_time: i64, // the retention policy of data. If 0, then not used.
-    pub retention_size: u32, // the maximum number of versions are kept. If 0 then all are used.
+    pub topic_desc: TopicDescriptionEncode,
     pub one_registrar_ip_addr: Vec<u8>,
     pub one_registrar_port: u16
 }
@@ -326,6 +313,10 @@ pub struct AnswerHashForVRF {
 
 
 
+
+
+
+
 pub fn get_topic(ereq: &SumTypeRequest) -> Option<String> {
     use types::SumTypeRequest::*;
     match ereq {
@@ -344,7 +335,7 @@ pub fn get_topic(ereq: &SumTypeRequest) -> Option<String> {
 
 #[derive(Clone, Serialize, Deserialize)]
 pub enum SumTypeRequest {
-    Topiccreationrequest(TopicDescription),
+    Topiccreationrequest(TopicDescriptionEncode),
     Accountinfo(AccountInfo),
     Depositrequest(DepositRequest),
     Paymentrequest(PaymentRequest),
@@ -366,7 +357,7 @@ pub struct MKBoperation {
     pub signature: Option<HashType>,
 }
 
-#[derive(Debug, Clone, Hash, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub enum SumTypeAnswer {
     Mkboperation(MKBoperation),
     Exporttopicinformation(ExportTopicInformation),
@@ -374,14 +365,14 @@ pub enum SumTypeAnswer {
     Trivialanswer(TrivialAnswer),
 }
 
-#[derive(Debug, Clone, Hash, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct TypeAnswer {
     pub result: bool, 
     pub text: String,
     pub answer: SumTypeAnswer,
 }
 
-#[derive(Debug, Clone, Hash, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct TypeAnswerComplete {
     pub result: bool, 
     pub text: String,
@@ -391,6 +382,47 @@ pub struct TypeAnswerComplete {
 
 pub fn get_typeanswer_complete(ans: TypeAnswer, sign: String) -> TypeAnswerComplete {
     TypeAnswerComplete { result: ans.result, text: ans.text, signature: sign, answer: ans.answer}
+}
+
+
+#[derive(Debug, Clone, Hash, Serialize, Deserialize)]
+pub struct NoTopicOper {
+    pub constness: bool,
+}
+
+#[derive(Debug, Clone, Hash, Serialize, Deserialize)]
+pub struct TopicOper {
+    pub topic: String,
+    pub constness: bool,
+}
+
+
+#[derive(Debug, Clone, Hash, Serialize, Deserialize)]
+pub enum GossipOperationKind {
+    Globalgossip(), // sending to all the other registrars
+    Topicgossip(String), // sending to the registrars of the topic
+    Nogossip(), // no sending to other registrars
+}
+
+
+
+pub fn get_topic_symbolic(ereq: &SumTypeRequest) -> GossipOperationKind {
+    use types::SumTypeRequest::*;
+    match ereq {
+        Topiccreationrequest(_) => { GossipOperationKind::Nogossip()},
+        Accountinfo(eacct) => { GossipOperationKind::Topicgossip(eacct.topic.clone()) },
+        Depositrequest(edep) => { GossipOperationKind::Topicgossip(edep.topic.clone()) },
+        Paymentrequest(epay) => { GossipOperationKind::Topicgossip(epay.topic.clone()) },
+        Withdrawrequest(ewith) => { GossipOperationKind::Topicgossip(ewith.topic.clone()) },
+        Senddatarequest(esend) => { GossipOperationKind::Topicgossip(esend.topic.clone()) },
+        Addsubscriber(eadd) => { GossipOperationKind::Topicgossip(eadd.topic.clone()) },
+        Removesubscriber(erem) => { GossipOperationKind::Topicgossip(erem.topic.clone()) },
+        Addregistrar(eadd) => { GossipOperationKind::Topicgossip(eadd.topic.clone()) },
+        Removeregistrar(erem) => { GossipOperationKind::Topicgossip(erem.topic.clone()) },
+        Internalrequesttopicinfo(ereq) => { GossipOperationKind::Topicgossip(ereq.topic.clone()) },
+        Fulltopicexport(efte) => { GossipOperationKind::Topicgossip(efte.topic.clone()) },
+        Retrievehashforvrf(erhfv) => { GossipOperationKind::Topicgossip(erhfv.topic.clone()) },
+    }
 }
 
 

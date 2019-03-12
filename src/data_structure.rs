@@ -34,7 +34,7 @@ pub fn func_insert_record(topic_desc: &TopicDescriptionEncode, listval: &mut Vec
     }
     listval.push(eval.clone());
     let len = listval.len();
-    if topic_desc.capacity_mem > 0 || topic_desc.retention_time > 0 || topic_desc.retention_size > 0 {
+    if topic_desc.total_capacity_mem > 0 || topic_desc.retention_time > 0 || topic_desc.retention_size > 0 {
         let upper_bound_retention_size = if topic_desc.retention_size > 0 {topic_desc.retention_size as usize} else {len};
         let upper_bound_retention_time = if topic_desc.retention_time > 0 {
             let mut i_level = 0;
@@ -53,13 +53,13 @@ pub fn func_insert_record(topic_desc: &TopicDescriptionEncode, listval: &mut Vec
             }
             i_level
         } else {len};
-        let upper_bound_capacity_mem = if topic_desc.capacity_mem > 0 {
+        let upper_bound_capacity_mem = if topic_desc.total_capacity_mem > 0 {
             let mut tot_size = 0;
             let mut i_level = 0;
             while i_level<len {
                 let len = listval[len - 1 - i_level].data_current.len();
                 tot_size += len;
-                if tot_size > (topic_desc.capacity_mem as usize) {break;}
+                if tot_size > (topic_desc.total_capacity_mem as usize) {break;}
                 i_level += 1;
             }
             i_level
@@ -106,15 +106,12 @@ pub fn compute_the_hash(topdesc: &TopicDescriptionEncode, econt: &ContainerTypeF
 }
 
 
-pub fn get_topic_info_wmkb(w_mkb: std::sync::MutexGuard<TopicAllInfo>, my_reg: &SingleRegistrarFinal, topic: &String) -> Option<ExportTopicInformation> {
+pub fn get_topic_info_wmkb(w_mkb: &std::sync::MutexGuard<TopicAllInfo>, my_reg: &SingleRegistrarFinal, topic: &String) -> Option<ExportTopicInformation> {
     let x = (*w_mkb).all_topic_state.get(topic);
     match x {
         Some(eval) => {
             Some(ExportTopicInformation {
-                min_interval_insertion_micros: eval.topic_desc.min_interval_insertion_micros,
-                capacity_mem: eval.topic_desc.capacity_mem,
-                retention_time: eval.topic_desc.retention_time,
-                retention_size: eval.topic_desc.retention_size,
+                topic_desc: eval.topic_desc.clone(),
                 one_registrar_ip_addr: my_reg.ip_addr.clone(),
                 one_registrar_port: my_reg.port})
         },
@@ -128,12 +125,12 @@ pub fn get_topic_info_wmkb(w_mkb: std::sync::MutexGuard<TopicAllInfo>, my_reg: &
 // This function takes the request, check for correctness.
 // If correct, the signature is returned to be checked.
 // If not correct, then the signature is sent in order to be checked.
-pub fn process_operation(mut w_mkb: std::sync::MutexGuard<TopicAllInfo>, common_init: CommonInitFinal, my_reg: &SingleRegistrarFinal, esumreq: SumTypeRequest) -> TypeAnswer {
+pub fn process_operation(w_mkb: &mut std::sync::MutexGuard<TopicAllInfo>, common_init: CommonInitFinal, my_reg: &SingleRegistrarFinal, esumreq: SumTypeRequest) -> TypeAnswer {
     let triv_answer = SumTypeAnswer::Trivialanswer(TrivialAnswer {});
     match esumreq.clone() {
         Topiccreationrequest(etop) => {
             let sgp = Default::default();
-            let set_of_acct = FullTopicData { topic_desc: get_topic_desc_encode(&etop),
+            let set_of_acct = FullTopicData { topic_desc: etop.clone(),
                                               list_active_reg: HashSet::<String>::new(),
                                               sgp: sgp,
                                               list_subscribed_node: HashSet::<String>::new(), 

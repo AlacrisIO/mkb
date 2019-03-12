@@ -57,10 +57,10 @@ pub fn inf_loop(dbe: DBE, tot_mkb: TopicAllInfo, common_init: CommonInitFinal, l
         println!("process_request, step 1");
         let w_dbe : std::sync::MutexGuard<DBE> = lk_dbe.lock().unwrap();
         println!("process_request, step 2");
-        let w_mkb : std::sync::MutexGuard<TopicAllInfo> = lk_mkb_0.lock().unwrap();
+        let mut w_mkb : std::sync::MutexGuard<TopicAllInfo> = lk_mkb_0.lock().unwrap();
         println!("process_request, step 3");
 //        let res_oper = process_request_kernel(esumreq.clone(), sgp, common_init_0.clone());
-        let res_oper = process_request_kernel(w_mkb, &my_reg_0.clone(), esumreq.clone(), sgp.clone(), common_init_0.clone());
+        let res_oper = process_request_kernel(&mut w_mkb, &my_reg_0.clone(), esumreq.clone(), sgp.clone(), common_init_0.clone());
         match res_oper {
             Some(e) => {
                 return Err(JsonRpcError::invalid_params(e));
@@ -72,8 +72,8 @@ pub fn inf_loop(dbe: DBE, tot_mkb: TopicAllInfo, common_init: CommonInitFinal, l
         println!("process_request, step 8");
         match get_topic(&esumreq.clone()) {
             Some(etopic) => {
-                let w_mkb_3 : std::sync::MutexGuard<TopicAllInfo> = lk_mkb_1.lock().unwrap();
-                send_info_to_registered(w_mkb_3, &etopic, &esumreq);
+                let w_mkb_1 : std::sync::MutexGuard<TopicAllInfo> = lk_mkb_1.lock().unwrap();
+                send_info_to_registered(w_mkb_1, &etopic, &esumreq);
             },
             None => {},
         }
@@ -105,7 +105,7 @@ pub fn inf_loop(dbe: DBE, tot_mkb: TopicAllInfo, common_init: CommonInitFinal, l
     };
     let get_topic_info = move |topic: String| -> Result<serde_json::Value> {
         let w_mkb : std::sync::MutexGuard<TopicAllInfo> = lk_mkb_3.lock().unwrap();
-        let eval = get_topic_info_wmkb(w_mkb, &my_reg_2, &topic);
+        let eval = get_topic_info_wmkb(&w_mkb, &my_reg_2, &topic);
         match eval {
             Some(eval_b) => Ok(Value::String(serde_json::to_string(&eval_b).unwrap())),
             None => Err(JsonRpcError::invalid_params("not present topic".to_string())),
@@ -120,9 +120,7 @@ pub fn inf_loop(dbe: DBE, tot_mkb: TopicAllInfo, common_init: CommonInitFinal, l
         }
     };
 
-    
-    
-    let signature_oper_secp256k1 = move |estr: &String | -> SignedString {
+    let signature_oper_secp256k1 = move |estr: &String| -> SignedString {
         println!("signature_oper_secp256k1, step 1, estr={}", estr);
         let estr_u8 : &[u8] = estr.as_bytes();
         println!("signature_oper_secp256k1, step 2, estr_u8={:?}", estr_u8);
@@ -165,7 +163,7 @@ pub fn inf_loop(dbe: DBE, tot_mkb: TopicAllInfo, common_init: CommonInitFinal, l
     });
     io.add_method("topic_creation", move |params: Params| {
         println!("Processing a topic_creation_request command");
-        match params.parse::<TopicDescription>() {
+        match params.parse::<TopicDescriptionEncode>() {
             Ok(eval) => {
                 let esumreq = SumTypeRequest::Topiccreationrequest(eval);
                 return process_request_0(esumreq);
@@ -327,8 +325,8 @@ pub fn inf_loop(dbe: DBE, tot_mkb: TopicAllInfo, common_init: CommonInitFinal, l
                 println!("parsing eval, step 1");
                 let esumreq = serde_json::from_str(&eval.message).unwrap();
                 println!("parsing eval, step 2");
-                let w_mkb : std::sync::MutexGuard<TopicAllInfo> = lk_mkb_4.lock().unwrap();
-                let res_oper = process_operation(w_mkb, common_init.clone(), &my_reg, esumreq);
+                let mut w_mkb : std::sync::MutexGuard<TopicAllInfo> = lk_mkb_4.lock().unwrap();
+                let res_oper = process_operation(&mut w_mkb, common_init.clone(), &my_reg, esumreq);
                 println!("parsing eval, step 3");
                 return fct_signature(&res_oper);
             },

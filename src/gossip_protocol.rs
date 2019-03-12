@@ -213,7 +213,7 @@ pub fn check_mkb_operation(common_init: CommonInitFinal, sgp: SimpleGossipProtoc
 }
 
 
-pub fn process_request_kernel(w_mkb: std::sync::MutexGuard<TopicAllInfo>, my_reg: &SingleRegistrarFinal, esumreq: SumTypeRequest, sgp: SimpleGossipProtocol, common_init: CommonInitFinal) -> Option<String> {
+pub fn process_request_kernel(w_mkb: &mut std::sync::MutexGuard<TopicAllInfo>, my_reg: &SingleRegistrarFinal, esumreq: SumTypeRequest, sgp: SimpleGossipProtocol, common_init: CommonInitFinal) -> Option<String> {
     //
     // The Add registrar require a specfic operation of sending data.
     //
@@ -258,11 +258,34 @@ pub fn process_request_kernel(w_mkb: std::sync::MutexGuard<TopicAllInfo>, my_reg
     if res_oper.result == false {
         return Some(res_oper.text);
     }
-    println!("process_request, step 5");
-    let test = check_mkb_operation(common_init.clone(), sgp, esumreq.clone());
-    println!("process_request, step 6");
-    if test == false {
-        return Some("Error with the other registrars".to_string());
+    match get_topic_symbolic(&esumreq.clone()) {
+        GossipOperationKind::Nogossip() => {
+            println!("GossipOperation::Nogossip, so nothing happens");
+        },
+        GossipOperationKind::Topicgossip(eval) => {
+            let x = (*w_mkb).all_topic_state.get(&eval);
+            match x {
+                None => {
+                    return Some("Topic missing (but maybe error should be detected earlier)".to_string());
+                },
+                Some(eval) => {
+                    println!("process_request, step 5");
+                    let test = check_mkb_operation(common_init.clone(), eval.sgp.clone(), esumreq.clone());
+                    println!("process_request, step 6");
+                    if test == false {
+                        return Some("Error with the other registrars".to_string());
+                    }
+                },
+            }
+        },
+        GossipOperationKind::Globalgossip() => {
+            println!("process_request, global gossip, step 1");
+            let test = check_mkb_operation(common_init.clone(), sgp, esumreq.clone());
+            println!("process_request, global gossip, step 2");
+            if test == false {
+                return Some("Error with the other registrars".to_string());
+            }
+        },
     }
     None
 }
