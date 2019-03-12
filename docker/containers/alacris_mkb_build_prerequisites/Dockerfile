@@ -2,6 +2,10 @@ FROM debian:stretch
 
 WORKDIR /root
 
+# Add non-root user
+RUN groupadd -g 1100 appuser && \
+    useradd -r -u 1100 -g appuser appuser
+
 # common packages
 RUN apt-get update && \
     apt-get install --no-install-recommends -y \
