@@ -6,6 +6,7 @@
 
 use types::*;
 use types::SumTypeRequest::*;
+use gossip_protocol::*;
 use std::collections::HashMap;
 use std::collections::HashSet;
 use multihash::{encode};
@@ -127,7 +128,7 @@ pub fn get_topic_info_wmkb(w_mkb: std::sync::MutexGuard<TopicAllInfo>, my_reg: &
 // This function takes the request, check for correctness.
 // If correct, the signature is returned to be checked.
 // If not correct, then the signature is sent in order to be checked.
-pub fn process_operation(mut w_mkb: std::sync::MutexGuard<TopicAllInfo>, my_reg: &SingleRegistrarFinal, esumreq: SumTypeRequest) -> TypeAnswer {
+pub fn process_operation(mut w_mkb: std::sync::MutexGuard<TopicAllInfo>, common_init: CommonInitFinal, my_reg: &SingleRegistrarFinal, esumreq: SumTypeRequest) -> TypeAnswer {
     let triv_answer = SumTypeAnswer::Trivialanswer(TrivialAnswer {});
     match esumreq.clone() {
         Topiccreationrequest(etop) => {
@@ -357,6 +358,7 @@ pub fn process_operation(mut w_mkb: std::sync::MutexGuard<TopicAllInfo>, my_reg:
                         true => TypeAnswer { result: false, answer: triv_answer, text: "already_registered".to_string() },
                         false => {
                             etop_b.list_active_reg.insert(ereg.registrar_name);
+                            etop_b.sgp = compute_simple_gossip_protocol_topic(&common_init, my_reg.address.clone(), etop_b.list_active_reg.clone());
                             TypeAnswer{result: true, answer: triv_answer, text: "successful subscriber insertion".to_string()}
                         },
                     }
@@ -381,6 +383,7 @@ pub fn process_operation(mut w_mkb: std::sync::MutexGuard<TopicAllInfo>, my_reg:
                             false => TypeAnswer{result: false, answer: triv_answer, text: "not_registered".to_string()},
                             true => {
                                 etop_b.list_active_reg.remove(&ereg.registrar_name);
+                                etop_b.sgp = compute_simple_gossip_protocol_topic(&common_init, my_reg.address.clone(), etop_b.list_active_reg.clone());
                                 TypeAnswer{result: true, answer: triv_answer, text: "successful registrar removal".to_string()}
                             },
                         }

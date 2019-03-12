@@ -5,6 +5,7 @@ use types::*;
 use types::SumTypeAnswer::*;
 use types::SumTypeRequest::*;
 use type_init::*;
+use multihash::{encode};
 use data_structure::*;
 use secp256k1::{Secp256k1, Message};
 use jsonrpc_client_http::HttpTransport;
@@ -252,7 +253,7 @@ pub fn process_request_kernel(w_mkb: std::sync::MutexGuard<TopicAllInfo>, my_reg
     //
     // The other operations
     //
-    let res_oper = process_operation(w_mkb, my_reg, esumreq.clone());
+    let res_oper = process_operation(w_mkb, common_init.clone(), my_reg, esumreq.clone());
     println!("process_request, step 4");
     if res_oper.result == false {
         return Some(res_oper.text);
@@ -270,15 +271,5 @@ pub fn process_request_kernel(w_mkb: std::sync::MutexGuard<TopicAllInfo>, my_reg
 
 
 pub fn get_vector_len_thirtytwo(v: &[u8]) -> Vec<u8> {
-    let len = v.len();
-    let mut vret = vec![0x00; 32];
-    let mut pos = 0;
-    for i in 0..len {
-	vret[pos] += v[i];
-	pos += 1;
-	if pos==32 {
-            pos=0;
-	}
-    }
-    vret
+    encode(multihash::Hash::Keccak256, v).expect("encoding failed")
 }

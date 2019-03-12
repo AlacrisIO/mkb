@@ -328,7 +328,7 @@ pub fn inf_loop(dbe: DBE, tot_mkb: TopicAllInfo, common_init: CommonInitFinal, l
                 let esumreq = serde_json::from_str(&eval.message).unwrap();
                 println!("parsing eval, step 2");
                 let w_mkb : std::sync::MutexGuard<TopicAllInfo> = lk_mkb_4.lock().unwrap();
-                let res_oper = process_operation(w_mkb, &my_reg, esumreq);
+                let res_oper = process_operation(w_mkb, common_init.clone(), &my_reg, esumreq);
                 println!("parsing eval, step 3");
                 return fct_signature(&res_oper);
             },
