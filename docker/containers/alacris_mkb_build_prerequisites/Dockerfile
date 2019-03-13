@@ -40,8 +40,3 @@ RUN curl https://sh.rustup.rs -sSf | \
     sh -s -- --default-toolchain $RUST_VERSION -y
 
 ENV PATH=/home/appuser/.cargo/bin:$PATH
-
-
-
-
-

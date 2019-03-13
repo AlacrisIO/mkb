@@ -14,7 +14,7 @@ run() {
 }
 
 echo "Building build prerequisite image"
-run docker build -t gcr.io/legicash-demo-1950/legicash-demo/alacris-mkb-build-preprequisites:v1 -f ../containers/alacris_mkb_build_prerequisites/Dockerfile .
+run docker build -t gcr.io/legicash-demo-1950/legicash-demo/alacris-mkb-build-prerequisites:v1 -f ../containers/alacris_mkb_build_prerequisites/Dockerfile .
 
 echo "Building application images"
 run docker-compose -f ../docker-compose.yml build
