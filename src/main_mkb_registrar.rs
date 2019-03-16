@@ -55,6 +55,7 @@ extern crate num_derive;
 mod db;
 mod types;
 mod type_init;
+mod type_hash;
 mod parsing_input;
 mod infinite_loop;
 mod gossip_protocol;
