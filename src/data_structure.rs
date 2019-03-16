@@ -80,7 +80,7 @@ pub fn func_insert_record(topic_desc: &TopicDescriptionEncode, listval: &mut Vec
 
 
 
-pub fn query_info_latest(w_mkb: std::sync::MutexGuard<TopicAllInfo>, topic: String, name: String) -> Result<AccountCurrent, String> {
+pub fn query_info_latest(w_mkb: &std::sync::MutexGuard<TopicAllInfo>, topic: String, name: String) -> Result<AccountCurrent, String> {
     let iter = (*w_mkb).all_topic_state.get(&topic);
     match iter {
         None => Err("Topic is not existent here".to_string()),
@@ -441,7 +441,7 @@ pub fn process_operation(w_mkb: &mut std::sync::MutexGuard<TopicAllInfo>, common
                     let mut ev = Vec::<SinglePairUserHash>::new();
                     for (name, seq) in &eval.all_account_state {
                         let elen = seq.len();
-                        let esing = SinglePairUserHash { name: name.to_string(), hash: seq[elen-1].hash.clone() };
+                        let esing = SinglePairUserHash { account_name: name.to_string(), hash: seq[elen-1].hash.clone() };
                         ev.push(esing);
                     }
                     let econt = ComputeHashOfTopic { topic: eret.topic, topic_desc: eval.topic_desc.clone(), list_pair: ev };
@@ -454,8 +454,20 @@ pub fn process_operation(w_mkb: &mut std::sync::MutexGuard<TopicAllInfo>, common
                 },
             }
         },
+        Getlatestentry(ereq) => {
+            let e_ans = query_info_latest(w_mkb, ereq.topic, ereq.account_name);
+            match e_ans {
+                Err(eval) => {
+                    TypeAnswer { result: false, answer: triv_answer, text: eval }
+                },
+                Ok(eval) => {
+                    let ans = SumTypeAnswer::Accountlatestrequest(eval);
+                    TypeAnswer { result: true, answer: ans, text: "successful request".to_string() }
+                },
+            }
+        },
         Triplerequest(ereq) => {
-            let e_ans = triple_query_info(w_mkb, ereq.topic, ereq.name, ereq.nonce);
+            let e_ans = triple_query_info(w_mkb, ereq.topic, ereq.account_name, ereq.nonce);
             match e_ans {
                 Err(eval) => {
                     TypeAnswer { result: false, answer: triv_answer, text: eval }

@@ -45,7 +45,6 @@ pub fn inf_loop(dbe: DBE, tot_mkb: TopicAllInfo, common_init: CommonInitFinal, l
     let lk_dbe = Arc::new(Mutex::<DBE>::new(dbe));
     let lk_mkb = Arc::new(Mutex::<TopicAllInfo>::new(tot_mkb));
     let lk_mkb_0 = lk_mkb.clone();
-    let lk_mkb_2 = lk_mkb.clone();
     let lk_mkb_3 = lk_mkb.clone();
     let lk_mkb_4 = lk_mkb.clone();
     let sgp = compute_simple_gossip_protocol(&common_init_0, my_reg.address.clone());
@@ -76,26 +75,21 @@ pub fn inf_loop(dbe: DBE, tot_mkb: TopicAllInfo, common_init: CommonInitFinal, l
         println!("process_request, step 9");
         Ok(Value::String("Operation done correcly".into()))
     };
-    let process_request_0 = process_request.clone();
-    let process_request_1 = process_request.clone();
-    let process_request_2 = process_request.clone();
-    let process_request_3 = process_request.clone();
-    let process_request_4 = process_request.clone();
-    let process_request_5 = process_request.clone();
-    let process_request_6 = process_request.clone();
-    let process_request_7 = process_request.clone();
-    let process_request_8 = process_request.clone();
-    let process_request_9 = process_request.clone();
+    let process_request_0  = process_request.clone();
+    let process_request_1  = process_request.clone();
+    let process_request_2  = process_request.clone();
+    let process_request_3  = process_request.clone();
+    let process_request_4  = process_request.clone();
+    let process_request_5  = process_request.clone();
+    let process_request_6  = process_request.clone();
+    let process_request_7  = process_request.clone();
+    let process_request_8  = process_request.clone();
+    let process_request_9  = process_request.clone();
+    let process_request_10 = process_request.clone();
+    let process_request_11 = process_request.clone();
 
 
-    let request_data = move |topic: String, name: String| -> Result<serde_json::Value> {
-        let w_mkb : std::sync::MutexGuard<TopicAllInfo> = lk_mkb_2.lock().unwrap();
-        match query_info_latest(w_mkb, topic, name) {
-            Ok(eval) => Ok(Value::String(serde_json::to_string(&eval).unwrap())),
-            Err(e) => Err(JsonRpcError::invalid_params(e)),
-        }
-    };
-    let get_list_registrar = move || -> Result<serde_json::Value> {
+    let get_list_registrars = move || -> Result<serde_json::Value> {
         let estr = serde_json::to_string(&retrieve_complete_list_registrar(common_init_1.clone())).unwrap();
         return Ok(Value::String(estr));
     };
@@ -219,13 +213,22 @@ pub fn inf_loop(dbe: DBE, tot_mkb: TopicAllInfo, common_init: CommonInitFinal, l
             Err(e) => fct_parsing_error(e, "send_data".to_string()),
         }
     });
-    io.add_method("get_info", move |params: Params| {
-        println!("Processing a get_data command");
+    io.add_method("get_from_latest", move |params: Params| {
+        println!("Processing a get_from_latest");
         match params.parse::<GetInfoRequest>() {
             Ok(eval) => {
-                let e_topic = eval.topic;
-                let e_account_name = eval.account_name;
-                return request_data(e_topic, e_account_name);
+                let esumreq = SumTypeRequest::Getlatestentry(eval);
+                return process_request_6(esumreq);
+            },
+            Err(e) => fct_parsing_error(e, "get_info".to_string()),
+        }
+    });
+    io.add_method("get_from_triple", move |params: Params| {
+        println!("Processing a get_from_triple");
+        match params.parse::<TripleRequest>() {
+            Ok(eval) => {
+                let esumreq = SumTypeRequest::Triplerequest(eval);
+                return process_request_7(esumreq);
             },
             Err(e) => fct_parsing_error(e, "get_info".to_string()),
         }
@@ -235,7 +238,7 @@ pub fn inf_loop(dbe: DBE, tot_mkb: TopicAllInfo, common_init: CommonInitFinal, l
         match params.parse::<AddSubscriber>() {
             Ok(eval) => {
                 let esumreq = SumTypeRequest::Addsubscriber(eval);
-                return process_request_6(esumreq);
+                return process_request_8(esumreq);
             },
             Err(e) => fct_parsing_error(e, "add_subscriber".to_string()),
         }
@@ -245,7 +248,7 @@ pub fn inf_loop(dbe: DBE, tot_mkb: TopicAllInfo, common_init: CommonInitFinal, l
         match params.parse::<RemoveSubscriber>() {
             Ok(eval) => {
                 let esumreq = SumTypeRequest::Removesubscriber(eval);
-                return process_request_7(esumreq);
+                return process_request_9(esumreq);
             },
             Err(e) => fct_parsing_error(e, "add_subscriber".to_string()),
         }
@@ -255,7 +258,7 @@ pub fn inf_loop(dbe: DBE, tot_mkb: TopicAllInfo, common_init: CommonInitFinal, l
         match params.parse::<AddRegistrar>() {
             Ok(eval) => {
                 let esumreq = SumTypeRequest::Addregistrar(eval);
-                return process_request_8(esumreq);
+                return process_request_10(esumreq);
             },
             Err(e) => fct_parsing_error(e, "add_registrar".to_string()),
         }
@@ -265,7 +268,7 @@ pub fn inf_loop(dbe: DBE, tot_mkb: TopicAllInfo, common_init: CommonInitFinal, l
         match params.parse::<RemoveRegistrar>() {
             Ok(eval) => {
                 let esumreq = SumTypeRequest::Removeregistrar(eval);
-                return process_request_9(esumreq);
+                return process_request_11(esumreq);
             },
             Err(e) => fct_parsing_error(e, "remove_registrar".to_string()),
         }
@@ -274,7 +277,7 @@ pub fn inf_loop(dbe: DBE, tot_mkb: TopicAllInfo, common_init: CommonInitFinal, l
         println!("Providing the list of registrars");
         match params.parse::<ListRegistrar>() {
             Ok(_) => {
-                return get_list_registrar();
+                return get_list_registrars();
             },
             Err(e) => fct_parsing_error(e, "get_list_registrars".to_string()),
         }

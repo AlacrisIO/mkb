@@ -37,7 +37,7 @@ pub struct TopicAllInfo {
 
 #[derive(Serialize)]
 pub struct SinglePairUserHash {
-    pub name: String,
+    pub account_name: String,
     pub hash: HashType,
 }
 
@@ -223,7 +223,7 @@ pub struct AnswerHashForVRF {
 #[derive(Clone, Hash, Serialize, Deserialize)]
 pub struct TripleRequest {
     pub topic: String,
-    pub name: String,
+    pub account_name: String,
     pub nonce: u32,
 }
 
@@ -267,6 +267,7 @@ pub enum SumTypeRequest {
     Internalrequesttopicinfo(InternalRequestTopicInfo),
     Fulltopicexport(TopicExportation),
     Retrievehashforvrf(RetrieveHashForVRF),
+    Getlatestentry(GetInfoRequest),
     Triplerequest(TripleRequest),
 }
 
@@ -283,6 +284,7 @@ pub enum SumTypeAnswer {
     Exporttopicinformation(ExportTopicInformation),
     Answerhashforvrf(AnswerHashForVRF),
     Accounttriplerequest(AccountCurrent),
+    Accountlatestrequest(AccountCurrent),
     Trivialanswer(TrivialAnswer),
 }
 
@@ -331,6 +333,8 @@ pub fn get_topic_symbolic(ereq: &SumTypeRequest) -> GossipOperationKind {
     use types::SumTypeRequest::*;
     match ereq {
         Topiccreationrequest(_) => { GossipOperationKind::Nogossip()},
+        Getlatestentry(_) => { GossipOperationKind::Nogossip()},
+        Triplerequest(_) => { GossipOperationKind::Nogossip()},
         Accountinfo(eacct) => { GossipOperationKind::Topicgossip(eacct.topic.clone()) },
         Depositrequest(edep) => { GossipOperationKind::Topicgossip(edep.topic.clone()) },
         Paymentrequest(epay) => { GossipOperationKind::Topicgossip(epay.topic.clone()) },
@@ -343,7 +347,6 @@ pub fn get_topic_symbolic(ereq: &SumTypeRequest) -> GossipOperationKind {
         Internalrequesttopicinfo(ereq) => { GossipOperationKind::Topicgossip(ereq.topic.clone()) },
         Fulltopicexport(efte) => { GossipOperationKind::Topicgossip(efte.topic.clone()) },
         Retrievehashforvrf(erhfv) => { GossipOperationKind::Topicgossip(erhfv.topic.clone()) },
-        Triplerequest(_) => { GossipOperationKind::Nogossip()},
     }
 }
 
