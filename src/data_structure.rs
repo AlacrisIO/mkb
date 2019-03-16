@@ -17,7 +17,7 @@ use type_init::*;
 
 
 
-pub fn func_insert_record(topic_desc: &TopicDescriptionEncode, listval: &mut Vec<AccountCurrent>, eval: AccountCurrent) -> TypeAnswer {
+pub fn func_insert_record(topic_desc: &TopicDescription, listval: &mut Vec<AccountCurrent>, eval: AccountCurrent) -> TypeAnswer {
     if topic_desc.min_interval_insertion_micros > 0 {
         let len = listval.len();
         let dura = eval.utc.signed_duration_since(listval[len-1].utc);
@@ -122,7 +122,7 @@ pub fn triple_query_info(w_mkb: &std::sync::MutexGuard<TopicAllInfo>, topic: Str
 
 
 
-pub fn compute_the_hash(topdesc: &TopicDescriptionEncode, econt: &ContainerTypeForHash) -> HashType {
+pub fn compute_the_hash(topdesc: &TopicDescription, econt: &ContainerTypeForHash) -> HashType {
     let econt_str = serde_json::to_string(econt).expect("Error in compute_the_hash");
     let econt_str_u8 = econt_str.as_bytes();
     let eret = encode(topdesc.hash_method.val, econt_str_u8).expect("encoding failed");

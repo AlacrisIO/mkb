@@ -21,7 +21,7 @@ pub struct AccountCurrent {
 
 #[derive(Clone, Serialize, Deserialize)]
 pub struct FullTopicData {
-    pub topic_desc: TopicDescriptionEncode,
+    pub topic_desc: TopicDescription,
     pub list_active_reg: HashSet<String>,
     pub sgp: SimpleGossipProtocol,
     pub list_subscribed_node: HashSet<String>,
@@ -45,7 +45,7 @@ pub struct SinglePairUserHash {
 #[derive(Serialize)]
 pub struct ComputeHashOfTopic {
     pub topic: String,
-    pub topic_desc: TopicDescriptionEncode,
+    pub topic_desc: TopicDescription,
     pub list_pair: Vec<SinglePairUserHash>,
 }
 
@@ -77,12 +77,12 @@ pub struct GossipProtocol {
 // RPC request from the users
 
 #[derive(Clone, Debug, Default, Serialize, Deserialize)]
-pub struct TopicDescriptionEncode {
+pub struct TopicDescription {
     pub topic: String, // the name of the topic
     pub min_interval_insertion_micros: i64, // the number of allowed transactions per seconds. 0 for infinity
     pub total_capacity_mem: u64, // the total allowed capacity. If 0 for infinity
     pub instant_capacity_mem: u64, // the total allowed capacity. If 0 for infinity
-    pub total_throughput_per_min: u64, // 
+    pub total_throughput_per_min: u64, //
     pub total_throughput_per_sec: u64, // 
     pub retention_time: i64, // the retention policy of data. If 0, then not used.
     pub retention_size: u32, // the maximum number of versions are kept. If 0 then all are kept.
@@ -92,7 +92,7 @@ pub struct TopicDescriptionEncode {
 
 #[derive(Default, Debug, Clone, Serialize, Deserialize)]
 pub struct ExportTopicInformation {
-    pub topic_desc: TopicDescriptionEncode,
+    pub topic_desc: TopicDescription,
     pub one_registrar_ip_addr: Vec<u8>,
     pub one_registrar_port: u16
 }
@@ -254,7 +254,7 @@ pub fn get_topic(ereq: &SumTypeRequest) -> Option<String> {
 
 #[derive(Clone, Serialize, Deserialize)]
 pub enum SumTypeRequest {
-    Topiccreationrequest(TopicDescriptionEncode),
+    Topiccreationrequest(TopicDescription),
     Accountinfo(AccountInfo),
     Depositrequest(DepositRequest),
     Paymentrequest(PaymentRequest),

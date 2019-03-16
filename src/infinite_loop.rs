@@ -153,12 +153,12 @@ pub fn inf_loop(dbe: DBE, tot_mkb: TopicAllInfo, common_init: CommonInitFinal, l
     });
     io.add_method("topic_creation", move |params: Params| {
         println!("Processing a topic_creation_request command");
-        match params.parse::<TopicDescriptionEncode>() {
+        match params.parse::<TopicDescription>() {
             Ok(eval) => {
                 let esumreq = SumTypeRequest::Topiccreationrequest(eval);
                 return process_request_0(esumreq);
             },
-            Err(e) => fct_parsing_error(e, "add_account".to_string()),
+            Err(e) => fct_parsing_error(e, "topic_creation".to_string()),
         }
     });
     io.add_method("add_account", move |params: Params| {
