@@ -10,7 +10,7 @@ pub type HashType = Vec<u8>;
 
 // Account and topics.
 
-#[derive(Clone, Serialize, Deserialize)]
+#[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct AccountCurrent {
     pub current_money: u64,
     pub data_current: String,
@@ -220,6 +220,12 @@ pub struct AnswerHashForVRF {
     pub hash: String,
 }
 
+#[derive(Clone, Hash, Serialize, Deserialize)]
+pub struct TripleRequest {
+    pub topic: String,
+    pub name: String,
+    pub nonce: u32,
+}
 
 
 
@@ -261,6 +267,7 @@ pub enum SumTypeRequest {
     Internalrequesttopicinfo(InternalRequestTopicInfo),
     Fulltopicexport(TopicExportation),
     Retrievehashforvrf(RetrieveHashForVRF),
+    Triplerequest(TripleRequest),
 }
 
 
@@ -275,6 +282,7 @@ pub enum SumTypeAnswer {
     Mkboperation(MKBoperation),
     Exporttopicinformation(ExportTopicInformation),
     Answerhashforvrf(AnswerHashForVRF),
+    Accounttriplerequest(AccountCurrent),
     Trivialanswer(TrivialAnswer),
 }
 
@@ -335,6 +343,7 @@ pub fn get_topic_symbolic(ereq: &SumTypeRequest) -> GossipOperationKind {
         Internalrequesttopicinfo(ereq) => { GossipOperationKind::Topicgossip(ereq.topic.clone()) },
         Fulltopicexport(efte) => { GossipOperationKind::Topicgossip(efte.topic.clone()) },
         Retrievehashforvrf(erhfv) => { GossipOperationKind::Topicgossip(erhfv.topic.clone()) },
+        Triplerequest(_) => { GossipOperationKind::Nogossip()},
     }
 }
 

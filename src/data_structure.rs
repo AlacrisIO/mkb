@@ -80,7 +80,7 @@ pub fn func_insert_record(topic_desc: &TopicDescriptionEncode, listval: &mut Vec
 
 
 
-pub fn query_info(w_mkb: std::sync::MutexGuard<TopicAllInfo>, topic: String, name: String) -> Result<AccountCurrent, String> {
+pub fn query_info_latest(w_mkb: std::sync::MutexGuard<TopicAllInfo>, topic: String, name: String) -> Result<AccountCurrent, String> {
     let iter = (*w_mkb).all_topic_state.get(&topic);
     match iter {
         None => Err("Topic is not existent here".to_string()),
@@ -96,6 +96,30 @@ pub fn query_info(w_mkb: std::sync::MutexGuard<TopicAllInfo>, topic: String, nam
         }
     }
 }
+
+
+pub fn triple_query_info(w_mkb: &std::sync::MutexGuard<TopicAllInfo>, topic: String, name: String, nonce: u32) -> Result<AccountCurrent, String> {
+    let iter = (*w_mkb).all_topic_state.get(&topic);
+    match iter {
+        None => Err("Topic is not existent on this registrar".to_string()),
+        Some(eval) => {
+            let iter_b = eval.all_account_state.get(&name);
+            match iter_b {
+                None => Err("Name is not existent here".to_string()),
+                Some(eval_b) => {
+                    for eent in eval_b {
+                        if eent.nonce==nonce {
+                            return Ok(eent.clone())
+                        }
+                    }
+                    Err("nonce is absent in the list".to_string())
+                },
+            }
+        }
+    }
+}
+
+
 
 
 pub fn compute_the_hash(topdesc: &TopicDescriptionEncode, econt: &ContainerTypeForHash) -> HashType {
@@ -427,6 +451,18 @@ pub fn process_operation(w_mkb: &mut std::sync::MutexGuard<TopicAllInfo>, common
                     let eret_str = bytes_to_hex(eret);
                     let ans = SumTypeAnswer::Answerhashforvrf(AnswerHashForVRF { hash: eret_str});
                     TypeAnswer { result: true, answer: ans, text: "successful topic extraction".to_string() }
+                },
+            }
+        },
+        Triplerequest(ereq) => {
+            let e_ans = triple_query_info(w_mkb, ereq.topic, ereq.name, ereq.nonce);
+            match e_ans {
+                Err(eval) => {
+                    TypeAnswer { result: false, answer: triv_answer, text: eval }
+                },
+                Ok(eval) => {
+                    let ans = SumTypeAnswer::Accounttriplerequest(eval);
+                    TypeAnswer { result: true, answer: ans, text: "successful request".to_string() }
                 },
             }
         },

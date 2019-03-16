@@ -90,7 +90,7 @@ pub fn inf_loop(dbe: DBE, tot_mkb: TopicAllInfo, common_init: CommonInitFinal, l
 
     let request_data = move |topic: String, name: String| -> Result<serde_json::Value> {
         let w_mkb : std::sync::MutexGuard<TopicAllInfo> = lk_mkb_2.lock().unwrap();
-        match query_info(w_mkb, topic, name) {
+        match query_info_latest(w_mkb, topic, name) {
             Ok(eval) => Ok(Value::String(serde_json::to_string(&eval).unwrap())),
             Err(e) => Err(JsonRpcError::invalid_params(e)),
         }
