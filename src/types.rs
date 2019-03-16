@@ -94,7 +94,9 @@ pub struct TopicDescription {
 pub struct ExportTopicInformation {
     pub topic_desc: TopicDescription,
     pub one_registrar_ip_addr: Vec<u8>,
-    pub one_registrar_port: u16
+    pub one_registrar_port: u16,
+    pub list_registrar_name: Vec<String>
+        
 }
 
 
@@ -171,7 +173,12 @@ pub struct RemoveSubscriber {
 }
 
 #[derive(Clone, Hash, Serialize, Deserialize)]
-pub struct ListRegistrar {
+pub struct TotalListRegistrar {
+}
+
+#[derive(Clone, Hash, Serialize, Deserialize)]
+pub struct TopicListRegistrar {
+    pub topic: String
 }
 
 

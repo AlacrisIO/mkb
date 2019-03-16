@@ -130,14 +130,22 @@ pub fn compute_the_hash(topdesc: &TopicDescription, econt: &ContainerTypeForHash
 }
 
 
+
+
+
 pub fn get_topic_info_wmkb(w_mkb: &std::sync::MutexGuard<TopicAllInfo>, my_reg: &SingleRegistrarFinal, topic: &String) -> Option<ExportTopicInformation> {
     let x = (*w_mkb).all_topic_state.get(topic);
     match x {
         Some(eval) => {
+            let mut e_vec = Vec::<String>::new();
+            for e_ent in eval.list_active_reg.clone() {
+                e_vec.push(e_ent);
+            }
             Some(ExportTopicInformation {
                 topic_desc: eval.topic_desc.clone(),
                 one_registrar_ip_addr: my_reg.ip_addr.clone(),
-                one_registrar_port: my_reg.port})
+                one_registrar_port: my_reg.port,
+                list_registrar_name: e_vec})
         },
         None => None,
     }
@@ -417,8 +425,7 @@ pub fn process_operation(w_mkb: &mut std::sync::MutexGuard<TopicAllInfo>, common
             let eval = get_topic_info_wmkb(w_mkb, my_reg, &eint.topic);
             match eval {
                 None => {
-                    let export_topic_fail = SumTypeAnswer::Exporttopicinformation(Default::default());
-                    TypeAnswer { result: false, answer: export_topic_fail, text: "topic is absent".to_string() }
+                    TypeAnswer { result: false, answer: triv_answer, text: "topic is absent".to_string() }
                 },
                 Some(eval) => {
                     let export_topic_succ = SumTypeAnswer::Exporttopicinformation(eval);

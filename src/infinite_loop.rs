@@ -89,7 +89,7 @@ pub fn inf_loop(dbe: DBE, tot_mkb: TopicAllInfo, common_init: CommonInitFinal, l
     let process_request_11 = process_request.clone();
 
 
-    let get_list_registrars = move || -> Result<serde_json::Value> {
+    let get_total_list_registrars = move || -> Result<serde_json::Value> {
         let estr = serde_json::to_string(&retrieve_complete_list_registrar(common_init_1.clone())).unwrap();
         return Ok(Value::String(estr));
     };
@@ -123,7 +123,7 @@ pub fn inf_loop(dbe: DBE, tot_mkb: TopicAllInfo, common_init: CommonInitFinal, l
         let estr_u8_b_ref : &[u8] = &estr_u8_b;
         let secp = Secp256k1::new();
         println!("signature_oper_secp256k1, step 6");
-        let message = Message::from_slice(estr_u8_b_ref).expect("Error in creation of message");
+        let message = Message::from_slice(estr_u8_b_ref).expect("signature_oper_secp256k1 : Error in creation of message");
         println!("signature_oper_secp256k1, step 7");
         
         let sig : secp256k1::Signature = secp.sign(&message, &secret_key_copy);
@@ -273,13 +273,13 @@ pub fn inf_loop(dbe: DBE, tot_mkb: TopicAllInfo, common_init: CommonInitFinal, l
             Err(e) => fct_parsing_error(e, "remove_registrar".to_string()),
         }
     });
-    io.add_method("get_list_registrars", move |params: Params| {
+    io.add_method("get_total_list_registrars", move |params: Params| {
         println!("Providing the list of registrars");
-        match params.parse::<ListRegistrar>() {
+        match params.parse::<TotalListRegistrar>() {
             Ok(_) => {
-                return get_list_registrars();
+                return get_total_list_registrars();
             },
-            Err(e) => fct_parsing_error(e, "get_list_registrars".to_string()),
+            Err(e) => fct_parsing_error(e, "get_total_list_registrars".to_string()),
         }
     });
     io.add_method("find_topic_info", move |params: Params| {
