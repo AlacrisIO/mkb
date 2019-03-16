@@ -162,8 +162,10 @@ pub fn process_operation(w_mkb: &mut std::sync::MutexGuard<TopicAllInfo>, common
     match esumreq.clone() {
         Topiccreationrequest(etop) => {
             let sgp = Default::default();
+            let mut e_list = HashSet::<String>::new();
+            e_list.insert(my_reg.address.clone());
             let set_of_acct = FullTopicData { topic_desc: etop.clone(),
-                                              list_active_reg: HashSet::<String>::new(),
+                                              list_active_reg: e_list,
                                               sgp: sgp,
                                               list_subscribed_node: HashSet::<String>::new(), 
                                               all_account_state: HashMap::new()};
