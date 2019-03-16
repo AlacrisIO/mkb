@@ -32,6 +32,7 @@ pub struct SingleRegistrarFinal {
 pub struct CommonInitFinal {
     pub registrars: Vec<SingleRegistrarFinal>,
     pub map_name_idx: HashMap<String,usize>,
+    pub map_address_idx: HashMap<String,usize>,
     pub consensus_fraction: f32
 }
 
@@ -61,23 +62,39 @@ pub fn retrieve_complete_list_registrar(common_init: CommonInitFinal) -> ListSin
 
 pub fn retrieve_common_init_final(common_init: &CommonInit) -> CommonInitFinal {
     let mut e_vect = Vec::<SingleRegistrarFinal>::new();
-    let mut e_map = HashMap::<String,usize>::new();
+    let mut e_map_name = HashMap::<String,usize>::new();
+    let mut e_map_address = HashMap::<String,usize>::new();
     let mut idx=0;
     for eval in common_init.registrars.clone() {
         let eval_b = SingleRegistrarFinal{name: eval.name.clone(), address: eval.address.clone(),
                                           public_key: retrieve_public_key(&eval.public_key.clone()),
                                           ip_addr: eval.ip_addr, port: eval.port};
         e_vect.push(eval_b);
-        e_map.insert(eval.name.clone(), idx);
+        e_map_name.insert(eval.name.clone(), idx);
+        e_map_address.insert(eval.address.clone(), idx);
         idx +=1;
     }
-    CommonInitFinal{registrars: e_vect, map_name_idx: e_map, consensus_fraction: common_init.consensus_fraction}
+    CommonInitFinal{registrars: e_vect,
+                    map_name_idx: e_map_name, map_address_idx: e_map_address,
+                    consensus_fraction: common_init.consensus_fraction}
 }
 
 pub fn get_registrar_by_address(address: String, common_init: &CommonInitFinal) -> Option<SingleRegistrarFinal> {
-    let iter = common_init.map_name_idx.get(&address);
+    let iter = common_init.map_address_idx.get(&address);
     match iter {
-        None => None,
+        None => {
+            println!("Failed to find entry in get_registrar_by_address, address={}", address);
+            None},
+        Some(eval) => Some(common_init.registrars[*eval].clone()),
+    }
+}
+
+pub fn get_registrar_by_name(name: String, common_init: &CommonInitFinal) -> Option<SingleRegistrarFinal> {
+    let iter = common_init.map_name_idx.get(&name);
+    match iter {
+        None => {
+            println!("Failed to find entry in get_registrar_by_name, name={}", name);
+            None},
         Some(eval) => Some(common_init.registrars[*eval].clone()),
     }
 }
@@ -132,8 +149,8 @@ pub fn retrieve_public_key(ekey: &String) -> secp256k1::key::PublicKey {
 
 
 pub fn get_localinit_final(local_init: &LocalInit) -> LocalInitFinal {
-    println!("local_init.secret_key={}", local_init.secret_key);
-    println!("local_init.public_key={}", local_init.public_key);
+//    println!("local_init.secret_key={}", local_init.secret_key);
+//    println!("local_init.public_key={}", local_init.public_key);
     let secret_key_nat : secp256k1::key::SecretKey = retrieve_secret_key(&local_init.secret_key.clone());
     let public_key_nat : secp256k1::key::PublicKey = retrieve_public_key(&local_init.public_key.clone());
     //

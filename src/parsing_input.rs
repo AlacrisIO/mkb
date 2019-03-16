@@ -22,7 +22,6 @@ pub fn read_common_init_ci<P: AsRef<Path>>(path: P) -> CommonInitFinal {
     let reader = BufReader::new(file);
     println!("read_common_init_ci : After reader statement");
     
-
     // Read the JSON contents of the file as an instance of `CommonInit`.
     let u : CommonInit = serde_json::from_reader(reader).expect("Error in parsing of input");
     println!("read_common_init_ci : We have read u");
