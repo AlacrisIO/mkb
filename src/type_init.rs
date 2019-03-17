@@ -1,3 +1,7 @@
+use std::fs::File;
+use std::io::BufReader;
+use std::path::Path;
+use serde_json;
 use serde::Deserialize;
 use std::collections::HashMap;
 
@@ -157,5 +161,33 @@ pub fn get_localinit_final(local_init: &LocalInit) -> LocalInitFinal {
     LocalInitFinal {name: local_init.name.clone(), address: local_init.address.clone(),
                     public_key: public_key_nat, secret_key: secret_key_nat,
                     password: local_init.password.clone(), database_file: local_init.database_file.clone()}
+}
+
+
+
+
+pub fn read_common_init_ci<P: AsRef<Path>>(path: P) -> CommonInitFinal {
+    // Open the file in read-only mode with buffer.
+    let file = File::open(path).expect("Error in opening path");
+    println!("read_common_init_ci : After open statement");
+
+    let reader = BufReader::new(file);
+    println!("read_common_init_ci : After reader statement");
+
+    // Read the JSON contents of the file as an instance of `CommonInit`.
+    let u : CommonInit = serde_json::from_reader(reader).expect("Error in parsing of input");
+    println!("read_common_init_ci : We have read u");
+    retrieve_common_init_final(&u)
+}
+
+
+
+pub fn read_local_init<P: AsRef<Path>>(path: P) -> LocalInitFinal {
+    // Open the file in read-only mode with buffer.
+    let file = File::open(path).expect("Error read_local_init, operation");
+    let reader = BufReader::new(file);
+
+    let u : LocalInit = serde_json::from_reader(reader).expect("Error reading types::LocalInit");
+    get_localinit_final(&u)
 }
 

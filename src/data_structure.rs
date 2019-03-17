@@ -464,6 +464,18 @@ pub fn process_operation(w_mkb: &mut std::sync::MutexGuard<TopicAllInfo>, common
                 },
             }
         },
+        Setcommittee(ecomm) => {
+            let x = (*w_mkb).all_topic_state.get_mut(&ecomm.topic);
+            match x {
+                None => {
+                    TypeAnswer { result: false, answer: triv_answer, text: "topic error".to_string() }
+                },
+                Some(eval) => {
+                    eval.committee = ecomm.committee;
+                    TypeAnswer { result: true, answer: triv_answer, text: "successful committee setting".to_string() }
+                },
+            }
+        },
         Getlatestentry(ereq) => {
             let e_ans = query_info_latest(w_mkb, ereq.topic, ereq.account_name);
             match e_ans {

@@ -52,10 +52,10 @@ extern crate num_derive;
 //use log::{info, trace};
 
 
-mod db;
 mod types;
 mod type_init;
 mod type_hash;
+mod parsing_input;
 mod infinite_loop;
 mod gossip_protocol;
 mod data_structure;
@@ -69,28 +69,15 @@ fn main() {
     let arguments: Vec<String> = std::env::args().collect();
     let nb_arg = arguments.len();
     println!("nb_arg={}", nb_arg);
-    if nb_arg != 3 {
-        println!("Exiting program. It is run as");
-        println!("mkb_registrar   common_init.json   local_init.json");
+    if nb_arg != 2 {
+        println!("Exiting program. It is run as mkb common_init.json local_init.json");
         process::exit(1);
     }
-    let str_file_common_init = &arguments[1];
-    let str_file_local_init = &arguments[2];
-    println!("CommonInit = {}     LocalInit = {}", str_file_common_init, str_file_local_init);
-    let common_init : type_init::CommonInitFinal = type_init::read_common_init_ci(str_file_common_init);
+    let str_file_client_init = &arguments[1];
+    println!("ClientInit = {}", str_file_client_init);
+    let client_init : type_init::CommonInitFinal = parsing_input::read_client_init(str_file_client_init);
     println!("We have common_init");
-
-    let local_init : type_init::LocalInitFinal = type_init::read_local_init(str_file_local_init);
-    println!("We have local_init");
     
-    let database_file : String = local_init.database_file.clone();
-    println!("We have database_file = {}", database_file);
-    
-    let dbe = db::open_database(&database_file);
-    println!("We have opened db");
-
-    let tot_mkb : types::TopicAllInfo = Default::default();
-    
-    infinite_loop::inf_loop(dbe, tot_mkb, common_init, local_init);
+    infinite_loop::inf_loop_client(common_init, local_init);
     println!("Normal termination of the MKB");
 }

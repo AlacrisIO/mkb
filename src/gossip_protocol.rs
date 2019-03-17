@@ -315,7 +315,6 @@ pub fn process_request_kernel(w_mkb: &mut std::sync::MutexGuard<TopicAllInfo>, m
 
 pub fn get_vector_len_thirtytwo(v: &[u8]) -> Vec<u8> {
     let e_vec = encode(multihash::Hash::Keccak256, v).expect("encoding failed");
-//    println!("e_vec has len={} while it should be 32", e_vec.len());
     let mut e_vec_ret = Vec::<u8>::new();
     for i in 0..32 {
         e_vec_ret.push(e_vec[i]);

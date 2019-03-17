@@ -23,6 +23,7 @@ pub struct AccountCurrent {
 pub struct TopicDescription {
     pub topic: String, // the name of the topic
     pub min_interval_insertion_micros: i64, // the number of allowed transactions per seconds. 0 for infinity
+    pub committee_size: i32, // committee size. Can be 0 if no committee is computed.
     pub total_capacity_mem: u64, // the total allowed capacity. If 0 for infinity
     pub instant_capacity_mem: u64, // the total allowed capacity. If 0 for infinity
     pub total_throughput_per_min: u64, //
@@ -223,6 +224,16 @@ pub struct TrivialAnswer {
 
 
 #[derive(Debug, Clone, Hash, Serialize, Deserialize)]
+pub struct Committee {
+    pub topic: String,
+    pub committee: Vec<String>,
+}
+
+
+
+
+
+#[derive(Debug, Clone, Hash, Serialize, Deserialize)]
 pub struct AnswerHashForVRF {
     pub hash: String,
 }
@@ -274,6 +285,7 @@ pub enum SumTypeRequest {
     Internalrequesttopicinfo(InternalRequestTopicInfo),
     Fulltopicexport(TopicExportation),
     Retrievehashforvrf(RetrieveHashForVRF),
+    Setcommittee(Committee),
     Getlatestentry(GetInfoRequest),
     Triplerequest(TripleRequest),
 }
@@ -354,8 +366,13 @@ pub fn get_topic_symbolic(ereq: &SumTypeRequest) -> GossipOperationKind {
         Internalrequesttopicinfo(ereq) => { GossipOperationKind::Topicgossip(ereq.topic.clone()) },
         Fulltopicexport(efte) => { GossipOperationKind::Topicgossip(efte.topic.clone()) },
         Retrievehashforvrf(erhfv) => { GossipOperationKind::Topicgossip(erhfv.topic.clone()) },
+        Setcommittee(esc) =>  { GossipOperationKind::Topicgossip(esc.topic.clone()) },
     }
 }
+
+
+
+
 
 
 
