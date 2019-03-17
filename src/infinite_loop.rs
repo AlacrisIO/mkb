@@ -1,10 +1,6 @@
-//use std::process;
 use jsonrpc_core::*;
-//use jsonrpc_core::futures::Future;
-//use std::collections::HashMap;
 use std::sync::{Arc, Mutex};
 use jsonrpc_core::{Error as JsonRpcError};
-use secp256k1::{Secp256k1, Message};
 use std::net::{IpAddr, Ipv4Addr, SocketAddr};
 use jsonrpc_http_server::{ServerBuilder};
 
@@ -14,8 +10,7 @@ use type_init::*;
 use db::*;
 use data_structure::*;
 use gossip_protocol::*;
-
-
+use type_sign::*;
 
 
 
@@ -111,34 +106,6 @@ pub fn inf_loop(dbe: DBE, tot_mkb: TopicAllInfo, common_init: CommonInitFinal, l
             },
         }
     };
-
-    let signature_oper_secp256k1 = move |estr: &String| -> SignedString {
-        println!("Beginning of signature_oper_secp256k1");
-//        println!("signature_oper_secp256k1, step 1, estr={}", estr);
-        let estr_u8 : &[u8] = estr.as_bytes();
-//        println!("signature_oper_secp256k1, step 2, estr_u8={:?}", estr_u8);
-//        let len=estr_u8.len();
-//        println!("signature_oper_secp256k1, step 3, len={}", len);
-        let estr_u8_b = get_vector_len_thirtytwo(estr_u8);
-//        println!("signature_oper_secp256k1, step 4, estr_u8_b={:?}", estr_u8_b);
-//        let len_b=estr_u8_b.len();
-//        println!("signature_oper_secp256k1, step 5, len_b={}", len_b);
-        let estr_u8_b_ref : &[u8] = &estr_u8_b;
-        let secp = Secp256k1::new();
-//        println!("signature_oper_secp256k1, step 6");
-        let message = Message::from_slice(estr_u8_b_ref).expect("signature_oper_secp256k1 : Error in creation of message");
-//        println!("signature_oper_secp256k1, step 7");
-        
-        let sig : secp256k1::Signature = secp.sign(&message, &secret_key_copy);
-//        println!("signature_oper_secp256k1, step 8");
-        let sig_vec : Vec<u8> = secp256k1::Signature::serialize_der(&sig);
-//        println!("signature_oper_secp256k1, step 9, sig_vect={:?}", sig_vec);
-//        println!("signature_oper_secp256k1, step 9, |sig_vect|={}", sig_vec.len());
-        SignedString {result: estr.to_string(), sig: sig_vec}
-    };
-    
-    
-
     let fct_parsing_error = |e : jsonrpc_core::Error, oper: String| {
         println!("Error during parsing {:?}", e);
         let str0 = "parsing error for ".to_string();
@@ -314,7 +281,7 @@ pub fn inf_loop(dbe: DBE, tot_mkb: TopicAllInfo, common_init: CommonInitFinal, l
             match emer.result {
                 true => {
                     let estr = serde_json::to_string(emer).unwrap();
-                    let str_sig = signature_oper_secp256k1(&estr);
+                    let str_sig = signature_oper_secp256k1(secret_key_copy, &estr);
                     let estr_b = serde_json::to_string(&str_sig).unwrap();
                     return Ok(Value::String(estr_b));
                 },

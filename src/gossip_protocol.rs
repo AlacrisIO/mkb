@@ -5,7 +5,7 @@ use types::*;
 use types::SumTypeAnswer::*;
 use types::SumTypeRequest::*;
 use type_init::*;
-use multihash::{encode};
+use type_sign::*;
 use data_structure::*;
 use secp256k1::{Secp256k1, Message};
 use jsonrpc_client_http::HttpTransport;
@@ -310,14 +310,3 @@ pub fn process_request_kernel(w_mkb: &mut std::sync::MutexGuard<TopicAllInfo>, m
     }
 }
 
-
-
-
-pub fn get_vector_len_thirtytwo(v: &[u8]) -> Vec<u8> {
-    let e_vec = encode(multihash::Hash::Keccak256, v).expect("encoding failed");
-    let mut e_vec_ret = Vec::<u8>::new();
-    for i in 0..32 {
-        e_vec_ret.push(e_vec[i]);
-    }
-    e_vec_ret
-}

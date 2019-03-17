@@ -371,13 +371,6 @@ pub fn get_topic_symbolic(ereq: &SumTypeRequest) -> GossipOperationKind {
 }
 
 
-
-
-
-
-
-
-
 #[derive(Clone, Serialize, Deserialize)]
 pub struct ContainerTypeForHash {
     pub hash: HashType,
@@ -406,15 +399,3 @@ pub struct MessageTransRed {
     pub message: String,
 }
 
-
-
-
-
-
-
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct SignedString {
-    pub result: String,
-    pub sig: Vec<u8>,
-}
