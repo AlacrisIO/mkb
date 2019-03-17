@@ -19,11 +19,25 @@ pub struct AccountCurrent {
     pub nonce: u32
 }
 
+#[derive(Clone, Debug, Default, Serialize, Deserialize)]
+pub struct TopicDescription {
+    pub topic: String, // the name of the topic
+    pub min_interval_insertion_micros: i64, // the number of allowed transactions per seconds. 0 for infinity
+    pub total_capacity_mem: u64, // the total allowed capacity. If 0 for infinity
+    pub instant_capacity_mem: u64, // the total allowed capacity. If 0 for infinity
+    pub total_throughput_per_min: u64, //
+    pub total_throughput_per_sec: u64, // 
+    pub retention_time: i64, // the retention policy of data. If 0, then not used.
+    pub retention_size: u32, // the maximum number of versions are kept. If 0 then all are kept.
+    pub hash_method: MultihashType, // The hashing method used.
+}
+
 #[derive(Clone, Serialize, Deserialize)]
 pub struct FullTopicData {
     pub topic_desc: TopicDescription,
     pub list_active_reg: HashSet<String>,
     pub sgp: SimpleGossipProtocol,
+    pub committee: Vec<String>,
     pub list_subscribed_node: HashSet<String>,
     pub all_account_state: HashMap<String,Vec<AccountCurrent>>
 }
@@ -76,19 +90,6 @@ pub struct GossipProtocol {
 
 // RPC request from the users
 
-#[derive(Clone, Debug, Default, Serialize, Deserialize)]
-pub struct TopicDescription {
-    pub topic: String, // the name of the topic
-    pub min_interval_insertion_micros: i64, // the number of allowed transactions per seconds. 0 for infinity
-    pub total_capacity_mem: u64, // the total allowed capacity. If 0 for infinity
-    pub instant_capacity_mem: u64, // the total allowed capacity. If 0 for infinity
-    pub total_throughput_per_min: u64, //
-    pub total_throughput_per_sec: u64, // 
-    pub retention_time: i64, // the retention policy of data. If 0, then not used.
-    pub retention_size: u32, // the maximum number of versions are kept. If 0 then all are kept.
-    pub hash_method: MultihashType, // The hashing method used.
-}
-
 
 #[derive(Default, Debug, Clone, Serialize, Deserialize)]
 pub struct ExportTopicInformation {
@@ -96,7 +97,6 @@ pub struct ExportTopicInformation {
     pub one_registrar_ip_addr: Vec<u8>,
     pub one_registrar_port: u16,
     pub list_registrar_name: Vec<String>
-        
 }
 
 

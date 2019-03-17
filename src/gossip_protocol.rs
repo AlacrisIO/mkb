@@ -79,17 +79,17 @@ jsonrpc_client!(pub struct InternalClient {
 });
 
 fn send_transaction_kernel(mesg: MessageTrans) -> String {
-    println!("send_transaction_kernel, step 1");
+//    println!("send_transaction_kernel, step 1");
     let lnk : String = "http://".to_string() + &mesg.ip_plus_port;
-    println!("send_transaction_kernel, step 2");
+//    println!("send_transaction_kernel, step 2");
     let transport = HttpTransport::new().standalone().expect("Error in creation of HttpTransport");
-    println!("send_transaction_kernel, step 3");
+//    println!("send_transaction_kernel, step 3");
     let transport_handle = transport.handle(&lnk).expect("Error in creation of transport_handle");
-    println!("send_transaction_kernel, step 4");
+//    println!("send_transaction_kernel, step 4");
     let mut client = InternalClient::new(transport_handle);
-    println!("send_transaction_kernel, step 5");
+//    println!("send_transaction_kernel, step 5");
     let result1 = client.internal_operation(mesg.message).call().expect("Error in calls of internal_check");
-    println!("send_transaction_kernel, step 6");
+//    println!("send_transaction_kernel, step 6");
     result1
 }
 
@@ -114,42 +114,42 @@ pub fn send_info_to_registered(mut w_mkb: std::sync::MutexGuard<TopicAllInfo>, e
 
 
 fn send_transaction(registrar: SingleRegistrarFinal, esumreq: &SumTypeRequest) -> Option<TypeAnswerComplete> {
-    println!("send_transaction, step 1");
+//    println!("send_transaction, step 1");
     let ip_plus_port = get_ip_plus_port(registrar.ip_addr, registrar.port);
-    println!("send_transaction, step 2");
+//    println!("send_transaction, step 2");
     //
     let esumreq_str = serde_json::to_string(esumreq).expect("Errot in creation of esumreq_str");
-    println!("send_transaction, step 3");
+//    println!("send_transaction, step 3");
     let mesg = MessageTrans { ip_plus_port: ip_plus_port, message: esumreq_str };
-    println!("send_transaction, step 4");
+//    println!("send_transaction, step 4");
     //
     let reply = send_transaction_kernel(mesg);
-    println!("send_transaction result={}", reply);
+//    println!("send_transaction result={}", reply);
     //
     let reply_b : SignedString = serde_json::from_str(&reply).expect("Error in signedstring");
-    println!("send_transaction, step 5, reply_b.result={}", reply_b.result);
+//    println!("send_transaction, step 5, reply_b.result={}", reply_b.result);
     let estr_u8 : &[u8] = reply_b.result.as_bytes();
-    println!("send_transaction, step 6");
+//    println!("send_transaction, step 6");
     let estr_u8_b = get_vector_len_thirtytwo(estr_u8);
-    println!("send_transaction, step 7, estr_u8_b={:?}", estr_u8_b);
+//    println!("send_transaction, step 7, estr_u8_b={:?}", estr_u8_b);
     let message = Message::from_slice(&estr_u8_b).expect("send_transaction : Error in creation of message");
     println!("send_transaction, step 8");
     let secp = Secp256k1::new();
-    println!("send_transaction, step 9 reply_b.sig={:?}", reply_b.sig);
-    println!("send_transaction, step 9, |reply_b.sig|={}", reply_b.sig.len());
+//    println!("send_transaction, step 9 reply_b.sig={:?}", reply_b.sig);
+//    println!("send_transaction, step 9, |reply_b.sig|={}", reply_b.sig.len());
     let esign : secp256k1::Signature = secp256k1::Signature::from_der(&reply_b.sig).expect("send_transaction : Error in extraction of signature");
-    println!("send_transaction, step 10");
+//    println!("send_transaction, step 10");
     let test : bool = secp.verify(&message, &esign, &registrar.public_key).is_ok();
     let esign_str : String = bytes_to_hex(secp256k1::Signature::serialize_der(&esign));
-    println!("send_transaction, step 11, test={}", test);
+//    println!("send_transaction, step 11, test={}", test);
     if test==false {
         println!("send_transaction: error in the verification of signature");
         return None;
     }
-    println!("send_transaction, step 12");
+//    println!("send_transaction, step 12");
     //
     let res : Result<TypeAnswer,_> = serde_json::from_str(&reply_b.result);
-    println!("send_transaction, step 13");
+//    println!("send_transaction, step 13");
     match res {
         Ok(ans) => {println!("send_transaction: parsing success ans={:?}", ans);
                      let ans_compl = get_typeanswer_complete(ans, esign_str);
@@ -212,8 +212,26 @@ pub fn check_mkb_operation(common_init: CommonInitFinal, sgp: SimpleGossipProtoc
     return false;
 }
 
+pub fn get_serialization_typeanswer(e_ans: TypeAnswer) -> String {
+    match e_ans.result {
+        false => {
+            return "answer is false".to_string();
+        },
+        true => {
+            match e_ans.answer {
+                Trivialanswer(_eval) => {
+                    return "successful answer, nothing to report".to_string();
+                },
+                _ => {},
+            }
+            let estr = serde_json::to_string(&e_ans.answer).expect("The serialization failed");
+            estr
+        },
+    }
+}
 
-pub fn process_request_kernel(w_mkb: &mut std::sync::MutexGuard<TopicAllInfo>, my_reg: &SingleRegistrarFinal, esumreq: SumTypeRequest, sgp: SimpleGossipProtocol, common_init: CommonInitFinal) -> Option<String> {
+
+pub fn process_request_kernel(w_mkb: &mut std::sync::MutexGuard<TopicAllInfo>, my_reg: &SingleRegistrarFinal, esumreq: SumTypeRequest, sgp: SimpleGossipProtocol, common_init: CommonInitFinal) -> Result<TypeAnswer,String> {
     //
     // The Add registrar require a specfic operation of sending data.
     //
@@ -222,13 +240,13 @@ pub fn process_request_kernel(w_mkb: &mut std::sync::MutexGuard<TopicAllInfo>, m
             let reg_send_opt = get_registrar_by_address(eadd.registrar_name, &common_init);
             match reg_send_opt {
                 None => {
-                    return Some("Registrar is missing".to_string());
+                    return Err("Registrar is missing".to_string());
                 },
                 Some(reg_send) => {
                     let eval = (*w_mkb).all_topic_state.get(&eadd.topic);
                     match eval {
                         None => {
-                            return Some("Error: Failed to find topic".to_string());
+                            return Err("Error: Failed to find topic".to_string());
                         },
                         Some(eval_b) => {
                             let etopexport = TopicExportation { topic: eadd.topic, topic_info: eval_b.clone()};
@@ -236,7 +254,7 @@ pub fn process_request_kernel(w_mkb: &mut std::sync::MutexGuard<TopicAllInfo>, m
                             let ans_opt = send_transaction(reg_send, &esumreq_b);
                             match ans_opt {
                                 None => {
-                                    return Some("Error operation".to_string());
+                                    return Err("Error operation".to_string());
                                 },
                                 Some(_ans) => {
                                     print!("Sending data went ok");
@@ -256,25 +274,27 @@ pub fn process_request_kernel(w_mkb: &mut std::sync::MutexGuard<TopicAllInfo>, m
     let res_oper = process_operation(w_mkb, common_init.clone(), my_reg, esumreq.clone());
     println!("process_request, step 4");
     if res_oper.result == false {
-        return Some(res_oper.text);
+        return Err(res_oper.text);
     }
     match get_topic_symbolic(&esumreq.clone()) {
         GossipOperationKind::Nogossip() => {
             println!("GossipOperation::Nogossip, so nothing happens");
+            Ok(res_oper)
         },
         GossipOperationKind::Topicgossip(eval) => {
             let x = (*w_mkb).all_topic_state.get(&eval);
             match x {
                 None => {
-                    return Some("Topic missing (but maybe error should be detected earlier)".to_string());
+                    return Err("Topic missing (but maybe error should be detected earlier)".to_string());
                 },
                 Some(eval) => {
                     println!("process_request, step 5");
                     let test = check_mkb_operation(common_init.clone(), eval.sgp.clone(), esumreq.clone());
                     println!("process_request, step 6");
                     if test == false {
-                        return Some("Error with the other registrars".to_string());
+                        return Err("Error with the other registrars".to_string());
                     }
+                    Ok(res_oper)
                 },
             }
         },
@@ -283,11 +303,11 @@ pub fn process_request_kernel(w_mkb: &mut std::sync::MutexGuard<TopicAllInfo>, m
             let test = check_mkb_operation(common_init.clone(), sgp, esumreq.clone());
             println!("process_request, global gossip, step 2");
             if test == false {
-                return Some("Error with the other registrars".to_string());
+                return Err("Error with the other registrars".to_string());
             }
+            Ok(res_oper)
         },
     }
-    None
 }
 
 
@@ -295,11 +315,10 @@ pub fn process_request_kernel(w_mkb: &mut std::sync::MutexGuard<TopicAllInfo>, m
 
 pub fn get_vector_len_thirtytwo(v: &[u8]) -> Vec<u8> {
     let e_vec = encode(multihash::Hash::Keccak256, v).expect("encoding failed");
-    println!("e_vec has len={} while it should be 32", e_vec.len());
+//    println!("e_vec has len={} while it should be 32", e_vec.len());
     let mut e_vec_ret = Vec::<u8>::new();
     for i in 0..32 {
         e_vec_ret.push(e_vec[i]);
     }
     e_vec_ret
-        
 }

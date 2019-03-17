@@ -161,12 +161,13 @@ pub fn process_operation(w_mkb: &mut std::sync::MutexGuard<TopicAllInfo>, common
     let triv_answer = SumTypeAnswer::Trivialanswer(TrivialAnswer {});
     match esumreq.clone() {
         Topiccreationrequest(etop) => {
-            let sgp = Default::default();
+            let sgp = Default::default(); // for just one node, the trivial sgp is ok.
             let mut e_list = HashSet::<String>::new();
             e_list.insert(my_reg.address.clone());
             let set_of_acct = FullTopicData { topic_desc: etop.clone(),
                                               list_active_reg: e_list,
                                               sgp: sgp,
+                                              committee: Vec::<String>::new(), 
                                               list_subscribed_node: HashSet::<String>::new(), 
                                               all_account_state: HashMap::new()};
             (*w_mkb).all_topic_state.insert(etop.topic, set_of_acct);

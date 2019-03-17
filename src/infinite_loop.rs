@@ -58,22 +58,24 @@ pub fn inf_loop(dbe: DBE, tot_mkb: TopicAllInfo, common_init: CommonInitFinal, l
         println!("process_request, step 3");
         let res_oper = process_request_kernel(&mut w_mkb, &my_reg_0.clone(), esumreq.clone(), sgp.clone(), common_init_0.clone());
         match res_oper {
-            Some(e) => {
+            Err(e) => {
                 return Err(JsonRpcError::invalid_params(e));
             },
-            None => {},
-        }
-        println!("process_request, step 7");
-        database_update(w_dbe, esumreq.clone());
-        println!("process_request, step 8");
-        match get_topic(&esumreq.clone()) {
-            Some(etopic) => {
-                send_info_to_registered(w_mkb, &etopic, &esumreq);
+            Ok(eval) => {
+                println!("process_request, step 7");
+                database_update(w_dbe, esumreq.clone());
+                println!("process_request, step 8");
+                match get_topic(&esumreq.clone()) {
+                    Some(etopic) => {
+                        send_info_to_registered(w_mkb, &etopic, &esumreq);
+                    },
+                    None => {},
+                }
+                println!("process_request, step 9");
+                let estr = get_serialization_typeanswer(eval);
+                Ok(Value::String(estr))
             },
-            None => {},
         }
-        println!("process_request, step 9");
-        Ok(Value::String("Operation done correcly".into()))
     };
     let process_request_0  = process_request.clone();
     let process_request_1  = process_request.clone();
@@ -111,26 +113,27 @@ pub fn inf_loop(dbe: DBE, tot_mkb: TopicAllInfo, common_init: CommonInitFinal, l
     };
 
     let signature_oper_secp256k1 = move |estr: &String| -> SignedString {
-        println!("signature_oper_secp256k1, step 1, estr={}", estr);
+        println!("Beginning of signature_oper_secp256k1");
+//        println!("signature_oper_secp256k1, step 1, estr={}", estr);
         let estr_u8 : &[u8] = estr.as_bytes();
-        println!("signature_oper_secp256k1, step 2, estr_u8={:?}", estr_u8);
-        let len=estr_u8.len();
-        println!("signature_oper_secp256k1, step 3, len={}", len);
+//        println!("signature_oper_secp256k1, step 2, estr_u8={:?}", estr_u8);
+//        let len=estr_u8.len();
+//        println!("signature_oper_secp256k1, step 3, len={}", len);
         let estr_u8_b = get_vector_len_thirtytwo(estr_u8);
-        println!("signature_oper_secp256k1, step 4, estr_u8_b={:?}", estr_u8_b);
-        let len_b=estr_u8_b.len();
-        println!("signature_oper_secp256k1, step 5, len_b={}", len_b);
+//        println!("signature_oper_secp256k1, step 4, estr_u8_b={:?}", estr_u8_b);
+//        let len_b=estr_u8_b.len();
+//        println!("signature_oper_secp256k1, step 5, len_b={}", len_b);
         let estr_u8_b_ref : &[u8] = &estr_u8_b;
         let secp = Secp256k1::new();
-        println!("signature_oper_secp256k1, step 6");
+//        println!("signature_oper_secp256k1, step 6");
         let message = Message::from_slice(estr_u8_b_ref).expect("signature_oper_secp256k1 : Error in creation of message");
-        println!("signature_oper_secp256k1, step 7");
+//        println!("signature_oper_secp256k1, step 7");
         
         let sig : secp256k1::Signature = secp.sign(&message, &secret_key_copy);
-        println!("signature_oper_secp256k1, step 8");
+//        println!("signature_oper_secp256k1, step 8");
         let sig_vec : Vec<u8> = secp256k1::Signature::serialize_der(&sig);
-        println!("signature_oper_secp256k1, step 9, sig_vect={:?}", sig_vec);
-        println!("signature_oper_secp256k1, step 9, |sig_vect|={}", sig_vec.len());        
+//        println!("signature_oper_secp256k1, step 9, sig_vect={:?}", sig_vec);
+//        println!("signature_oper_secp256k1, step 9, |sig_vect|={}", sig_vec.len());
         SignedString {result: estr.to_string(), sig: sig_vec}
     };
     
