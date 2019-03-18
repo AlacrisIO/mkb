@@ -55,13 +55,12 @@ extern crate num_derive;
 mod types;
 mod type_init;
 mod type_hash;
-mod parsing_input;
-mod infinite_loop;
+mod type_sign;
+mod vrf;
+mod infinite_loop_client;
 mod gossip_protocol;
 mod data_structure;
-
-//mod rpc_server;
-//mod rpc_client;
+mod common_net;
 
 fn main() {
     println!("Beginning MKB");
@@ -70,14 +69,15 @@ fn main() {
     let nb_arg = arguments.len();
     println!("nb_arg={}", nb_arg);
     if nb_arg != 2 {
-        println!("Exiting program. It is run as mkb common_init.json local_init.json");
+        println!("Exiting program. It is run as");
+        println!("mkb_client    client_init.json");
         process::exit(1);
     }
     let str_file_client_init = &arguments[1];
     println!("ClientInit = {}", str_file_client_init);
-    let client_init : type_init::CommonInitFinal = parsing_input::read_client_init(str_file_client_init);
+    let client_init : type_init::ClientInitFinal = type_init::read_client_init_ci(str_file_client_init);
     println!("We have common_init");
     
-    infinite_loop::inf_loop_client(common_init, local_init);
+    infinite_loop_client::inf_loop_client(client_init);
     println!("Normal termination of the MKB");
 }

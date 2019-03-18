@@ -61,9 +61,7 @@ mod vrf;
 mod infinite_loop;
 mod gossip_protocol;
 mod data_structure;
-
-//mod rpc_server;
-//mod rpc_client;
+mod common_net;
 
 fn main() {
     println!("Beginning MKB");

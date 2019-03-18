@@ -52,6 +52,63 @@ pub struct ListSingleAddress {
     pub list_sing_addr: Vec<SingleAddress>,
 }
 
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct LocalInit {
+    pub name: String,
+    pub address: String,
+    pub public_key: String,
+    pub secret_key: String,
+    pub password: String,
+    pub database_file: String,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct LocalInitFinal {
+    pub name: String,
+    pub address: String,
+    pub public_key: secp256k1::key::PublicKey,
+    pub secret_key: secp256k1::key::SecretKey,
+    pub password: String,
+    pub database_file: String,
+}
+
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct ClientInit {
+    pub client_ip_addr: Vec<u8>,
+    pub client_port: u16,
+    pub registrar_ip_addr: Vec<u8>,
+    pub registrar_port: u16,
+    pub public_key: String,
+    pub secret_key: String,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct ClientInitFinal {
+    pub client_ip_addr: Vec<u8>,
+    pub client_port: u16,
+    pub registrar_ip_addr: Vec<u8>,
+    pub registrar_port: u16,
+    pub public_key: secp256k1::key::PublicKey,
+    pub secret_key: secp256k1::key::SecretKey,
+}
+
+
+
+
+
+pub fn get_clientinit_final(client_init: &ClientInit) -> ClientInitFinal {
+    let secret_key_nat : secp256k1::key::SecretKey = retrieve_secret_key(&client_init.secret_key.clone());
+    let public_key_nat : secp256k1::key::PublicKey = retrieve_public_key(&client_init.public_key.clone());
+    //
+    ClientInitFinal {client_ip_addr: client_init.client_ip_addr.clone(),
+                     client_port: client_init.client_port,
+                     registrar_ip_addr: client_init.registrar_ip_addr.clone(),
+                     registrar_port: client_init.registrar_port,
+                     public_key: public_key_nat, secret_key: secret_key_nat }
+}
+
 pub fn retrieve_complete_list_registrar(common_init: CommonInitFinal) -> ListSingleAddress {
     let mut e_vect = Vec::<SingleAddress>::new();
     for e_rec in common_init.registrars {
@@ -106,25 +163,9 @@ pub fn get_registrar_by_name(name: String, common_init: &CommonInitFinal) -> Opt
 
 
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct LocalInit {
-    pub name: String,
-    pub address: String,
-    pub public_key: String,
-    pub secret_key: String,
-    pub password: String,
-    pub database_file: String,
-}
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct LocalInitFinal {
-    pub name: String,
-    pub address: String,
-    pub public_key: secp256k1::key::PublicKey,
-    pub secret_key: secp256k1::key::SecretKey,
-    pub password: String,
-    pub database_file: String,
-}
+
+
 
 pub fn hex_to_bytes(hex: &str) -> Vec<u8> {
     hex.as_bytes()
@@ -179,6 +220,22 @@ pub fn read_common_init_ci<P: AsRef<Path>>(path: P) -> CommonInitFinal {
     println!("read_common_init_ci : We have read u");
     retrieve_common_init_final(&u)
 }
+
+
+pub fn read_client_init_ci<P: AsRef<Path>>(path: P) -> ClientInitFinal {
+    let file = File::open(path).expect("Error in opening path");
+    println!("read_common_init_ci : After open statement");
+
+    let reader = BufReader::new(file);
+    println!("read_common_init_ci : After reader statement");
+
+    let u : ClientInit = serde_json::from_reader(reader).expect("Error in parsing of input");
+    println!("read_common_init_ci : We have read u");
+    get_clientinit_final(&u)
+}
+
+
+
 
 
 

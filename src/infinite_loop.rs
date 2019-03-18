@@ -10,7 +10,7 @@ use db::*;
 use data_structure::*;
 use gossip_protocol::*;
 use type_sign::*;
-
+use common_net::*;
 
 pub fn inf_loop(dbe: DBE, tot_mkb: TopicAllInfo, common_init: CommonInitFinal, local_init: LocalInitFinal)
 {
@@ -301,8 +301,7 @@ pub fn inf_loop(dbe: DBE, tot_mkb: TopicAllInfo, common_init: CommonInitFinal, l
 
     
     //
-    let my_hostname = IpAddr::V4(Ipv4Addr::new(my_reg_1.ip_addr[0], my_reg_1.ip_addr[1], my_reg_1.ip_addr[2], my_reg_1.ip_addr[3]));
-    println!("We have the hostname");
+    let my_hostname = retrieve_v4_addr(my_reg_1.ip_addr);
     let socket = SocketAddr::new(my_hostname, my_reg_1.port);
     println!("We have the socket");
     //

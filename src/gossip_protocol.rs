@@ -79,17 +79,11 @@ jsonrpc_client!(pub struct InternalClient {
 });
 
 fn send_transaction_kernel(mesg: MessageTrans) -> String {
-//    println!("send_transaction_kernel, step 1");
     let lnk : String = "http://".to_string() + &mesg.ip_plus_port;
-//    println!("send_transaction_kernel, step 2");
     let transport = HttpTransport::new().standalone().expect("Error in creation of HttpTransport");
-//    println!("send_transaction_kernel, step 3");
     let transport_handle = transport.handle(&lnk).expect("Error in creation of transport_handle");
-//    println!("send_transaction_kernel, step 4");
     let mut client = InternalClient::new(transport_handle);
-//    println!("send_transaction_kernel, step 5");
     let result1 = client.internal_operation(mesg.message).call().expect("Error in calls of internal_check");
-//    println!("send_transaction_kernel, step 6");
     result1
 }
 

@@ -23,8 +23,8 @@ pub struct AccountCurrent {
 #[derive(Clone, Debug, Default, Serialize, Deserialize)]
 pub struct TopicDescription {
     pub topic: String, // the name of the topic
-    pub min_interval_insertion_micros: i64, // the number of allowed transactions per seconds. 0 for infinity
     pub committee_size: i32, // committee size. Can be 0 if no committee is computed.
+    pub min_interval_insertion_micros: i64, // the number of allowed transactions per seconds. 0 for infinity
     pub total_capacity_mem: u64, // the total allowed capacity. If 0 for infinity
     pub instant_capacity_mem: u64, // the total allowed capacity. If 0 for infinity
     pub total_throughput_per_min: u64, //
@@ -34,7 +34,7 @@ pub struct TopicDescription {
     pub hash_method: MultihashType, // The hashing method used.
 }
 
-#[derive(Clone, Serialize, Deserialize)]
+#[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct FullTopicData {
     pub topic_desc: TopicDescription,
     pub list_active_reg: HashSet<String>,
@@ -105,7 +105,7 @@ pub struct ExportTopicInformation {
 
 
 
-#[derive(Clone, Hash, Serialize, Deserialize)]
+#[derive(Clone, Debug, Hash, Serialize, Deserialize)]
 pub struct AccountInfo {
     pub topic: String,
     pub account_name: String,
@@ -117,7 +117,7 @@ pub struct AccountInfo {
 
 
 
-#[derive(Clone, Hash, Serialize, Deserialize)]
+#[derive(Clone, Debug, Hash, Serialize, Deserialize)]
 pub struct DepositRequest {
     pub topic: String,
     pub account_name: String,
@@ -125,7 +125,7 @@ pub struct DepositRequest {
     pub amount: u64
 }
 
-#[derive(Clone, Hash, Serialize, Deserialize)]
+#[derive(Clone, Debug, Hash, Serialize, Deserialize)]
 pub struct PaymentRequest {
     pub topic: String,
     pub account_name_sender: String,
@@ -134,7 +134,7 @@ pub struct PaymentRequest {
     pub amount: u64
 }
 
-#[derive(Clone, Hash, Serialize, Deserialize)]
+#[derive(Clone, Debug, Hash, Serialize, Deserialize)]
 pub struct WithdrawRequest {
     pub topic: String,
     pub account_name: String,
@@ -142,7 +142,7 @@ pub struct WithdrawRequest {
     pub amount: u64
 }
 
-#[derive(Clone, Hash, Serialize, Deserialize)]
+#[derive(Clone, Debug, Hash, Serialize, Deserialize)]
 pub struct SendDataRequest {
     pub topic: String,
     pub account_name: String,
@@ -152,7 +152,7 @@ pub struct SendDataRequest {
 
 // Queries on the database
 
-#[derive(Clone, Hash, Serialize, Deserialize)]
+#[derive(Clone, Debug, Hash, Serialize, Deserialize)]
 pub struct GetInfoRequest {
     pub topic: String,
     pub account_name: String,
@@ -162,13 +162,13 @@ pub struct GetInfoRequest {
 
 
 
-#[derive(Clone, Hash, Serialize, Deserialize)]
+#[derive(Clone, Debug, Hash, Serialize, Deserialize)]
 pub struct AddSubscriber {
     pub topic: String,
     pub subscriber_name: String,
 }
 
-#[derive(Clone, Hash, Serialize, Deserialize)]
+#[derive(Clone, Debug, Hash, Serialize, Deserialize)]
 pub struct RemoveSubscriber {
     pub topic: String,
     pub subscriber_name: String,
@@ -184,13 +184,13 @@ pub struct TopicListRegistrar {
 }
 
 
-#[derive(Clone, Hash, Serialize, Deserialize)]
+#[derive(Clone, Debug, Hash, Serialize, Deserialize)]
 pub struct AddRegistrar {
     pub topic: String,
     pub registrar_name: String,
 }
 
-#[derive(Clone, Hash, Serialize, Deserialize)]
+#[derive(Clone, Debug, Hash, Serialize, Deserialize)]
 pub struct RemoveRegistrar {
     pub topic: String,
     pub registrar_name: String,
@@ -202,12 +202,12 @@ pub struct RequestInfoTopic {
     pub topic: String,
 }
 
-#[derive(Clone, Hash, Serialize, Deserialize)]
+#[derive(Clone, Debug, Hash, Serialize, Deserialize)]
 pub struct InternalRequestTopicInfo {
     pub topic: String,
 }
 
-#[derive(Clone, Serialize, Deserialize)]
+#[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct TopicExportation {
     pub topic: String,
     pub topic_info: FullTopicData,
@@ -221,11 +221,32 @@ pub struct TrivialAnswer {
 
 
 
-#[derive(Clone, Hash, Serialize, Deserialize)]
+#[derive(Clone, Debug, Hash, Serialize, Deserialize)]
 pub struct TripleRequest {
     pub topic: String,
     pub account_name: String,
     pub nonce: u32,
+}
+
+
+#[derive(Clone, Debug, Serialize, Deserialize)]
+pub enum SumTypeRequest {
+    Topiccreationrequest(TopicDescription),
+    Accountinfo(AccountInfo),
+    Depositrequest(DepositRequest),
+    Paymentrequest(PaymentRequest),
+    Withdrawrequest(WithdrawRequest),
+    Senddatarequest(SendDataRequest),
+    Addsubscriber(AddSubscriber),
+    Removesubscriber(RemoveSubscriber),
+    Addregistrar(AddRegistrar),
+    Removeregistrar(RemoveRegistrar),
+    Internalrequesttopicinfo(InternalRequestTopicInfo),
+    Fulltopicexport(TopicExportation),
+    Retrievehashforvrf(RetrieveHashForVRF),
+    Setcommittee(Committee),
+    Getlatestentry(GetInfoRequest),
+    Triplerequest(TripleRequest),
 }
 
 pub fn get_topic_export_subscriber(ereq: &SumTypeRequest) -> Option<String> {
@@ -257,27 +278,6 @@ pub fn get_committee_size(top_desc: &TopicDescription, esumreq: SumTypeRequest) 
 
 
 
-
-
-#[derive(Clone, Serialize, Deserialize)]
-pub enum SumTypeRequest {
-    Topiccreationrequest(TopicDescription),
-    Accountinfo(AccountInfo),
-    Depositrequest(DepositRequest),
-    Paymentrequest(PaymentRequest),
-    Withdrawrequest(WithdrawRequest),
-    Senddatarequest(SendDataRequest),
-    Addsubscriber(AddSubscriber),
-    Removesubscriber(RemoveSubscriber),
-    Addregistrar(AddRegistrar),
-    Removeregistrar(RemoveRegistrar),
-    Internalrequesttopicinfo(InternalRequestTopicInfo),
-    Fulltopicexport(TopicExportation),
-    Retrievehashforvrf(RetrieveHashForVRF),
-    Setcommittee(Committee),
-    Getlatestentry(GetInfoRequest),
-    Triplerequest(TripleRequest),
-}
 
 
 

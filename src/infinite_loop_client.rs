@@ -1,20 +1,22 @@
-//use std::process;
 use jsonrpc_core::*;
-//use jsonrpc_core::futures::Future;
-//use std::collections::HashMap;
-use std::sync::{Arc, Mutex};
 use jsonrpc_core::{Error as JsonRpcError};
-use secp256k1::{Secp256k1, Message};
-use std::net::{IpAddr, Ipv4Addr, SocketAddr};
+use std::net::{SocketAddr};
 use jsonrpc_http_server::{ServerBuilder};
 
 //use types;
 use types::*;
 use type_init::*;
-use db::*;
-use data_structure::*;
-use gossip_protocol::*;
+use common_net::*;
 
+jsonrpc_client!(pub struct InternalClient {
+    pub fn send_data(&mut self, transmission: String) -> RpcRequest<String>;
+});
+
+
+pub fn send_data_cs(client_init: ClientInitFinal, esend: SendDataRequest) -> Result<serde_json::Value> {
+    let estr = "testr".to_string();
+    Ok(Value::String(estr))
+}
 
 
 
@@ -22,60 +24,7 @@ use gossip_protocol::*;
 
 pub fn inf_loop_client(client_init: ClientInitFinal)
 {
-    let process_request = move |esumreq: SumTypeRequest| -> Result<serde_json::Value> {
-        println!("process_request, step 1");
-        let w_dbe : std::sync::MutexGuard<DBE> = lk_dbe.lock().unwrap();
-        println!("process_request, step 2");
-        let mut w_mkb : std::sync::MutexGuard<TopicAllInfo> = lk_mkb_0.lock().unwrap();
-        println!("process_request, step 3");
-        let res_oper = process_request_kernel(&mut w_mkb, &my_reg_0.clone(), esumreq.clone(), sgp.clone(), common_init_0.clone());
-        match res_oper {
-            Err(e) => {
-                return Err(JsonRpcError::invalid_params(e));
-            },
-            Ok(eval) => {
-                println!("process_request, step 7");
-                database_update(w_dbe, esumreq.clone());
-                println!("process_request, step 8");
-                match get_topic(&esumreq.clone()) {
-                    Some(etopic) => {
-                        send_info_to_registered(w_mkb, &etopic, &esumreq);
-                    },
-                    None => {},
-                }
-                println!("process_request, step 9");
-                let estr = get_serialization_typeanswer(eval);
-                Ok(Value::String(estr))
-            },
-        }
-    };
-    let process_request_0  = process_request.clone();
-    let process_request_1  = process_request.clone();
-    let process_request_2  = process_request.clone();
-    let process_request_3  = process_request.clone();
-    let process_request_4  = process_request.clone();
-    let process_request_5  = process_request.clone();
-    let process_request_6  = process_request.clone();
-    let process_request_7  = process_request.clone();
-    let process_request_8  = process_request.clone();
-    let process_request_9  = process_request.clone();
-    let process_request_10 = process_request.clone();
-    let process_request_11 = process_request.clone();
-
-    let signature_oper_secp256k1 = move |estr: &String| -> SignedString {
-        println!("Beginning of signature_oper_secp256k1");
-        let estr_u8 : &[u8] = estr.as_bytes();
-        let estr_u8_b = get_vector_len_thirtytwo(estr_u8);
-        let estr_u8_b_ref : &[u8] = &estr_u8_b;
-        let secp = Secp256k1::new();
-        let message = Message::from_slice(estr_u8_b_ref).expect("signature_oper_secp256k1 : Error in creation of message");
-        let sig : secp256k1::Signature = secp.sign(&message, &secret_key_copy);
-        let sig_vec : Vec<u8> = secp256k1::Signature::serialize_der(&sig);
-        SignedString {result: estr.to_string(), sig: sig_vec}
-    };
-    
-    
-
+    let client_init_0 = client_init.clone();
     let fct_parsing_error = |e : jsonrpc_core::Error, oper: String| {
         println!("Error during parsing {:?}", e);
         let str0 = "parsing error for ".to_string();
@@ -84,155 +33,21 @@ pub fn inf_loop_client(client_init: ClientInitFinal)
         return Err(JsonRpcError::invalid_params(str_out));
     };
 
+    let process_request = move |esend: SendDataRequest| -> Result<serde_json::Value> {
+        send_data_cs(client_init, esend)
+    };
+
+
     
     
     let mut io = IoHandler::new();
-    io.add_method("topic_creation", move |params: Params| {
-        println!("Processing a topic_creation_request command");
-        match params.parse::<TopicDescription>() {
-            Ok(eval) => {
-                let esumreq = SumTypeRequest::Topiccreationrequest(eval);
-                return process_request_0(esumreq);
-            },
-            Err(e) => fct_parsing_error(e, "topic_creation".to_string()),
-        }
-    });
-    io.add_method("add_account", move |params: Params| {
-        println!("Processing a add_account command");
-        match params.parse::<AccountInfo>() {
-            Ok(eval) => {
-                println!("add_account, step 1");
-                let esumreq = SumTypeRequest::Accountinfo(eval);
-                println!("add_account, step 2");
-                return process_request_1(esumreq);
-            },
-            Err(e) => fct_parsing_error(e, "add_account".to_string()),
-        }
-    });
-    io.add_method("deposit", move |params: Params| {
-        println!("Processing a deposit command");
-        match params.parse::<DepositRequest>() {
-            Ok(eval) => {
-                let esumreq = SumTypeRequest::Depositrequest(eval);
-                return process_request_2(esumreq);
-            },
-            Err(e) => fct_parsing_error(e, "deposit".to_string()),
-        }
-    });
-    io.add_method("payment", move |params: Params| {
-        println!("Processing a payment command");
-        match params.parse::<PaymentRequest>() {
-            Ok(eval) => {
-                let esumreq = SumTypeRequest::Paymentrequest(eval);
-                return process_request_3(esumreq);
-            },
-            Err(e) => fct_parsing_error(e, "deposit".to_string()),
-        }
-    });
-    io.add_method("withdrawal", move |params: Params| {
-        println!("Processing a withdrawal command");
-        match params.parse::<WithdrawRequest>() {
-            Ok(eval) => {
-                let esumreq = SumTypeRequest::Withdrawrequest(eval);
-                return process_request_4(esumreq);
-            },
-            Err(e) => fct_parsing_error(e, "withdrawal".to_string()),
-        }
-    });
     io.add_method("send_data", move |params: Params| {
         println!("Processing a send_data command");
         match params.parse::<SendDataRequest>() {
             Ok(eval) => {
-                let esumreq = SumTypeRequest::Senddatarequest(eval);
-                return process_request_5(esumreq);
+                return process_request(eval);
             },
             Err(e) => fct_parsing_error(e, "send_data".to_string()),
-        }
-    });
-    io.add_method("get_from_latest", move |params: Params| {
-        println!("Processing a get_from_latest");
-        match params.parse::<GetInfoRequest>() {
-            Ok(eval) => {
-                let esumreq = SumTypeRequest::Getlatestentry(eval);
-                return process_request_6(esumreq);
-            },
-            Err(e) => fct_parsing_error(e, "get_info".to_string()),
-        }
-    });
-    io.add_method("get_from_triple", move |params: Params| {
-        println!("Processing a get_from_triple");
-        match params.parse::<TripleRequest>() {
-            Ok(eval) => {
-                let esumreq = SumTypeRequest::Triplerequest(eval);
-                return process_request_7(esumreq);
-            },
-            Err(e) => fct_parsing_error(e, "get_info".to_string()),
-        }
-    });
-    io.add_method("add_subscriber", move |params: Params| {
-        println!("Processing a add subscriber request");
-        match params.parse::<AddSubscriber>() {
-            Ok(eval) => {
-                let esumreq = SumTypeRequest::Addsubscriber(eval);
-                return process_request_8(esumreq);
-            },
-            Err(e) => fct_parsing_error(e, "add_subscriber".to_string()),
-        }
-    });
-    io.add_method("remove_subscriber", move |params: Params| {
-        println!("Processing a remove subscriber request");
-        match params.parse::<RemoveSubscriber>() {
-            Ok(eval) => {
-                let esumreq = SumTypeRequest::Removesubscriber(eval);
-                return process_request_9(esumreq);
-            },
-            Err(e) => fct_parsing_error(e, "add_subscriber".to_string()),
-        }
-    });
-    io.add_method("add_registrar", move |params: Params| {
-        println!("Processing a add registrar request");
-        match params.parse::<AddRegistrar>() {
-            Ok(eval) => {
-                let esumreq = SumTypeRequest::Addregistrar(eval);
-                return process_request_10(esumreq);
-            },
-            Err(e) => fct_parsing_error(e, "add_registrar".to_string()),
-        }
-    });
-    io.add_method("remove_registrar", move |params: Params| {
-        println!("Processing a remove registrar request");
-        match params.parse::<RemoveRegistrar>() {
-            Ok(eval) => {
-                let esumreq = SumTypeRequest::Removeregistrar(eval);
-                return process_request_11(esumreq);
-            },
-            Err(e) => fct_parsing_error(e, "remove_registrar".to_string()),
-        }
-    });
-    io.add_method("get_total_list_registrars", move |params: Params| {
-        println!("Providing the list of registrars");
-        match params.parse::<TotalListRegistrar>() {
-            Ok(_) => {
-                return get_total_list_registrars();
-            },
-            Err(e) => fct_parsing_error(e, "get_total_list_registrars".to_string()),
-        }
-    });
-    io.add_method("find_topic_info", move |params: Params| {
-        println!("Providing information of the topic");
-        match params.parse::<RequestInfoTopic>() {
-            Ok(eval) => {
-                let res = get_topic_info(eval.topic.clone());
-                match res {
-                    Ok(eval_b) => {
-                        return Ok(eval_b);
-                    }
-                    Err(_) => {
-                        get_topic_info_sgp(eval.topic)
-                    },
-                }
-            },
-            Err(e) => fct_parsing_error(e, "find_topic_info".to_string()),
         }
     });
     io.add_method("registration_info", move |params: Params| {
@@ -240,10 +55,8 @@ pub fn inf_loop_client(client_init: ClientInitFinal)
         match params.parse::<MessageTransRed>() {
             Ok(eval) => {
                 let esumreq = serde_json::from_str(&eval.message).expect("Parsing failed");
-                println!("parsing eval, step 2");
-                let res_oper = process_operation(&mut w_mkb, common_init.clone(), &my_reg, esumreq);
-                println!("parsing eval, step 3");
-                return fct_signature(&res_oper);
+                let estr = "parsing eval, step 2".to_string();
+                return Ok(Value::String(estr));
             },
             Err(e) => fct_parsing_error(e, "internel_check".to_string()),
         }
@@ -251,9 +64,8 @@ pub fn inf_loop_client(client_init: ClientInitFinal)
 
     
     //
-    let my_hostname = IpAddr::V4(Ipv4Addr::new(my_reg_1.ip_addr[0], my_reg_1.ip_addr[1], my_reg_1.ip_addr[2], my_reg_1.ip_addr[3]));
-    println!("We have the hostname");
-    let socket = SocketAddr::new(my_hostname, my_reg_1.port);
+    let my_hostname = retrieve_v4_addr(client_init.client_ip_addr);
+    let socket = SocketAddr::new(my_hostname, client_init.client_port);
     println!("We have the socket");
     //
     let server = ServerBuilder::new(io)
