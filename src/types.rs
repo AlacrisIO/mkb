@@ -228,15 +228,6 @@ pub struct TripleRequest {
     pub nonce: u32,
 }
 
-
-
-
-
-
-
-
-
-
 pub fn get_topic(ereq: &SumTypeRequest) -> Option<String> {
     use types::SumTypeRequest::*;
     match ereq {
@@ -296,19 +287,6 @@ pub struct TypeAnswer {
     pub text: String,
     pub answer: SumTypeAnswer,
 }
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct TypeAnswerComplete {
-    pub result: bool, 
-    pub text: String,
-    pub signature: String,
-    pub answer: SumTypeAnswer,
-}
-
-pub fn get_typeanswer_complete(ans: TypeAnswer, sign: String) -> TypeAnswerComplete {
-    TypeAnswerComplete { result: ans.result, text: ans.text, signature: sign, answer: ans.answer}
-}
-
 
 #[derive(Debug, Clone, Hash, Serialize, Deserialize)]
 pub struct NoTopicOper {

@@ -4,15 +4,12 @@ use jsonrpc_core::{Error as JsonRpcError};
 use std::net::{IpAddr, Ipv4Addr, SocketAddr};
 use jsonrpc_http_server::{ServerBuilder};
 
-//use types;
 use types::*;
 use type_init::*;
 use db::*;
 use data_structure::*;
 use gossip_protocol::*;
 use type_sign::*;
-
-
 
 
 pub fn inf_loop(dbe: DBE, tot_mkb: TopicAllInfo, common_init: CommonInitFinal, local_init: LocalInitFinal)
@@ -39,7 +36,6 @@ pub fn inf_loop(dbe: DBE, tot_mkb: TopicAllInfo, common_init: CommonInitFinal, l
 
     let lk_dbe = Arc::new(Mutex::<DBE>::new(dbe));
     let lk_mkb = Arc::new(Mutex::<TopicAllInfo>::new(tot_mkb));
-    let lk_mkb_0 = lk_mkb.clone();
     let lk_mkb_3 = lk_mkb.clone();
     let lk_mkb_4 = lk_mkb.clone();
     let sgp = compute_simple_gossip_protocol(&common_init_0, my_reg.address.clone());
@@ -49,7 +45,7 @@ pub fn inf_loop(dbe: DBE, tot_mkb: TopicAllInfo, common_init: CommonInitFinal, l
         println!("process_request, step 1");
         let w_dbe : std::sync::MutexGuard<DBE> = lk_dbe.lock().unwrap();
         println!("process_request, step 2");
-        let mut w_mkb : std::sync::MutexGuard<TopicAllInfo> = lk_mkb_0.lock().unwrap();
+        let mut w_mkb : std::sync::MutexGuard<TopicAllInfo> = lk_mkb.lock().unwrap();
         println!("process_request, step 3");
         let res_oper = process_request_kernel(&mut w_mkb, &my_reg_0.clone(), esumreq.clone(), sgp.clone(), common_init_0.clone());
         match res_oper {

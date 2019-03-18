@@ -112,7 +112,7 @@ pub fn send_info_to_registered(mut w_mkb: std::sync::MutexGuard<TopicAllInfo>, e
 
 
 
-pub fn send_transaction(registrar: &SingleRegistrarFinal, esumreq: &SumTypeRequest) -> Option<TypeAnswerComplete> {
+pub fn send_transaction(registrar: &SingleRegistrarFinal, esumreq: &SumTypeRequest) -> Option<TypeAnswer> {
     let ip_plus_port = get_ip_plus_port(&registrar.ip_addr, registrar.port);
     //
     let esumreq_str = serde_json::to_string(esumreq).expect("Errot in creation of esumreq_str");
@@ -125,13 +125,11 @@ pub fn send_transaction(registrar: &SingleRegistrarFinal, esumreq: &SumTypeReque
         println!("send_transaction: error in the verification of signature");
         return None;
     }
-    let esign_str : String = "str".to_string(); // should be removed
     //
     let res : Result<TypeAnswer,_> = serde_json::from_str(&reply_b.result);
     match res {
         Ok(ans) => {println!("send_transaction: parsing success ans={:?}", ans);
-                     let ans_compl = get_typeanswer_complete(ans, esign_str);
-                     Some(ans_compl)},
+                    Some(ans)},
         Err(e) => {println!("send_transaction: parsing error e={}", e); None},
     }
 }
