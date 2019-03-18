@@ -228,7 +228,7 @@ pub struct TripleRequest {
     pub nonce: u32,
 }
 
-pub fn get_topic(ereq: &SumTypeRequest) -> Option<String> {
+pub fn get_topic_export_subscriber(ereq: &SumTypeRequest) -> Option<String> {
     use types::SumTypeRequest::*;
     match ereq {
         Accountinfo(eacct) => { Some(eacct.topic.clone()) },
@@ -239,6 +239,21 @@ pub fn get_topic(ereq: &SumTypeRequest) -> Option<String> {
         _ => None,
     }
 }
+
+pub fn get_committee_size(top_desc: &TopicDescription, esumreq: SumTypeRequest) -> i32 {
+    use types::SumTypeRequest::*;
+    match esumreq {
+        Addregistrar(_eval) => {
+            return top_desc.committee_size;
+        },
+        Removeregistrar(_eval) => {
+            return top_desc.committee_size;
+        },
+        _ => -1,
+    }
+}
+
+
 
 
 

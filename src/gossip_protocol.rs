@@ -6,6 +6,7 @@ use types::SumTypeAnswer::*;
 use types::SumTypeRequest::*;
 use type_init::*;
 use type_sign::*;
+use vrf::*;
 use data_structure::*;
 use jsonrpc_client_http::HttpTransport;
 
@@ -258,17 +259,21 @@ pub fn process_request_kernel(w_mkb: &mut std::sync::MutexGuard<TopicAllInfo>, m
             Ok(res_oper)
         },
         GossipOperationKind::Topicgossip(eval) => {
-            let x = (*w_mkb).all_topic_state.get(&eval);
+            let mut x = (*w_mkb).all_topic_state.get_mut(&eval);
             match x {
                 None => {
                     return Err("Topic missing (but maybe error should be detected earlier)".to_string());
                 },
-                Some(eval) => {
+                Some(eval_b) => {
                     println!("process_request, step 5");
-                    let test = check_mkb_operation(common_init.clone(), eval.sgp.clone(), esumreq.clone());
+                    let test = check_mkb_operation(common_init.clone(), eval_b.sgp.clone(), esumreq.clone());
                     println!("process_request, step 6");
                     if test == false {
                         return Err("Error with the other registrars".to_string());
+                    }
+                    let committee_size = get_committee_size(&eval_b.topic_desc, esumreq);
+                    if committee_size>0 {
+                        compute_committee_and_send(eval_b, my_reg, eval, committee_size);
                     }
                     Ok(res_oper)
                 },

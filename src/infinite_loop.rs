@@ -56,7 +56,7 @@ pub fn inf_loop(dbe: DBE, tot_mkb: TopicAllInfo, common_init: CommonInitFinal, l
                 println!("process_request, step 7");
                 database_update(w_dbe, esumreq.clone());
                 println!("process_request, step 8");
-                match get_topic(&esumreq.clone()) {
+                match get_topic_export_subscriber(&esumreq.clone()) {
                     Some(etopic) => {
                         send_info_to_registered(w_mkb, &etopic, &esumreq);
                     },

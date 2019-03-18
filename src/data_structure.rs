@@ -442,13 +442,14 @@ pub fn process_operation(w_mkb: &mut std::sync::MutexGuard<TopicAllInfo>, common
             TypeAnswer { result: true, answer: triv_ans, text: "success".to_string() }
         },
         Retrievehashforvrf(eret) => {
-            let hash_opt = compute_vrf_hash(w_mkb, eret.topic);
-            match hash_opt {
+            let x = (*w_mkb).all_topic_state.get(&eret.topic);
+            match x {
                 None => {
                     TypeAnswer { result: false, answer: triv_answer, text: "topic error".to_string() }
                 },
-                Some(x) => {
-                    let ans = SumTypeAnswer::Answerhashforvrf(x);
+                Some(eval) => {
+                    let hash_vrf = compute_vrf_hash(eval, eret.topic);
+                    let ans = SumTypeAnswer::Answerhashforvrf(hash_vrf);
                     TypeAnswer { result: true, answer: ans, text: "successful topic extraction".to_string() }
                 },
             }
