@@ -57,6 +57,7 @@ mod types;
 mod type_init;
 mod type_hash;
 mod type_sign;
+mod vrf;
 mod infinite_loop;
 mod gossip_protocol;
 mod data_structure;

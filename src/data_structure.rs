@@ -13,7 +13,7 @@ use multihash::{encode};
 use chrono::prelude::*;
 use types::HashType;
 use type_init::*;
-
+use vrf::compute_vrf_hash;
 
 
 
@@ -442,24 +442,13 @@ pub fn process_operation(w_mkb: &mut std::sync::MutexGuard<TopicAllInfo>, common
             TypeAnswer { result: true, answer: triv_ans, text: "success".to_string() }
         },
         Retrievehashforvrf(eret) => {
-            let x = (*w_mkb).all_topic_state.get(&eret.topic);
-            match x {
+            let hash_opt = compute_vrf_hash(w_mkb, eret.topic);
+            match hash_opt {
                 None => {
                     TypeAnswer { result: false, answer: triv_answer, text: "topic error".to_string() }
                 },
-                Some(eval) => {
-                    let mut ev = Vec::<SinglePairUserHash>::new();
-                    for (name, seq) in &eval.all_account_state {
-                        let elen = seq.len();
-                        let esing = SinglePairUserHash { account_name: name.to_string(), hash: seq[elen-1].hash.clone() };
-                        ev.push(esing);
-                    }
-                    let econt = ComputeHashOfTopic { topic: eret.topic, topic_desc: eval.topic_desc.clone(), list_pair: ev };
-                    let econt_str = serde_json::to_string(&econt).expect("error in serialization");
-                    let econt_str_u8 = econt_str.as_bytes();
-                    let eret = encode(eval.topic_desc.hash_method.val, econt_str_u8).unwrap();
-                    let eret_str = bytes_to_hex(eret);
-                    let ans = SumTypeAnswer::Answerhashforvrf(AnswerHashForVRF { hash: eret_str});
+                Some(x) => {
+                    let ans = SumTypeAnswer::Answerhashforvrf(x);
                     TypeAnswer { result: true, answer: ans, text: "successful topic extraction".to_string() }
                 },
             }

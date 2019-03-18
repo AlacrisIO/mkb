@@ -20,6 +20,18 @@ pub fn signature_oper_secp256k1(secret_key: secp256k1::key::SecretKey, estr: &St
 }
 
 
+pub fn check_signature_oper(public_key: secp256k1::key::PublicKey, str_sig: &SignedString) -> bool {
+    let estr_u8 : &[u8] = str_sig.result.as_bytes();
+    let estr_u8_b = get_vector_len_thirtytwo(estr_u8);
+    let message = Message::from_slice(&estr_u8_b).expect("send_transaction : Error in creation of message");
+    let secp = Secp256k1::new();
+    let esign : secp256k1::Signature = secp256k1::Signature::from_der(&str_sig.sig).expect("send_transaction : Error in extraction of signature");
+    let test : bool = secp.verify(&message, &esign, &public_key).is_ok();
+    test
+}
+
+
+
 
 pub fn get_vector_len_thirtytwo(v: &[u8]) -> Vec<u8> {
     let e_vec = encode(multihash::Hash::Keccak256, v).expect("encoding failed");

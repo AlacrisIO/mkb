@@ -4,6 +4,7 @@
 use serde::*;
 use type_init::*;
 use type_hash::*;
+use vrf::*;
 use chrono::prelude::*;
 use std::collections::{HashMap, HashSet};
 pub type HashType = Vec<u8>;
@@ -212,31 +213,13 @@ pub struct TopicExportation {
     pub topic_info: FullTopicData,
 }
 
-#[derive(Clone, Serialize, Deserialize)]
-pub struct RetrieveHashForVRF {
-    pub topic: String,
-}
-
 
 #[derive(Debug, Clone, Hash, Serialize, Deserialize)]
 pub struct TrivialAnswer {
 }
 
 
-#[derive(Debug, Clone, Hash, Serialize, Deserialize)]
-pub struct Committee {
-    pub topic: String,
-    pub committee: Vec<String>,
-}
 
-
-
-
-
-#[derive(Debug, Clone, Hash, Serialize, Deserialize)]
-pub struct AnswerHashForVRF {
-    pub hash: String,
-}
 
 #[derive(Clone, Hash, Serialize, Deserialize)]
 pub struct TripleRequest {
@@ -398,4 +381,3 @@ pub struct MessageTransRed {
 //    pub sender: String,
     pub message: String,
 }
-
