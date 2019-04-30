@@ -8,6 +8,9 @@ services:
     image: gcr.io/legicash-demo-1950/legicash-demo/alacris_mkb:${TAG:-v1.1}
     hostname: "alacris-registrar-bob"
     container_name: "alacris-registrar-bob"
+    environment:
+      - CARGO_HOME=/var/www/app/legicash-mkb/dockerout/cargo
+      - CARGO_TARGET_DIR=/var/www/app/legicash-mkb/dockerout/target
     networks:
       legicash-demo:
         ipv4_address: 10.5.0.11
@@ -25,6 +28,9 @@ services:
     image: gcr.io/legicash-demo-1950/legicash-demo/alacris_mkb:${TAG:-v1.1}
     hostname: "alacris-registrar-alice"
     container_name: "alacris-registrar-alice"
+    environment:
+      - CARGO_HOME=/var/www/app/legicash-mkb/dockerout/cargo
+      - CARGO_TARGET_DIR=/var/www/app/legicash-mkb/dockerout/target
     networks:
       legicash-demo:
         ipv4_address: 10.5.0.12
