@@ -110,8 +110,6 @@ pub fn inf_loop(dbe: DBE, tot_mkb: TopicAllInfo, common_init: CommonInitFinal, l
         return Err(JsonRpcError::invalid_params(str_out));
     };
 
-    
-    
     let mut io = IoHandler::new();
     io.add_method("terminate", |_: Params| {
         println!("Processing a terminate command");
@@ -298,8 +296,6 @@ pub fn inf_loop(dbe: DBE, tot_mkb: TopicAllInfo, common_init: CommonInitFinal, l
             Err(e) => fct_parsing_error(e, "internel_check".to_string()),
         }
     });
-
-    
     //
     let my_hostname = retrieve_v4_addr(my_reg_1.ip_addr);
     let socket = SocketAddr::new(my_hostname, my_reg_1.port);
@@ -308,7 +304,6 @@ pub fn inf_loop(dbe: DBE, tot_mkb: TopicAllInfo, common_init: CommonInitFinal, l
     let server = ServerBuilder::new(io)
         .start_http(&socket)
         .expect("Server must start with no issues");
-    
     println!("Before server.wait");
     server.wait()
 }

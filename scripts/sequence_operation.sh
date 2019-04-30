@@ -10,7 +10,10 @@ curl -s -X POST -H 'Content-Type: application/json' -i http://127.0.0.1:8805 --d
 "id" : 1
 }'
 
-#
+# ANSWER IS
+# {"jsonrpc":"2.0","result":"successful answer, nothing to report","id":1}
+
+
 
 echo "OPER 2: add a registrar"
 curl -s -X POST -H 'Content-Type: application/json' -i http://127.0.0.1:8805 --data '{
@@ -19,6 +22,9 @@ curl -s -X POST -H 'Content-Type: application/json' -i http://127.0.0.1:8805 --d
 "params": ["base_topic", "0x9ccaed210ce8c0cb49c5ad1c4f583406c264ba69"],
 "id" : 1
 }'
+
+# ANSWER IS
+# {"jsonrpc":"2.0","result":"successful answer, nothing to report","id":1}
 
 
 
@@ -30,6 +36,10 @@ curl -s -X POST -H 'Content-Type: application/json' -i http://127.0.0.1:8805 --d
 "id" : 1
 }'
 
+# ANSWER IS
+# {"jsonrpc":"2.0","result":"{\"Mkboperation\":{\"signature\":[]}}","id":1}
+
+
 echo "OPER 4: get_from_latest"
 curl -s -X POST -H 'Content-Type: application/json' -i http://127.0.0.1:8805 --data '{
 "jsonrpc": "2.0", 
@@ -38,6 +48,7 @@ curl -s -X POST -H 'Content-Type: application/json' -i http://127.0.0.1:8805 --d
 "id" : 1
 }'
 
-
+# ANSWER IS
+#
 
 echo
