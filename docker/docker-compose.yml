@@ -1,19 +1,39 @@
 version: "3"
 services:
   # Alacris services
-  alacris_mkb: # Alacris MKB
+  alacris_registrar_bob:
     build:
       context: ..
       dockerfile: docker/containers/alacris_mkb/Dockerfile
     image: gcr.io/legicash-demo-1950/legicash-demo/alacris_mkb:${TAG:-v1.1}
-    hostname: "alacris-mkb"
-    container_name: "alacris-mkb"
+    hostname: "alacris-registrar-bob"
+    container_name: "alacris-registrar-bob"
     networks:
       legicash-demo:
         ipv4_address: 10.5.0.11
     ports:
-      - "8805:8805"
       - "8806:8806"
+    volumes:
+      - ../docker/config/:/var/www/app/legicash-mkb/config/
+      - ../docker/containers/alacris_mkb/files/scripts/run_registrar_bob.sh:/usr/local/bin/run_registrar_bob
+      - ../docker/containers/alacris_mkb/files/conf/supervisord_bob.conf:/etc/supervisord.conf
+
+  alacris_registrar_alice:
+    build:
+      context: ..
+      dockerfile: docker/containers/alacris_mkb/Dockerfile
+    image: gcr.io/legicash-demo-1950/legicash-demo/alacris_mkb:${TAG:-v1.1}
+    hostname: "alacris-registrar-alice"
+    container_name: "alacris-registrar-alice"
+    networks:
+      legicash-demo:
+        ipv4_address: 10.5.0.12
+    ports:
+      - "8805:8805"
+    volumes:
+      - ../docker/config/:/var/www/app/legicash-mkb/config/
+      - ../docker/containers/alacris_mkb/files/scripts/run_registrar_alice.sh:/usr/local/bin/run_registrar_alice
+      - ../docker/containers/alacris_mkb/files/conf/supervisord_alice.conf:/etc/supervisord.conf
 
 
 networks:
