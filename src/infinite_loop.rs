@@ -25,7 +25,7 @@ pub fn inf_loop(dbe: DBE, tot_mkb: TopicAllInfo, common_init: CommonInitFinal, l
 
     let common_init_0 = common_init.clone();
     let common_init_1 = common_init.clone();
-//    let common_init_2 = common_init.clone();
+    let common_init_2 = common_init.clone();
     //
     let my_reg = get_registrar_by_address(local_init.address, &common_init_0).expect("Failed to find registrar");
     let my_reg_0 = my_reg.clone();
@@ -85,6 +85,9 @@ pub fn inf_loop(dbe: DBE, tot_mkb: TopicAllInfo, common_init: CommonInitFinal, l
         let estr = serde_json::to_string(&retrieve_complete_list_registrar(common_init_1.clone())).unwrap();
         return Ok(Value::String(estr));
     };
+    let get_registrar_by_name_loc = move |name: String| -> Option<SingleRegistrarFinal> {
+        get_registrar_by_name(name, &common_init_2.clone())
+    };
     let get_topic_info = move |topic: String| -> Result<serde_json::Value> {
         let w_mkb : std::sync::MutexGuard<TopicAllInfo> = lk_mkb_3.lock().unwrap();
         let eval = get_topic_info_wmkb(&w_mkb, &my_reg_2, &topic);
@@ -115,7 +118,7 @@ pub fn inf_loop(dbe: DBE, tot_mkb: TopicAllInfo, common_init: CommonInitFinal, l
         Ok(Value::String("We are trying to exit from the terminate".into()))
     });
     io.add_method("topic_creation", move |params: Params| {
-        println!("Processing a topic_creation_request command");
+        println!("Processing a topic_creation request command");
         match params.parse::<TopicDescription>() {
             Ok(eval) => {
                 let esumreq = SumTypeRequest::Topiccreationrequest(eval);
@@ -217,7 +220,7 @@ pub fn inf_loop(dbe: DBE, tot_mkb: TopicAllInfo, common_init: CommonInitFinal, l
         }
     });
     io.add_method("remove_subscriber", move |params: Params| {
-        println!("Processing a remove subscriber request");
+        println!("Processing a remove_subscriber request");
         match params.parse::<RemoveSubscriber>() {
             Ok(eval) => {
                 let esumreq = SumTypeRequest::Removesubscriber(eval);
@@ -227,17 +230,23 @@ pub fn inf_loop(dbe: DBE, tot_mkb: TopicAllInfo, common_init: CommonInitFinal, l
         }
     });
     io.add_method("add_registrar", move |params: Params| {
-        println!("Processing a add registrar request");
-        match params.parse::<AddRegistrar>() {
+        println!("Processing a add_registrar request");
+        match params.parse::<AddRegistrarInput>() {
             Ok(eval) => {
-                let esumreq = SumTypeRequest::Addregistrar(eval);
-                return process_request_10(esumreq);
+                match get_registrar_by_name_loc(eval.registrar_name) {
+                    None => Err(JsonRpcError::invalid_params("wrong registrar name".to_string())),
+                    Some(ereg) => {
+                        let eval_b = AddRegistrar { topic: eval.topic, registrar_address: ereg.address};
+                        let esumreq = SumTypeRequest::Addregistrar(eval_b);
+                        return process_request_10(esumreq);
+                    }
+                }
             },
             Err(e) => fct_parsing_error(e, "add_registrar".to_string()),
         }
     });
     io.add_method("remove_registrar", move |params: Params| {
-        println!("Processing a remove registrar request");
+        println!("Processing a remove_registrar request");
         match params.parse::<RemoveRegistrar>() {
             Ok(eval) => {
                 let esumreq = SumTypeRequest::Removeregistrar(eval);
@@ -247,7 +256,7 @@ pub fn inf_loop(dbe: DBE, tot_mkb: TopicAllInfo, common_init: CommonInitFinal, l
         }
     });
     io.add_method("get_total_list_registrars", move |params: Params| {
-        println!("Providing the list of registrars");
+        println!("Processing a get_total_list_registrars command");
         match params.parse::<TotalListRegistrar>() {
             Ok(_) => {
                 return get_total_list_registrars();

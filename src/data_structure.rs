@@ -167,8 +167,8 @@ pub fn process_operation(w_mkb: &mut std::sync::MutexGuard<TopicAllInfo>, common
             let set_of_acct = FullTopicData { topic_desc: etop.clone(),
                                               list_active_reg: e_list,
                                               sgp: sgp,
-                                              committee: Vec::<String>::new(), 
-                                              list_subscribed_node: HashSet::<String>::new(), 
+                                              committee: Vec::<String>::new(),
+                                              list_subscribed_node: HashSet::<String>::new(),
                                               all_account_state: HashMap::new()};
             (*w_mkb).all_topic_state.insert(etop.topic, set_of_acct);
             TypeAnswer { result: true, answer: triv_answer, text: "success".to_string() }
@@ -385,11 +385,11 @@ pub fn process_operation(w_mkb: &mut std::sync::MutexGuard<TopicAllInfo>, common
             let mut x = (*w_mkb).all_topic_state.get_mut(&ereg.topic);
             match x {
                 Some(mut etop_b) => {
-                    let test = etop_b.list_active_reg.contains(&ereg.registrar_name.clone());
+                    let test = etop_b.list_active_reg.contains(&ereg.registrar_address.clone());
                     match test {
                         true => TypeAnswer { result: false, answer: triv_answer, text: "already_registered".to_string() },
                         false => {
-                            etop_b.list_active_reg.insert(ereg.registrar_name);
+                            etop_b.list_active_reg.insert(ereg.registrar_address);
                             etop_b.sgp = compute_simple_gossip_protocol_topic(&common_init, my_reg.address.clone(), etop_b.list_active_reg.clone());
                             TypeAnswer{result: true, answer: triv_answer, text: "successful subscriber insertion".to_string()}
                         },
@@ -399,7 +399,7 @@ pub fn process_operation(w_mkb: &mut std::sync::MutexGuard<TopicAllInfo>, common
             }
         },
         Removeregistrar(ereg) => {
-            if ereg.registrar_name == my_reg.name {
+            if ereg.registrar_address == my_reg.address {
                 let x = (*w_mkb).all_topic_state.remove(&ereg.topic);
                 match x {
                     Some(_) => TypeAnswer{result: false, answer: triv_answer, text: "error in registrar removal".to_string()},
@@ -410,11 +410,11 @@ pub fn process_operation(w_mkb: &mut std::sync::MutexGuard<TopicAllInfo>, common
                 let mut x = (*w_mkb).all_topic_state.get_mut(&ereg.topic);
                 match x {
                     Some(mut etop_b) => {
-                        let test = etop_b.list_active_reg.contains(&ereg.registrar_name);
+                        let test = etop_b.list_active_reg.contains(&ereg.registrar_address);
                         match test {
                             false => TypeAnswer{result: false, answer: triv_answer, text: "not_registered".to_string()},
                             true => {
-                                etop_b.list_active_reg.remove(&ereg.registrar_name);
+                                etop_b.list_active_reg.remove(&ereg.registrar_address);
                                 etop_b.sgp = compute_simple_gossip_protocol_topic(&common_init, my_reg.address.clone(), etop_b.list_active_reg.clone());
                                 TypeAnswer{result: true, answer: triv_answer, text: "successful registrar removal".to_string()}
                             },

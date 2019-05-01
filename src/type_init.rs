@@ -11,6 +11,7 @@ pub struct SingleRegistrar {
     pub name: String,
     pub address: String,
     pub public_key: String,
+    pub hostname: String,
     pub ip_addr: Vec<u8>,
     pub port: u16,
 }
@@ -27,6 +28,7 @@ pub struct SingleRegistrarFinal {
     pub name: String,
     pub address: String,
     pub public_key: secp256k1::key::PublicKey,
+    pub hostname: String,
     pub ip_addr: Vec<u8>,
     pub port: u16,
 }
@@ -129,6 +131,7 @@ pub fn retrieve_common_init_final(common_init: &CommonInit) -> CommonInitFinal {
     for eval in common_init.registrars.clone() {
         let eval_b = SingleRegistrarFinal{name: eval.name.clone(), address: eval.address.clone(),
                                           public_key: retrieve_public_key(&eval.public_key.clone()),
+                                          hostname: eval.hostname.clone(),
                                           ip_addr: eval.ip_addr, port: eval.port};
         e_vect.push(eval_b);
         e_map_name.insert(eval.name.clone(), idx);

@@ -195,13 +195,19 @@ pub struct TopicListRegistrar {
 #[derive(Clone, Debug, Hash, Serialize, Deserialize)]
 pub struct AddRegistrar {
     pub topic: String,
+    pub registrar_address: String,
+}
+
+#[derive(Clone, Debug, Hash, Serialize, Deserialize)]
+pub struct AddRegistrarInput {
+    pub topic: String,
     pub registrar_name: String,
 }
 
 #[derive(Clone, Debug, Hash, Serialize, Deserialize)]
 pub struct RemoveRegistrar {
     pub topic: String,
-    pub registrar_name: String,
+    pub registrar_address: String,
 }
 
 
@@ -371,7 +377,7 @@ pub struct TransmissionRequest {
 
 #[derive(Clone, Serialize, Deserialize)]
 pub struct MessageTrans {
-    pub ip_plus_port: String,
+    pub address: String,
 //    pub sender: String,
     pub message: String,
 }

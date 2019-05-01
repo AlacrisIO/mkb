@@ -63,15 +63,13 @@ pub fn compute_simple_gossip_protocol_topic(common_init: &CommonInitFinal, addre
 }
 
 
-pub fn get_ip_plus_port(ip_addr: &Vec<u8>, port: u16) -> String {
-    let str0 : String = ip_addr[0].to_string();
-    let str1 : String = ip_addr[1].to_string();
-    let str2 : String = ip_addr[2].to_string();
-    let str3 : String = ip_addr[3].to_string();
-    let str4 : String = port.to_string();
-    let ip_plus_port : String = str0 + "." + &str1 + "." + &str2 + "." + &str3 + ":" + &str4;
-    ip_plus_port    
+pub fn get_hostname_plus_port(hostname: &String, port: u16) -> String {
+    let str0 = hostname.clone();
+    let str1 = port.to_string();
+    let hostname_plus_port : String = str0 + ":" + &str1;
+    hostname_plus_port
 }
+
 
 jsonrpc_client!(pub struct InternalClient {
     pub fn internal_operation(&mut self, transmission: String) -> RpcRequest<String>;
@@ -79,7 +77,7 @@ jsonrpc_client!(pub struct InternalClient {
 });
 
 fn send_transaction_kernel(mesg: MessageTrans) -> String {
-    let lnk : String = "http://".to_string() + &mesg.ip_plus_port;
+    let lnk : String = "http://".to_string() + &mesg.address;
     let transport = HttpTransport::new().standalone().expect("Error in creation of HttpTransport");
     let transport_handle = transport.handle(&lnk).expect("Error in creation of transport_handle");
     let mut client = InternalClient::new(transport_handle);
@@ -108,10 +106,10 @@ pub fn send_info_to_registered(mut w_mkb: std::sync::MutexGuard<TopicAllInfo>, e
 
 
 pub fn send_transaction(registrar: &SingleRegistrarFinal, esumreq: &SumTypeRequest) -> Option<TypeAnswer> {
-    let ip_plus_port = get_ip_plus_port(&registrar.ip_addr, registrar.port);
+    let address = get_hostname_plus_port(&registrar.hostname, registrar.port);
     //
     let esumreq_str = serde_json::to_string(esumreq).expect("Errot in creation of esumreq_str");
-    let mesg = MessageTrans { ip_plus_port: ip_plus_port, message: esumreq_str };
+    let mesg = MessageTrans { address: address, message: esumreq_str };
     //
     let reply = send_transaction_kernel(mesg);
     //
@@ -206,25 +204,37 @@ pub fn process_request_kernel(w_mkb: &mut std::sync::MutexGuard<TopicAllInfo>, m
     //
     // The Add registrar require a specfic operation of sending data.
     //
+    println!("process_request_kernel, step 1");
     match esumreq.clone() {
         Addregistrar(eadd) => {
-            let reg_send_opt = get_registrar_by_address(eadd.registrar_name, &common_init);
+            println!("process_request_kernel, add_registrar, step 1");
+            let reg_send_opt = get_registrar_by_address(eadd.registrar_address, &common_init);
+            println!("process_request_kernel, add_registrar, step 2");
             match reg_send_opt {
                 None => {
+                    println!("process_request_kernel, add_registrar, step 3");
                     return Err("Registrar is missing".to_string());
                 },
                 Some(reg_send) => {
+                    println!("process_request_kernel, add_registrar, step 4");
                     let eval = (*w_mkb).all_topic_state.get(&eadd.topic);
+                    println!("process_request_kernel, add_registrar, step 5");
                     match eval {
                         None => {
+                            println!("process_request_kernel, add_registrar, step 6");
                             return Err("Error: Failed to find topic".to_string());
                         },
                         Some(eval_b) => {
+                            println!("process_request_kernel, add_registrar, step 7");
                             let etopexport = TopicExportation { topic: eadd.topic, topic_info: eval_b.clone()};
+                            println!("process_request_kernel, add_registrar, step 8");
                             let esumreq_b = SumTypeRequest::Fulltopicexport(etopexport);
+                            println!("process_request_kernel, add_registrar, step 9");
                             let ans_opt = send_transaction(&reg_send, &esumreq_b);
+                            println!("process_request_kernel, add_registrar, step 10");
                             match ans_opt {
                                 None => {
+                                    println!("process_request_kernel, add_registrar, step 11");
                                     return Err("Error operation".to_string());
                                 },
                                 Some(_ans) => {
@@ -235,15 +245,15 @@ pub fn process_request_kernel(w_mkb: &mut std::sync::MutexGuard<TopicAllInfo>, m
                     }
                 },
             }
-            
         },
         _ => {},
     }
     //
     // The other operations
     //
+    println!("process_request_kernel, step 2");
     let res_oper = process_operation(w_mkb, common_init.clone(), my_reg, esumreq.clone());
-    println!("process_request, step 4");
+    println!("process_request_kernel, step 3");
     if res_oper.result == false {
         return Err(res_oper.text);
     }

@@ -38,7 +38,7 @@ extern crate jsonrpc_client_http;
 //The Merkle trees from CBT.
 extern crate merkle_cbt;
 extern crate numext_fixed_hash;
-    
+
 //big integers
 //#![cfg(feature = "serde")]
 extern crate num_bigint;
@@ -82,15 +82,15 @@ fn main() {
 
     let local_init : type_init::LocalInitFinal = type_init::read_local_init(str_file_local_init);
     println!("We have local_init");
-    
+
     let database_file : String = local_init.database_file.clone();
     println!("We have database_file = {}", database_file);
-    
+
     let dbe = db::open_database(&database_file);
     println!("We have opened db");
 
     let tot_mkb : types::TopicAllInfo = Default::default();
-    
+
     infinite_loop::inf_loop(dbe, tot_mkb, common_init, local_init);
     println!("Normal termination of the MKB");
 }
