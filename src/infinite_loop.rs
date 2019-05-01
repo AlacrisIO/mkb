@@ -18,8 +18,7 @@ pub fn inf_loop(dbe: DBE, tot_mkb: TopicAllInfo, common_init: CommonInitFinal, l
 //    let server_handle : Arc<Mutex<i32>>;
 //    let server_handle : Arc<Mutex<Option<i32>>>;
 //    let server_handle : Arc<Mutex<Option<ServerHandle>>>;
-    //    let for_io = server_handle.clone();
-    
+//    let for_io = server_handle.clone();
 //    let server_handle = Arc<Mutex<Option<ServerHandle>>>;
 //    let server_handle = Arc::new(Mutex::<i32>::new(0));
 //    let server_handle : Arc<Mutex<Option<jsonrpc_http_server::ServerHandler>>> = Default::default();
@@ -121,6 +120,16 @@ pub fn inf_loop(dbe: DBE, tot_mkb: TopicAllInfo, common_init: CommonInitFinal, l
             Ok(eval) => {
                 let esumreq = SumTypeRequest::Topiccreationrequest(eval);
                 return process_request_0(esumreq);
+            },
+            Err(e) => fct_parsing_error(e, "topic_creation".to_string()),
+        }
+    });
+    io.add_method("topic_creation_test", move |params: Params| {
+        println!("Processing a topic_creation_test command");
+        match params.parse::<TopicTest>() {
+            Ok(eval) => {
+                let estr = "parsing went ok";
+                Ok(Value::String(estr.to_string()))
             },
             Err(e) => fct_parsing_error(e, "topic_creation".to_string()),
         }
