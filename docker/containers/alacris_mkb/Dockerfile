@@ -1,4 +1,4 @@
-FROM gcr.io/legicash-demo-1950/legicash-demo/alacris-mkb-build-prerequisites:v1 AS dependencies
+FROM gcr.io/legicash-demo-1950/legicash-demo/alacris_mkb_build_prerequisites:v1 AS dependencies
 
 # copy over dummy files
 COPY docker/containers/alacris_mkb/dummy_src/ /var/www/app/dummy-mkb/
