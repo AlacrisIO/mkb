@@ -1,0 +1,8 @@
+{
+    "name": "Bob",
+    "address": "0x9ccaed210ce8c0cb49c5ad1c4f583406c264ba69",
+    "public_key": "026389776a876f0b6f582164d5201fbd9f904e8c51ae7e78f276a2e3fb0a2bac19", 
+    "secret_key": "97615fdadd5a65cfed9e9342c60ce1fd820bd4f7837fc2c938395bc3cae702bd", 
+    "password": "",
+    "database_file": "/tmp/Bob/"
+}

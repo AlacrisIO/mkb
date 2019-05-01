@@ -1,0 +1,9 @@
+{
+    "name": "Alice",
+    "address": "0xc54e86dffb87b9736e2e35dd85c775358f1c31ce",
+    "public_key": "03cd03c8c012e55f2cc82839a55578222d47e69f3c1fb067a6600dfd79c0bd28b7", 
+    "secret_key": "54aeebe11f5675bbde3c11cf2cf3480ff7013726617c9613ea98537cfd50c021", 
+    "password": "",
+    "database_file": "/tmp/Alice/"
+}
+
