@@ -1,4 +1,8 @@
 [[bin]]
+name = "mkb_client"
+path = "src/main_client.rs"
+
+[[bin]]
 name = "mkb_registrar"
 path = "src/main_mkb_registrar.rs"
 
@@ -51,6 +55,7 @@ num-derive = "0.2"
 num-bigint = { version = "0.2.2", features = [ "serde" ] }
 num-traits = "0.2.6"
 num-format = { version = "0.1", features = ["num-bigint", "with-serde"] }
+hex = "0.3.2"
 
 log = "0.4.6"
 
