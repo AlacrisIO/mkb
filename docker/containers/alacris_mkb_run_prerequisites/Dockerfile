@@ -21,3 +21,5 @@ WORKDIR /var/www/app/legicash-mkb/
 
 USER appuser
 
+EXPOSE 8805 8806
+
