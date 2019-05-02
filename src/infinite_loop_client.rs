@@ -13,7 +13,7 @@ jsonrpc_client!(pub struct InternalClient {
 });
 
 
-pub fn send_data_cs(client_init: &ClientInitFinal, esend: SendDataRequest) -> Result<serde_json::Value> {
+pub fn send_data_cs(_client_init: &ClientInitFinal, _esend: SendDataRequest) -> Result<serde_json::Value> {
     let estr = "testr".to_string();
     Ok(Value::String(estr))
 }
@@ -52,7 +52,7 @@ pub fn inf_loop_client(client_init: ClientInitFinal)
         println!("Printing from the registered registrar");
         match params.parse::<MessageTransRed>() {
             Ok(eval) => {
-                let esumreq : SumTypeRequest = serde_json::from_str(&eval.message).expect("Parsing failed");
+                let _esumreq : SumTypeRequest = serde_json::from_str(&eval.message).expect("Parsing failed");
                 let estr = "parsing eval, step 2".to_string();
                 return Ok(Value::String(estr));
             },

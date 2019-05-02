@@ -1,6 +1,6 @@
 [[bin]]
 name = "mkb_client"
-path = "src/main_mkb_client.rs"
+path = "src/main_client.rs"
 
 [[bin]]
 name = "mkb_registrar"

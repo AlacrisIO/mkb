@@ -141,8 +141,7 @@ pub fn get_topic_info_wmkb(w_mkb: &std::sync::MutexGuard<TopicAllInfo>, my_reg: 
             for e_ent in eval.list_active_reg.clone() {
                 e_vec.push(e_ent);
             }
-            Some(ExportTopicInformation {
-                topic_desc: eval.topic_desc.clone(),
+            Some(ExportTopicInformation {topic_desc: eval.topic_desc.clone(),
                 one_registrar_ip_addr: my_reg.ip_addr.clone(),
                 one_registrar_port: my_reg.port,
                 list_registrar_name: e_vec})
@@ -161,17 +160,27 @@ pub fn process_operation(w_mkb: &mut std::sync::MutexGuard<TopicAllInfo>, common
     let triv_answer = SumTypeAnswer::Trivialanswer(TrivialAnswer {});
     match esumreq.clone() {
         Topiccreationrequest(etop) => {
-            let sgp = Default::default(); // for just one node, the trivial sgp is ok.
-            let mut e_list = HashSet::<String>::new();
-            e_list.insert(my_reg.address.clone());
-            let set_of_acct = FullTopicData { topic_desc: etop.clone(),
-                                              list_active_reg: e_list,
-                                              sgp: sgp,
-                                              committee: Vec::<String>::new(),
-                                              list_subscribed_node: HashSet::<String>::new(),
-                                              all_account_state: HashMap::new()};
-            (*w_mkb).all_topic_state.insert(etop.topic, set_of_acct);
-            TypeAnswer { result: true, answer: triv_answer, text: "success".to_string() }
+            /* TODO: Clarify this problem.
+            We need to handle the error case where the topic is already registered.
+            But the obvious code does not compile.
+            //
+            let x = (*w_mkb).all_topic_state.get(&etop.topic);
+            match x {
+                Some(_edep_b) => {
+                    return TypeAnswer { result: false, answer: triv_answer, text: "topic already present".to_string() };
+                },
+                None => {*/
+                    let sgp = Default::default(); // for just one node, the trivial sgp is ok.
+                    let mut e_list = HashSet::<String>::new();
+                    e_list.insert(my_reg.address.clone());
+                    let set_of_acct = FullTopicData { topic_desc: etop.clone(),
+                                                      list_active_reg: e_list,
+                                                      sgp: sgp,
+                                                      committee: Vec::<String>::new(),
+                                                      list_subscribed_node: HashSet::<String>::new(),
+                                                      all_account_state: HashMap::new()};
+                    (*w_mkb).all_topic_state.insert(etop.topic, set_of_acct);
+                    TypeAnswer { result: true, answer: triv_answer, text: "success".to_string() }
         },
         Accountinfo(eacc) => {
             let mut x = (*w_mkb).all_topic_state.get_mut(&eacc.topic);
@@ -291,7 +300,6 @@ pub fn process_operation(w_mkb: &mut std::sync::MutexGuard<TopicAllInfo>, common
                 },
                 None => TypeAnswer { result: false, answer: triv_answer, text: "topic error".to_string() },
             }
-            
         },
         Withdrawrequest(ewith) => {
             let mut x = (*w_mkb).all_topic_state.get_mut(&ewith.topic);
@@ -490,5 +498,6 @@ pub fn process_operation(w_mkb: &mut std::sync::MutexGuard<TopicAllInfo>, common
                 },
             }
         },
+//        _ => {TypeAnswer { result: false, answer: triv_answer, text: "successful request".to_string() }},
     }
 }
