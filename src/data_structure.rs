@@ -14,7 +14,7 @@ use chrono::prelude::*;
 use types::HashType;
 use type_init::*;
 use vrf::compute_vrf_hash;
-
+use type_sign::vecu8_to_string;
 
 
 pub fn func_insert_record(topic_desc: &TopicDescription, listval: &mut Vec<AccountCurrent>, eval: AccountCurrent) -> TypeAnswer {
@@ -25,7 +25,7 @@ pub fn func_insert_record(topic_desc: &TopicDescription, listval: &mut Vec<Accou
         match dura_micros {
             Some(eval) => {
                 if eval < topic_desc.min_interval_insertion_micros {
-                    let mkb_oper_triv = SumTypeAnswer::Mkboperation(MKBoperation {signature: None});
+                    let mkb_oper_triv = SumTypeAnswer::Mkboperation(MKBoperation {hash: None});
                     return TypeAnswer { result: false, answer: mkb_oper_triv, text: "too near to last insertione".to_string() };
                 }
             },
@@ -72,7 +72,7 @@ pub fn func_insert_record(topic_desc: &TopicDescription, listval: &mut Vec<Accou
             }
         }
     }
-    let mkb_oper = SumTypeAnswer::Mkboperation(MKBoperation {signature: Some(eval.hash)});
+    let mkb_oper = SumTypeAnswer::Mkboperation(MKBoperation {hash: Some(vecu8_to_string(eval.hash))});
     TypeAnswer { result: true, answer: mkb_oper, text: "success".to_string() }
 }
 
@@ -192,7 +192,7 @@ pub fn process_operation(w_mkb: &mut std::sync::MutexGuard<TopicAllInfo>, common
                     }
                     let acct_start : AccountCurrent = AccountCurrent { current_money: 0, data_current: "".to_string(), hash: hash.clone(), utc: Utc::now(), nonce: 0};
                     eacc_b.all_account_state.insert(eacc.account_name, vec![acct_start.clone()]);
-                    let mkb_oper = SumTypeAnswer::Mkboperation(MKBoperation {signature: Some(acct_start.hash)});
+                    let mkb_oper = SumTypeAnswer::Mkboperation(MKBoperation {hash: Some(vecu8_to_string(acct_start.hash))});
                     TypeAnswer { result: true, answer: mkb_oper, text: "success".to_string() }
                 },
                 None => TypeAnswer { result: false, answer: triv_answer, text: "topic absent".to_string() },
@@ -339,8 +339,8 @@ pub fn process_operation(w_mkb: &mut std::sync::MutexGuard<TopicAllInfo>, common
                     match y {
                         Some(mut edep_c) => {
                             let len = edep_c.len();
-                            println!("edep_c[len-1]={:?}", edep_c[len-1].hash);
-                            println!("data.hash={:?}", edata.hash);
+//                            println!("edep_c[len-1]={:?}", edep_c[len-1].hash);
+//                            println!("data.hash={:?}", edata.hash);
                             if edep_c[len-1].hash == edata.hash {
                                 let new_amnt = edep_c[len-1].current_money;
                                 let econt = ContainerTypeForHash { hash: edep_c[len-1].hash.clone(), esum: esumreq};

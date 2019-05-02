@@ -301,7 +301,7 @@ pub fn get_committee_size(top_desc: &TopicDescription, esumreq: SumTypeRequest) 
 
 #[derive(Debug, Clone, Hash, Serialize, Deserialize)]
 pub struct MKBoperation {
-    pub signature: Option<HashType>,
+    pub hash: Option<String>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
