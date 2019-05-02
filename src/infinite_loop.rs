@@ -1,7 +1,7 @@
 use jsonrpc_core::*;
 use std::sync::{Arc, Mutex};
 use jsonrpc_core::{Error as JsonRpcError};
-use std::net::{IpAddr, Ipv4Addr, SocketAddr};
+use std::net::{SocketAddr};
 use jsonrpc_http_server::{ServerBuilder};
 
 use types::*;

@@ -158,6 +158,16 @@ pub struct SendDataRequest {
     pub data: String
 }
 
+#[derive(Clone, Debug, Hash, Serialize, Deserialize)]
+pub struct SendDataRequestInput {
+    pub topic: String,
+    pub account_name: String,
+    pub hash: String,
+    pub data: String
+}
+
+
+
 // Queries on the database
 
 #[derive(Clone, Debug, Hash, Serialize, Deserialize)]
