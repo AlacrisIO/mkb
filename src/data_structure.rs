@@ -186,7 +186,10 @@ pub fn process_operation(w_mkb: &mut std::sync::MutexGuard<TopicAllInfo>, common
             let mut x = (*w_mkb).all_topic_state.get_mut(&eacc.topic);
             match x {
                 Some(mut eacc_b) => {
-                    let hash: HashType = Default::default();
+                    let mut hash: Vec<u8> = Vec::new();
+                    for i in 0..32 {
+                        hash.push(0);
+                    }
                     let acct_start : AccountCurrent = AccountCurrent { current_money: 0, data_current: "".to_string(), hash: hash.clone(), utc: Utc::now(), nonce: 0};
                     eacc_b.all_account_state.insert(eacc.account_name, vec![acct_start.clone()]);
                     let mkb_oper = SumTypeAnswer::Mkboperation(MKBoperation {signature: Some(acct_start.hash)});
@@ -336,6 +339,8 @@ pub fn process_operation(w_mkb: &mut std::sync::MutexGuard<TopicAllInfo>, common
                     match y {
                         Some(mut edep_c) => {
                             let len = edep_c.len();
+                            println!("edep_c[len-1]={:?}", edep_c[len-1].hash);
+                            println!("data.hash={:?}", edata.hash);
                             if edep_c[len-1].hash == edata.hash {
                                 let new_amnt = edep_c[len-1].current_money;
                                 let econt = ContainerTypeForHash { hash: edep_c[len-1].hash.clone(), esum: esumreq};
