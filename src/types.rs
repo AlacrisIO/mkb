@@ -34,12 +34,6 @@ pub struct TopicDescription {
     pub hash_method: MultihashType, // The hashing method used.
 }
 
-#[derive(Clone, Debug, Default, Serialize, Deserialize)]
-pub struct TopicTest {
-    pub topic: String, // the name of the topic
-    pub committee_size_str: String, // committee size. Can be 0 if no committee is computed.
-}
-
 
 
 

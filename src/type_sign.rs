@@ -54,20 +54,13 @@ pub fn position_in_vector(v: &Vec<&str>, val: &str) -> usize {
 }
 
 pub fn string_to_vecu8(vin: String) -> Vec<u8> {
-    let len = vin.len();
-    if len == 0 {
-        let mut e_vec = Vec::new();
-        for i in 0..32 {
-            e_vec.push(0);
-        }
-        return e_vec;
-    }
-    let len2=len/2;
+    let len  = vin.len();
+    let len2 = len/2 - 1;
     let vec_char : Vec<&str> = vec!["0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "a", "b", "c", "d", "e", "f"];
     let mut e_vec = Vec::new();
     for i in 0..len2 {
-        let char1 : &str = &vin[2*i..2*i+1];
-        let char2 : &str = &vin[2*i+1..2*i+2];
+        let char1 : &str = &vin[2+2*i..2*i+3];
+        let char2 : &str = &vin[2*i+3..2*i+4];
         let pos1 = position_in_vector(&vec_char, char1) as u8;
         let pos2 = position_in_vector(&vec_char, char2) as u8;
         let epos : u8 = pos1 + 16 * pos2;
@@ -80,7 +73,7 @@ pub fn string_to_vecu8(vin: String) -> Vec<u8> {
 pub fn vecu8_to_string(vin: Vec<u8>) -> String {
     let len=vin.len();
     let vec_char=vec!["0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "a", "b", "c", "d", "e", "f"];
-    let mut str_o : String = "".to_string();
+    let mut str_o : String = "0x".to_string();
     for i in 0..len {
         let eval_u8 : u8 = vin[i];
         let res1_u8 = eval_u8 % 16;

@@ -127,16 +127,6 @@ pub fn inf_loop(dbe: DBE, tot_mkb: TopicAllInfo, common_init: CommonInitFinal, l
             Err(e) => fct_parsing_error(e, "topic_creation".to_string()),
         }
     });
-    io.add_method("topic_creation_test", move |params: Params| {
-        println!("Processing a topic_creation_test command");
-        match params.parse::<TopicTest>() {
-            Ok(eval) => {
-                let estr = "parsing went ok";
-                Ok(Value::String(estr.to_string()))
-            },
-            Err(e) => fct_parsing_error(e, "topic_creation".to_string()),
-        }
-    });
     io.add_method("add_account", move |params: Params| {
         println!("Processing a add_account command");
         match params.parse::<AccountInfo>() {
@@ -181,9 +171,12 @@ pub fn inf_loop(dbe: DBE, tot_mkb: TopicAllInfo, common_init: CommonInitFinal, l
     });
     io.add_method("send_data", move |params: Params| {
         println!("Processing a send_data command");
-        match params.parse::<SendDataRequest>() {
+        match params.parse::<SendDataRequestInput>() {
             Ok(eval) => {
-                let esumreq = SumTypeRequest::Senddatarequest(eval);
+                let eval_b = SendDataRequest { topic: eval.topic, account_name: eval.account_name,
+                                               hash: string_to_vecu8(eval.hash),
+                                               data: eval.data };
+                let esumreq = SumTypeRequest::Senddatarequest(eval_b);
                 return process_request_5(esumreq);
             },
             Err(e) => fct_parsing_error(e, "send_data".to_string()),
