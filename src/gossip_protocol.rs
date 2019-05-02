@@ -181,23 +181,6 @@ pub fn check_mkb_operation(common_init: CommonInitFinal, sgp: SimpleGossipProtoc
     return false;
 }
 
-pub fn get_serialization_typeanswer(e_ans: TypeAnswer) -> String {
-    match e_ans.result {
-        false => {
-            return "answer is false".to_string();
-        },
-        true => {
-            match e_ans.answer {
-                Trivialanswer(_eval) => {
-                    return "successful answer, nothing to report".to_string();
-                },
-                _ => {},
-            }
-            let estr = serde_json::to_string(&e_ans.answer).expect("The serialization failed");
-            estr
-        },
-    }
-}
 
 
 pub fn process_request_kernel(w_mkb: &mut std::sync::MutexGuard<TopicAllInfo>, my_reg: &SingleRegistrarFinal, esumreq: SumTypeRequest, sgp: SimpleGossipProtocol, common_init: CommonInitFinal) -> Result<TypeAnswer,String> {

@@ -28,7 +28,7 @@ pub struct TopicDescription {
     pub total_capacity_mem: u64, // the total allowed capacity. If 0 for infinity
     pub instant_capacity_mem: u64, // the total allowed capacity. If 0 for infinity
     pub total_throughput_per_min: u64, //
-    pub total_throughput_per_sec: u64, // 
+    pub total_throughput_per_sec: u64, //
     pub retention_time: i64, // the retention policy of data. If 0, then not used.
     pub retention_size: u32, // the maximum number of versions are kept. If 0 then all are kept.
     pub hash_method: MultihashType, // The hashing method used.
@@ -315,8 +315,15 @@ pub enum SumTypeAnswer {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct SumTypeAnswerOutput {
+    pub nature: String,
+    pub hash: Option<String>,
+}
+
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct TypeAnswer {
-    pub result: bool, 
+    pub result: bool,
     pub text: String,
     pub answer: SumTypeAnswer,
 }

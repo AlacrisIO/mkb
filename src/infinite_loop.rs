@@ -12,6 +12,33 @@ use gossip_protocol::*;
 use type_sign::*;
 use common_net::*;
 
+
+pub fn get_serialization_typeanswer(e_ans: TypeAnswer) -> Result<serde_json::Value> {
+    match e_ans.result {
+        false => {
+            return Ok(Value::String("answer is false".to_string()));
+        },
+        true => {
+            match e_ans.answer {
+                SumTypeAnswer::Trivialanswer(_eval) => {
+                    return Ok(Value::String("successful answer, nothing to report".to_string()));
+                },
+                SumTypeAnswer::Mkboperation(emkb) => {
+                    let eans_out = SumTypeAnswerOutput { nature: "Mkboperation".to_string(), hash: emkb.hash};
+                    let estr = serde_json::to_string(&eans_out).expect("The serialization failed");
+                    return Ok(Value::String(estr));
+                },
+                _ => {},
+            }
+            let estr = serde_json::to_string(&e_ans.answer).expect("The serialization failed");
+            Ok(Value::String(estr))
+        },
+    }
+}
+
+
+
+
 pub fn inf_loop(dbe: DBE, tot_mkb: TopicAllInfo, common_init: CommonInitFinal, local_init: LocalInitFinal)
 {
 //    let server_handle : Arc<i32>;
@@ -63,7 +90,7 @@ pub fn inf_loop(dbe: DBE, tot_mkb: TopicAllInfo, common_init: CommonInitFinal, l
                 }
                 println!("process_request, step 9");
                 let estr = get_serialization_typeanswer(eval);
-                Ok(Value::String(estr))
+                estr
             },
         }
     };

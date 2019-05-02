@@ -187,7 +187,7 @@ pub fn process_operation(w_mkb: &mut std::sync::MutexGuard<TopicAllInfo>, common
             match x {
                 Some(mut eacc_b) => {
                     let mut hash: Vec<u8> = Vec::new();
-                    for i in 0..32 {
+                    for _i in 0..32 {
                         hash.push(0);
                     }
                     let acct_start : AccountCurrent = AccountCurrent { current_money: 0, data_current: "".to_string(), hash: hash.clone(), utc: Utc::now(), nonce: 0};
