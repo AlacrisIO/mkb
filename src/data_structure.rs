@@ -44,8 +44,8 @@ pub fn func_insert_record(topic_desc: &TopicDescription, listval: &mut Vec<Accou
                 let dt_prev = listval[j_level].utc;
                 let dura_micros = dt_last.signed_duration_since(dt_prev).num_microseconds();
                 match dura_micros {
-                    Some(eval) => {
-                        if eval > topic_desc.retention_time { break; }
+                    Some(eper_time) => {
+                        if eper_time > topic_desc.retention_time { break; }
                     },
                     None => {break;},
                 }
@@ -126,7 +126,9 @@ pub fn compute_the_hash(topdesc: &TopicDescription, econt: &ContainerTypeForHash
     let econt_str = serde_json::to_string(econt).expect("Error in compute_the_hash");
     let econt_str_u8 = econt_str.as_bytes();
     let eret = encode(topdesc.hash_method.val, econt_str_u8).expect("encoding failed");
-    eret
+    let eret_red = eret[0..32].to_vec();
+    println!("compute_the_hash |eret_red|={:?}", eret_red.len());
+    eret_red
 }
 
 

@@ -25,8 +25,6 @@ pub fn get_serialization_typeanswer(e_ans: TypeAnswer) -> Result<serde_json::Val
                 },
                 SumTypeAnswer::Mkboperation(emkb) => {
                     let eans_out = SumTypeAnswerOutput { nature: "Mkboperation".to_string(), hash: emkb.hash};
-//                    let estr = serde_json::to_string(&eans_out).expect("The serialization failed");
-//                    return Ok(Value::String(estr))
                     return Ok(serde_json::to_value(eans_out).map_err(|_| jsonrpc_core::Error::internal_error())?);
                 },
                 _ => {},
