@@ -52,7 +52,7 @@ Blind version of the MKB
 
 Data type with leaves (by Alex):
  * List of S-expression.
- * 
+ *
 
 
 
