@@ -160,6 +160,15 @@ pub fn has_topic(w_mkb: &mut std::sync::MutexGuard<TopicAllInfo>, etopic: &Strin
     }
 }
 
+pub fn has_account(eacc : &mut FullTopicData, eacc_name: &String) -> bool {
+    let x = eacc.all_account_state.get(eacc_name);
+    match x {
+        Some(_) => {true},
+        None => {false},
+    }
+}
+
+
 // This function takes the request, check for correctness.
 // If correct, the signature is returned to be checked.
 // If not correct, then the signature is sent in order to be checked.
@@ -203,14 +212,25 @@ pub fn process_operation(w_mkb: &mut std::sync::MutexGuard<TopicAllInfo>, common
             let mut x = (*w_mkb).all_topic_state.get_mut(&eacc.topic);
             match x {
                 Some(mut eacc_b) => {
-                    let mut hash: Vec<u8> = Vec::new();
-                    for _i in 0..32 {
-                        hash.push(0);
+                    let test = has_account(eacc_b, &eacc.account_name);
+                    match test {
+                        true => {
+                            // need non-trivial answer
+                            TypeAnswer { result: true, answer: triv_answer, text: "success".to_string() }
+                        },
+                        false => {
+                            let mut hash: Vec<u8> = Vec::new();
+                            for _i in 0..32 {
+                                hash.push(0);
+                            }
+                            let acct_start : AccountCurrent = AccountCurrent { current_money: 0, data_current: "".to_string(), hash: hash.clone(), utc: Utc::now(), nonce: 0};
+                            eacc_b.all_account_state.insert(eacc.account_name, vec![acct_start.clone()]);
+                            let mkb_oper = SumTypeAnswer::Mkboperation(MKBoperation {hash: Some(vecu8_to_string(acct_start.hash))});
+                            TypeAnswer { result: true, answer: mkb_oper, text: "success".to_string() }
+                        }
                     }
-                    let acct_start : AccountCurrent = AccountCurrent { current_money: 0, data_current: "".to_string(), hash: hash.clone(), utc: Utc::now(), nonce: 0};
-                    eacc_b.all_account_state.insert(eacc.account_name, vec![acct_start.clone()]);
-                    let mkb_oper = SumTypeAnswer::Mkboperation(MKBoperation {hash: Some(vecu8_to_string(acct_start.hash))});
-                    TypeAnswer { result: true, answer: mkb_oper, text: "success".to_string() }
+                    
+                    
                 },
                 None => TypeAnswer { result: false, answer: triv_answer, text: "topic absent".to_string() },
             }
