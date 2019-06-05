@@ -60,7 +60,8 @@ hex = "0.3.2"
 log = "0.4.6"
 
 rocksdb = "0.8.1"
-secp256k1 = { git = "https://github.com/rust-bitcoin/rust-secp256k1/", features = [ "rand", "serde" ], rev = "90faf434c9ace65005541a4cc0b9e7505014cb6f" }
+#secp256k1 = { git = "https://github.com/rust-bitcoin/rust-secp256k1/", features = [ "rand", "serde" ], rev = "90faf434c9ace65005541a4cc0b9e7505014cb6f" }
+secp256k1 = { git = "https://github.com/rust-bitcoin/rust-secp256k1/", features = [ "rand", "serde" ] }
 multi-party-schnorr = { git = "https://github.com/KZen-networks/multi-party-schnorr" }
 chrono = { version = "0.4.6", features = ["serde"] }
 

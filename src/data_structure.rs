@@ -152,7 +152,13 @@ pub fn get_topic_info_wmkb(w_mkb: &std::sync::MutexGuard<TopicAllInfo>, my_reg: 
 }
 
 
-
+pub fn has_topic(w_mkb: &mut std::sync::MutexGuard<TopicAllInfo>, etopic: &String) -> bool {
+    let x = (*w_mkb).all_topic_state.get(etopic);
+    match x {
+        Some(_) => {true},
+        None => {false},
+    }
+}
 
 // This function takes the request, check for correctness.
 // If correct, the signature is returned to be checked.
@@ -163,14 +169,14 @@ pub fn process_operation(w_mkb: &mut std::sync::MutexGuard<TopicAllInfo>, common
         Topiccreationrequest(etop) => {
             /* TODO: Clarify this problem.
             We need to handle the error case where the topic is already registered.
-            But the obvious code does not compile.
+            But the obvious code does not compile. */
             //
-            let x = (*w_mkb).all_topic_state.get(&etop.topic);
-            match x {
-                Some(_edep_b) => {
+            let test = has_topic(w_mkb, &etop.topic);
+            match test {
+                true => {
                     return TypeAnswer { result: false, answer: triv_answer, text: "topic already present".to_string() };
                 },
-                None => {*/
+                false => {
                     let sgp = Default::default(); // for just one node, the trivial sgp is ok.
                     let mut e_list = BTreeSet::<String>::new();
                     e_list.insert(my_reg.address.clone());
@@ -182,6 +188,8 @@ pub fn process_operation(w_mkb: &mut std::sync::MutexGuard<TopicAllInfo>, common
                                                       all_account_state: BTreeMap::new()};
                     (*w_mkb).all_topic_state.insert(etop.topic, set_of_acct);
                     TypeAnswer { result: true, answer: triv_answer, text: "success".to_string() }
+                },
+            }
         },
         Accountinfo(eacc) => {
             let mut x = (*w_mkb).all_topic_state.get_mut(&eacc.topic);
