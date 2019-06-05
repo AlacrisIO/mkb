@@ -7,8 +7,7 @@
 use types::*;
 use types::SumTypeRequest::*;
 use gossip_protocol::*;
-use std::collections::HashMap;
-use std::collections::HashSet;
+use std::collections::{BTreeSet, BTreeMap};
 use multihash::{encode};
 use chrono::prelude::*;
 use types::HashType;
@@ -173,14 +172,14 @@ pub fn process_operation(w_mkb: &mut std::sync::MutexGuard<TopicAllInfo>, common
                 },
                 None => {*/
                     let sgp = Default::default(); // for just one node, the trivial sgp is ok.
-                    let mut e_list = HashSet::<String>::new();
+                    let mut e_list = BTreeSet::<String>::new();
                     e_list.insert(my_reg.address.clone());
                     let set_of_acct = FullTopicData { topic_desc: etop.clone(),
                                                       list_active_reg: e_list,
                                                       sgp: sgp,
                                                       committee: Vec::<String>::new(),
-                                                      list_subscribed_node: HashSet::<String>::new(),
-                                                      all_account_state: HashMap::new()};
+                                                      list_subscribed_node: BTreeSet::<String>::new(),
+                                                      all_account_state: BTreeMap::new()};
                     (*w_mkb).all_topic_state.insert(etop.topic, set_of_acct);
                     TypeAnswer { result: true, answer: triv_answer, text: "success".to_string() }
         },
@@ -378,7 +377,7 @@ pub fn process_operation(w_mkb: &mut std::sync::MutexGuard<TopicAllInfo>, common
                 None => TypeAnswer { result: false, answer: triv_answer, text: "topic error".to_string() },
             }
             // TODO: We need a different channel for this kind of operation
-            // which are 
+            // which are
         },
         Removesubscriber(eremove) => {
             let mut x = (*w_mkb).all_topic_state.get_mut(&eremove.topic);

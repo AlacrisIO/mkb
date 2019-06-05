@@ -23,7 +23,7 @@ pub struct CommonInit {
     pub consensus_fraction: f32
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Hash, Serialize, Deserialize)]
 pub struct SingleRegistrarFinal {
     pub name: String,
     pub address: String,

@@ -4,6 +4,10 @@ use std::fmt;
 use std::fmt::Debug;
 use std::fmt::Formatter;
 
+use std::hash::Hash;
+use std::hash::Hasher;
+
+
 #[derive(Clone)]
 pub struct MultihashType {
     pub val: multihash::Hash,
@@ -14,12 +18,12 @@ fn map_string_to_hash_meth(hash_method: String) -> Option<multihash::Hash> {
         "SHA1" => Some(multihash::Hash::SHA1),
         "SHA2256" => Some(multihash::Hash::SHA2256),
         "SHA2512" => Some(multihash::Hash::SHA2512),
-        
+
         "SHA3512" => Some(multihash::Hash::SHA3512),
         "SHA3384" => Some(multihash::Hash::SHA3384),
         "SHA3256" => Some(multihash::Hash::SHA3256),
         "SHA3224" => Some(multihash::Hash::SHA3224),
-        
+
         "Keccak224" => Some(multihash::Hash::Keccak224),
         "Keccak256" => Some(multihash::Hash::Keccak256),
         "Keccak384" => Some(multihash::Hash::Keccak384),
@@ -41,7 +45,7 @@ fn map_hash_method_to_string(hash_meth: multihash::Hash) -> String {
         multihash::Hash::SHA3384 => "SHA3384".to_string(),
         multihash::Hash::SHA3256 => "SHA3256".to_string(),
         multihash::Hash::SHA3224 => "SHA3224".to_string(),
-            
+
         multihash::Hash::Keccak224 => "Keccak224".to_string(),
         multihash::Hash::Keccak256 => "Keccak256".to_string(),
         multihash::Hash::Keccak384 => "Keccak384".to_string(),
@@ -78,10 +82,19 @@ impl Default for MultihashType {
     }
 }
 
+
+impl Hash for MultihashType {
+    fn hash<H: Hasher>(&self, state: &mut H) {
+        map_hash_method_to_string(self.val).hash(state)
+//        let str_out = map_hash_method_to_string(self.val);
+//        str_out.
+    }
+}
+
+
 impl Debug for MultihashType {
     fn fmt(&self, formatter: &mut Formatter) -> fmt::Result {
         write!(formatter, "Node({})", map_hash_method_to_string(self.val))
     }
 
 }
-

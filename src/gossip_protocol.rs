@@ -1,5 +1,5 @@
 //use std::process;
-use std::collections::HashSet;
+use std::collections::BTreeSet;
 
 use types::*;
 use types::SumTypeAnswer::*;
@@ -10,8 +10,19 @@ use vrf::*;
 use data_structure::*;
 use jsonrpc_client_http::HttpTransport;
 
-
-
+/// This is the function for computint the initial data for the gossip
+/// protocol.
+///
+/// ## How to use it:
+/// Input:
+///  * The common_init that contains the list of nodes
+///  * The address which is the node of interest, i.e. how things look like for you.
+///
+/// ## TODO
+/// Several things are needed to improve:
+///  * What we want is a dynamic system where nodes can be added or removed at will.
+///  * We want something more sophisticated, like a Distributed Hash Table algorithm
+///  * We want it to be safe by using VRF.
 pub fn compute_gossip_protocol(common_init: CommonInitFinal, address: String) -> GossipProtocol {
     let len = address.len();
     let mut the_vect = Vec::new();
@@ -30,7 +41,6 @@ pub fn compute_gossip_protocol(common_init: CommonInitFinal, address: String) ->
         };
         let e_line: RoutingLine = RoutingLine { list_direct_neighbor: get_routing_line() };
         the_vect.push(e_line);
-        
     }
     GossipProtocol { list_routing_line: the_vect, initial_address: address }
 }
@@ -49,7 +59,7 @@ pub fn compute_simple_gossip_protocol(common_init: &CommonInitFinal, address: St
     SimpleGossipProtocol { list_neighbor: the_vect }
 }
 
-pub fn compute_simple_gossip_protocol_topic(common_init: &CommonInitFinal, address: String, list_active_reg: HashSet<String>) -> SimpleGossipProtocol {
+pub fn compute_simple_gossip_protocol_topic(common_init: &CommonInitFinal, address: String, list_active_reg: BTreeSet<String>) -> SimpleGossipProtocol {
     let mut list_reg = Vec::<SingleRegistrarFinal>::new();
     for e_reg_addr in list_active_reg {
         if e_reg_addr != address {

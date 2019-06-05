@@ -6,7 +6,7 @@ use std::cmp::{Ordering, min};
 use multihash::encode;
 use gossip_protocol::send_transaction;
 
-#[derive(Clone, Debug, Serialize, Deserialize)]
+#[derive(Clone, Debug, Hash, Serialize, Deserialize)]
 pub struct RetrieveHashForVRF {
     pub topic: String,
 }

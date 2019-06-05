@@ -6,12 +6,12 @@ use type_init::*;
 use type_hash::*;
 use vrf::*;
 use chrono::prelude::*;
-use std::collections::{HashMap, HashSet};
+use std::collections::{BTreeSet, BTreeMap};
 pub type HashType = Vec<u8>;
 
 // Account and topics.
 
-#[derive(Clone, Debug, Serialize, Deserialize)]
+#[derive(Clone, Debug, Hash, Serialize, Deserialize)]
 pub struct AccountCurrent {
     pub current_money: u64,
     pub data_current: String,
@@ -20,7 +20,7 @@ pub struct AccountCurrent {
     pub nonce: u32
 }
 
-#[derive(Clone, Debug, Default, Serialize, Deserialize)]
+#[derive(Clone, Debug, Hash, Default, Serialize, Deserialize)]
 pub struct TopicDescription {
     pub topic: String, // the name of the topic
     pub committee_size: i32, // committee size. Can be 0 if no committee is computed.
@@ -37,19 +37,19 @@ pub struct TopicDescription {
 
 
 
-#[derive(Clone, Debug, Serialize, Deserialize)]
+#[derive(Clone, Debug, Hash, Serialize, Deserialize)]
 pub struct FullTopicData {
     pub topic_desc: TopicDescription,
-    pub list_active_reg: HashSet<String>,
+    pub list_active_reg: BTreeSet<String>,
     pub sgp: SimpleGossipProtocol,
     pub committee: Vec<String>,
-    pub list_subscribed_node: HashSet<String>,
-    pub all_account_state: HashMap<String,Vec<AccountCurrent>>
+    pub list_subscribed_node: BTreeSet<String>,
+    pub all_account_state: BTreeMap<String,Vec<AccountCurrent>>
 }
 
 #[derive(Clone,Default)]
 pub struct TopicAllInfo {
-    pub all_topic_state: HashMap<String,FullTopicData>
+    pub all_topic_state: BTreeMap<String,FullTopicData>
 }
 
 
@@ -72,7 +72,7 @@ pub struct ComputeHashOfTopic {
 
 // Gossip protocol
 
-#[derive(Default, Debug, Clone, Serialize, Deserialize)]
+#[derive(Default, Debug, Clone, Hash, Serialize, Deserialize)]
 pub struct SimpleGossipProtocol {
     pub list_neighbor: Vec<SingleRegistrarFinal>
 }
@@ -225,7 +225,7 @@ pub struct InternalRequestTopicInfo {
     pub topic: String,
 }
 
-#[derive(Clone, Debug, Serialize, Deserialize)]
+#[derive(Clone, Debug, Hash, Serialize, Deserialize)]
 pub struct TopicExportation {
     pub topic: String,
     pub topic_info: FullTopicData,
@@ -247,7 +247,7 @@ pub struct TripleRequest {
 }
 
 
-#[derive(Clone, Debug, Serialize, Deserialize)]
+#[derive(Clone, Debug, Hash, Serialize, Deserialize)]
 pub enum SumTypeRequest {
     Topiccreationrequest(TopicDescription),
     Accountinfo(AccountInfo),
