@@ -63,8 +63,6 @@ impl Serialize for MultihashType {
     }
 }
 
-
-
 impl<'de> Deserialize<'de> for MultihashType {
     fn deserialize<D>(deserializer: D) -> Result<MultihashType, D::Error> where D: Deserializer<'de>,
     {
@@ -82,12 +80,17 @@ impl Default for MultihashType {
     }
 }
 
-
 impl Hash for MultihashType {
     fn hash<H: Hasher>(&self, state: &mut H) {
         map_hash_method_to_string(self.val).hash(state)
-//        let str_out = map_hash_method_to_string(self.val);
-//        str_out.
+    }
+}
+
+impl PartialEq for MultihashType {
+    fn eq(&self, other: &Self) -> bool {
+        let str1 = map_hash_method_to_string(self.val);
+        let str2 = map_hash_method_to_string(other.val);
+        str1 == str2
     }
 }
 

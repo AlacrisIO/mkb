@@ -20,7 +20,7 @@ pub struct AccountCurrent {
     pub nonce: u32
 }
 
-#[derive(Clone, Debug, Hash, Default, Serialize, Deserialize)]
+#[derive(Clone, PartialEq, Debug, Hash, Default, Serialize, Deserialize)]
 pub struct TopicDescription {
     pub topic: String, // the name of the topic
     pub committee_size: i32, // committee size. Can be 0 if no committee is computed.
