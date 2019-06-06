@@ -51,7 +51,7 @@ pub fn func_insert_record(topic_desc: &TopicDescription, listval: &mut Vec<Accou
                     },
                     None => {break;},
                 }
-                i_level += 1;
+s                i_level += 1;
             }
             i_level
         } else {len}; */
@@ -376,8 +376,9 @@ pub fn process_operation(w_mkb: &mut std::sync::MutexGuard<TopicAllInfo>, common
                     match y {
                         Some(mut edep_c) => {
                             let len = edep_c.len();
-//                            println!("edep_c[len-1]={:?}", edep_c[len-1].hash);
-//                            println!("data.hash={:?}", edata.hash);
+                            //  println!("edep_c[len-1]={:?}", edep_c[len-1].hash);
+                            //  println!("data.hash={:?}", edata.hash);
+                            // First case, straightforward insertion
                             if edep_c[len-1].hash == edata.hash {
                                 let new_amnt = edep_c[len-1].current_money;
                                 let econt = ContainerTypeForHash { hash: edep_c[len-1].hash.clone(), esum: esumreq};
@@ -385,11 +386,21 @@ pub fn process_operation(w_mkb: &mut std::sync::MutexGuard<TopicAllInfo>, common
                                 let new_data = edata.data;
                                 let new_nonce = edep_c[len-1].nonce + 1;
                                 let new_account_curr = AccountCurrent { current_money: new_amnt, data_current: new_data, hash: new_hash.clone(), name: edata.account_name, nonce: new_nonce};
-                                func_insert_record(&edata_b.topic_desc, &mut edep_c, new_account_curr)
+                                return func_insert_record(&edata_b.topic_desc, &mut edep_c, new_account_curr);
                             }
-                            else {
-                                TypeAnswer { result: false, answer: triv_answer, text: "hash error".to_string() }
+                            // Second case, idempotent operation
+                            for i in 0..len-1 {
+                                if edep_c[i].hash == edata.hash {
+                                    let econt = ContainerTypeForHash { hash: edep_c[i].hash.clone(), esum: esumreq};
+                                    let new_hash = compute_the_hash(&edata_b.topic_desc, &econt);
+                                    if new_hash != edep_c[i+1].hash {
+                                        return TypeAnswer { result: false, answer: triv_answer, text: "the hash is an old one but the entry is not coherent with that previous history".to_string() };
+                                    }
+                                    let mkb_oper = SumTypeAnswer::Mkboperation(MKBoperation {hash: Some(vecu8_to_string(edep_c[i+1].clone().hash))});
+                                    return TypeAnswer { result: true, answer: mkb_oper, text: "entry is already present but the operation is coherent, it just does nothing".to_string() };
+                                }
                             }
+                            TypeAnswer { result: false, answer: triv_answer, text: "hash error".to_string() }
                         },
                         None => TypeAnswer { result: false, answer: triv_answer, text: "account error".to_string() },
                     }
