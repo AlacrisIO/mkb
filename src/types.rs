@@ -13,7 +13,7 @@ pub struct AccountCurrent {
     pub current_money: u64,
     pub data_current: String,
     pub hash: HashType,
-    pub utc: DateTime<Utc>,
+    pub name: String,
     pub nonce: u32
 }
 

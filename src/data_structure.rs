@@ -17,6 +17,7 @@ use type_sign::vecu8_to_string;
 
 
 pub fn func_insert_record(topic_desc: &TopicDescription, listval: &mut Vec<AccountCurrent>, eval: AccountCurrent) -> TypeAnswer {
+    /*
     if topic_desc.min_interval_insertion_micros > 0 {
         let len = listval.len();
         let dura = eval.utc.signed_duration_since(listval[len-1].utc);
@@ -30,11 +31,13 @@ pub fn func_insert_record(topic_desc: &TopicDescription, listval: &mut Vec<Accou
             },
             None => {},
         }
-    }
+    }*/
     listval.push(eval.clone());
     let len = listval.len();
     if topic_desc.total_capacity_mem > 0 || topic_desc.retention_time > 0 || topic_desc.retention_size > 0 {
         let upper_bound_retention_size = if topic_desc.retention_size > 0 {topic_desc.retention_size as usize} else {len};
+        let upper_bound_retention_time = len;
+/*
         let upper_bound_retention_time = if topic_desc.retention_time > 0 {
             let mut i_level = 0;
             let dt_last = listval[len-1].utc;
@@ -51,7 +54,7 @@ pub fn func_insert_record(topic_desc: &TopicDescription, listval: &mut Vec<Accou
                 i_level += 1;
             }
             i_level
-        } else {len};
+        } else {len}; */
         let upper_bound_capacity_mem = if topic_desc.total_capacity_mem > 0 {
             let mut tot_size = 0;
             let mut i_level = 0;
@@ -212,25 +215,22 @@ pub fn process_operation(w_mkb: &mut std::sync::MutexGuard<TopicAllInfo>, common
             let mut x = (*w_mkb).all_topic_state.get_mut(&eacc.topic);
             match x {
                 Some(mut eacc_b) => {
-                    let test = has_account(eacc_b, &eacc.account_name);
+                    let mut hash: Vec<u8> = Vec::new();
+                    for _i in 0..32 {
+                        hash.push(0);
+                    }
+                    let acct_start : AccountCurrent = AccountCurrent { current_money: 0, data_current: "".to_string(), hash: hash.clone(), name: eacc.clone().account_name, nonce: 0};
+                    let mkb_oper = SumTypeAnswer::Mkboperation(MKBoperation {hash: Some(vecu8_to_string(acct_start.clone().hash))});
+                    let test = has_account(eacc_b, &eacc.clone().account_name);
                     match test {
                         true => {
-                            // need non-trivial answer
-                            TypeAnswer { result: true, answer: triv_answer, text: "success".to_string() }
+                            TypeAnswer { result: true, answer: mkb_oper, text: "success".to_string() }
                         },
                         false => {
-                            let mut hash: Vec<u8> = Vec::new();
-                            for _i in 0..32 {
-                                hash.push(0);
-                            }
-                            let acct_start : AccountCurrent = AccountCurrent { current_money: 0, data_current: "".to_string(), hash: hash.clone(), utc: Utc::now(), nonce: 0};
                             eacc_b.all_account_state.insert(eacc.account_name, vec![acct_start.clone()]);
-                            let mkb_oper = SumTypeAnswer::Mkboperation(MKBoperation {hash: Some(vecu8_to_string(acct_start.hash))});
                             TypeAnswer { result: true, answer: mkb_oper, text: "success".to_string() }
                         }
                     }
-                    
-                    
                 },
                 None => TypeAnswer { result: false, answer: triv_answer, text: "topic absent".to_string() },
             }
@@ -249,7 +249,7 @@ pub fn process_operation(w_mkb: &mut std::sync::MutexGuard<TopicAllInfo>, common
                                 let new_hash = compute_the_hash(&edep_b.topic_desc, &econt);
                                 let new_data = "".to_string();
                                 let new_nonce = edep_c[len-1].nonce + 1;
-                                let new_account_curr = AccountCurrent { current_money: new_amnt, data_current: new_data, hash: new_hash.clone(), utc: Utc::now(), nonce: new_nonce};
+                                let new_account_curr = AccountCurrent { current_money: new_amnt, data_current: new_data, hash: new_hash.clone(), name: edep.account_name, nonce: new_nonce};
                                 func_insert_record(&edep_b.topic_desc, &mut edep_c, new_account_curr)
                             }
                             else {
@@ -308,7 +308,7 @@ pub fn process_operation(w_mkb: &mut std::sync::MutexGuard<TopicAllInfo>, common
                                 let new_hash1 = compute_the_hash(&epay_b.topic_desc, &econt);
                                 let new_data1 = "".to_string();
                                 let new_nonce = esend[len-1].nonce + 1;
-                                let new_account_send = AccountCurrent { current_money: new_amnt, data_current: new_data1, hash: new_hash1.clone(), utc: Utc::now(), nonce: new_nonce};
+                                let new_account_send = AccountCurrent { current_money: new_amnt, data_current: new_data1, hash: new_hash1.clone(), name: epay.account_name_sender, nonce: new_nonce};
                                 let ins = func_insert_record(&epay_b.topic_desc, &mut esend, new_account_send);
                                 if ins.result == false {
                                     return ins;
@@ -327,7 +327,7 @@ pub fn process_operation(w_mkb: &mut std::sync::MutexGuard<TopicAllInfo>, common
                                 let new_hash2 = compute_the_hash(&epay_b.topic_desc, &econt);
                                 let new_data2 = "".to_string();
                                 let new_nonce = erecv[len-1].nonce + 1;
-                                let new_account_recv = AccountCurrent { current_money: new_amnt, data_current: new_data2, hash: new_hash2.clone(), utc: Utc::now(), nonce: new_nonce};
+                                let new_account_recv = AccountCurrent { current_money: new_amnt, data_current: new_data2, hash: new_hash2.clone(), name: epay.account_name_receiver, nonce: new_nonce};
                                 let ins = func_insert_record(&epay_b.topic_desc, &mut erecv, new_account_recv);
                                 if ins.result == false {
                                     return ins;
@@ -355,7 +355,7 @@ pub fn process_operation(w_mkb: &mut std::sync::MutexGuard<TopicAllInfo>, common
                                 let new_hash = compute_the_hash(&ewith_b.topic_desc, &econt);
                                 let new_data = "".to_string();
                                 let new_nonce = ewith_c[len-1].nonce + 1;
-                                let new_account_curr = AccountCurrent { current_money: new_amnt, data_current: new_data, hash: new_hash.clone(), utc: Utc::now(), nonce: new_nonce};
+                                let new_account_curr = AccountCurrent { current_money: new_amnt, data_current: new_data, hash: new_hash.clone(), name: ewith.account_name, nonce: new_nonce};
                                 func_insert_record(&ewith_b.topic_desc, &mut ewith_c, new_account_curr)
                             }
                             else {
@@ -384,7 +384,7 @@ pub fn process_operation(w_mkb: &mut std::sync::MutexGuard<TopicAllInfo>, common
                                 let new_hash = compute_the_hash(&edata_b.topic_desc, &econt);
                                 let new_data = edata.data;
                                 let new_nonce = edep_c[len-1].nonce + 1;
-                                let new_account_curr = AccountCurrent { current_money: new_amnt, data_current: new_data, hash: new_hash.clone(), utc: Utc::now(), nonce: new_nonce};
+                                let new_account_curr = AccountCurrent { current_money: new_amnt, data_current: new_data, hash: new_hash.clone(), name: edata.account_name, nonce: new_nonce};
                                 func_insert_record(&edata_b.topic_desc, &mut edep_c, new_account_curr)
                             }
                             else {
