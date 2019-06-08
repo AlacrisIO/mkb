@@ -183,18 +183,11 @@ pub fn process_operation(w_mkb: &mut std::sync::MutexGuard<TopicAllInfo>, common
             let test = has_topic(w_mkb, &etop.topic);
             match test {
                 true => {
-                    let x = (*w_mkb).all_topic_state.get(&etop.topic);
-                    match x {
-                        Some(e_rec) => {
-                            if etop == e_rec.topic_desc {
-                                return TypeAnswer { result: true, answer: triv_answer, text: "topic already existing and the same topic description".to_string() };
-                            }
-                            return TypeAnswer { result: false, answer: triv_answer, text: "The topic already exist but the topic description put is different from the one already existing".to_string() };
-                        },
-                        None => {
-                            return TypeAnswer { result: false, answer: triv_answer, text: "bug in the code".to_string() };
-                        },
+                    let e_rec = (*w_mkb).all_topic_state.get(&etop.topic).unwrap();
+                    if etop == e_rec.topic_desc {
+                        return TypeAnswer { result: true, answer: triv_answer, text: "topic already existing and the same topic description".to_string() };
                     }
+                    return TypeAnswer { result: false, answer: triv_answer, text: "The topic already exist but the topic description put is different from the one already existing".to_string() };
                 },
                 false => {
                     let sgp = Default::default(); // for just one node, the trivial sgp is ok.
