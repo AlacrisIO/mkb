@@ -13,6 +13,13 @@
          "hostname": "127.0.0.1",
 	 "ip_addr": [127, 0, 0, 1],
 	 "port": 8806
+	},
+	{"name": "Charlie",
+	 "address": "0x0b714c8640329cbc313e09eeedf0ac76db2b5df7",
+	 "public_key": "03f3f01e20f3c0626063be8ad661bde4de59b9af6256fa04eef4936a103968bc3b",
+         "hostname": "127.0.0.1",
+	 "ip_addr": [127, 0, 0, 1],
+	 "port": 8807
 	}],
-    "consensus_fraction" : 0.60
+    "consensus_fraction" : 0.70
 }

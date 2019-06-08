@@ -21,7 +21,7 @@ pub fn get_serialization_typeanswer(e_ans: TypeAnswer) -> Result<serde_json::Val
         true => {
             match e_ans.answer {
                 SumTypeAnswer::Trivialanswer(_eval) => {
-                    return Ok(Value::String("successful answer, nothing to report".to_string()));
+                    return Ok(Value::String(e_ans.text));
                 },
                 SumTypeAnswer::Mkboperation(emkb) => {
                     let eans_out = SumTypeAnswerOutput { nature: "Mkboperation".to_string(), hash: emkb.hash};
@@ -323,6 +323,7 @@ pub fn inf_loop(dbe: DBE, tot_mkb: TopicAllInfo, common_init: CommonInitFinal, l
         match params.parse::<MessageTransRed>() {
             Ok(eval) => {
                 println!("parsing eval, step 1");
+                println!("eval.message={:?}", eval.message);
                 let esumreq = serde_json::from_str(&eval.message).unwrap();
                 println!("parsing eval, step 2");
                 let mut w_mkb : std::sync::MutexGuard<TopicAllInfo> = lk_mkb_4.lock().unwrap();

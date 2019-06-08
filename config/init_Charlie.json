@@ -1,0 +1,8 @@
+{
+    "name": "Charlie",
+    "address": "0x0b714c8640329cbc313e09eeedf0ac76db2b5df7",
+    "public_key": "03f3f01e20f3c0626063be8ad661bde4de59b9af6256fa04eef4936a103968bc3b",
+    "secret_key": "f8326363de9192089c6e40c61d48cd5ab2debff3379b25e380f27f16d60d2c44",
+    "password": "",
+    "database_file": "/tmp/Charlie/"
+}
