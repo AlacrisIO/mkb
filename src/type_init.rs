@@ -27,7 +27,7 @@ pub struct CommonInit {
 pub struct SingleRegistrarFinal {
     pub name: String,
     pub address: String,
-    pub public_key: secp256k1::key::PublicKey,
+    pub public_key: String,
     pub hostname: String,
     pub ip_addr: Vec<u8>,
     pub port: u16,
@@ -69,8 +69,8 @@ pub struct LocalInit {
 pub struct LocalInitFinal {
     pub name: String,
     pub address: String,
-    pub public_key: secp256k1::key::PublicKey,
-    pub secret_key: secp256k1::key::SecretKey,
+    pub public_key: String,
+    pub secret_key: String,
     pub password: String,
     pub database_file: String,
 }
@@ -92,8 +92,8 @@ pub struct ClientInitFinal {
     pub client_port: u16,
     pub registrar_ip_addr: Vec<u8>,
     pub registrar_port: u16,
-    pub public_key: secp256k1::key::PublicKey,
-    pub secret_key: secp256k1::key::SecretKey,
+    pub public_key: String, 
+    pub secret_key: String,
 }
 
 
@@ -101,14 +101,15 @@ pub struct ClientInitFinal {
 
 
 pub fn get_clientinit_final(client_init: &ClientInit) -> ClientInitFinal {
-    let secret_key_nat : secp256k1::key::SecretKey = retrieve_secret_key(&client_init.secret_key.clone());
-    let public_key_nat : secp256k1::key::PublicKey = retrieve_public_key(&client_init.public_key.clone());
+//    let secret_key_nat : secp256k1::key::SecretKey = retrieve_secret_key(&client_init.secret_key.clone());
+//    let public_key_nat : secp256k1::key::PublicKey = retrieve_public_key(&client_init.public_key.clone());
     //
     ClientInitFinal {client_ip_addr: client_init.client_ip_addr.clone(),
                      client_port: client_init.client_port,
                      registrar_ip_addr: client_init.registrar_ip_addr.clone(),
                      registrar_port: client_init.registrar_port,
-                     public_key: public_key_nat, secret_key: secret_key_nat }
+                     public_key: client_init.public_key.clone(),
+                     secret_key: client_init.secret_key.clone() }
 }
 
 pub fn retrieve_complete_list_registrar(common_init: CommonInitFinal) -> ListSingleAddress {
@@ -130,7 +131,7 @@ pub fn retrieve_common_init_final(common_init: &CommonInit) -> CommonInitFinal {
     let mut idx=0;
     for eval in common_init.registrars.clone() {
         let eval_b = SingleRegistrarFinal{name: eval.name.clone(), address: eval.address.clone(),
-                                          public_key: retrieve_public_key(&eval.public_key.clone()),
+                                          public_key: eval.public_key.clone(),
                                           hostname: eval.hostname.clone(),
                                           ip_addr: eval.ip_addr, port: eval.port};
         e_vect.push(eval_b);
@@ -170,40 +171,17 @@ pub fn get_registrar_by_name(name: String, common_init: &CommonInitFinal) -> Opt
 
 
 
-pub fn hex_to_bytes(hex: &str) -> Vec<u8> {
-    hex.as_bytes()
-        .chunks(2)
-        .filter_map(|b| std::str::from_utf8(b).ok())
-        .filter_map(|s| u8::from_str_radix(s, 16).ok())
-        .collect()
-}
-
-pub fn bytes_to_hex(ev: Vec<u8>) -> String {
-    hex::encode(ev)
-}
-
-
-
-
-pub fn retrieve_secret_key(ekey: &String) -> secp256k1::key::SecretKey {
-    secp256k1::key::SecretKey::from_slice(&hex_to_bytes(ekey)).expect("Error in reading secret key")
-}
-
-pub fn retrieve_public_key(ekey: &String) -> secp256k1::key::PublicKey {
-    secp256k1::key::PublicKey::from_slice(&hex_to_bytes(ekey)).expect("Error in reading public key")
-}
-
-
 
 
 pub fn get_localinit_final(local_init: &LocalInit) -> LocalInitFinal {
 //    println!("local_init.secret_key={}", local_init.secret_key);
 //    println!("local_init.public_key={}", local_init.public_key);
-    let secret_key_nat : secp256k1::key::SecretKey = retrieve_secret_key(&local_init.secret_key.clone());
-    let public_key_nat : secp256k1::key::PublicKey = retrieve_public_key(&local_init.public_key.clone());
+//    let secret_key_nat : secp256k1::key::SecretKey = retrieve_secret_key(&local_init.secret_key.clone());
+//    let public_key_nat : secp256k1::key::PublicKey = retrieve_public_key(&local_init.public_key.clone());
     //
     LocalInitFinal {name: local_init.name.clone(), address: local_init.address.clone(),
-                    public_key: public_key_nat, secret_key: secret_key_nat,
+                    public_key: local_init.public_key.clone(),
+                    secret_key: local_init.secret_key.clone(),
                     password: local_init.password.clone(), database_file: local_init.database_file.clone()}
 }
 

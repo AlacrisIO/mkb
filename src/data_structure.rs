@@ -416,8 +416,6 @@ pub fn process_operation(w_mkb: &mut std::sync::MutexGuard<TopicAllInfo>, common
                 },
                 None => TypeAnswer { result: false, answer: triv_answer, text: "topic error".to_string() },
             }
-            // TODO: We need a different channel for this kind of operation
-            // which are
         },
         Removesubscriber(eremove) => {
             let mut x = (*w_mkb).all_topic_state.get_mut(&eremove.topic);

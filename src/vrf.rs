@@ -1,4 +1,5 @@
 use types::*;
+use type_sign::*;
 use types::SumTypeAnswer::*;
 //use types::SumTypeRequest::*;
 use type_init::*;

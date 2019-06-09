@@ -57,7 +57,7 @@ pub fn inf_loop(dbe: DBE, tot_mkb: TopicAllInfo, common_init: CommonInitFinal, l
     let my_reg_0 = my_reg.clone();
     let my_reg_1 = my_reg.clone();
     let my_reg_2 = my_reg.clone();
-    let secret_key_copy = local_init.secret_key.clone();
+    let secret_key_copy = retrieve_secret_key(&local_init.secret_key);
 
     let lk_dbe = Arc::new(Mutex::<DBE>::new(dbe));
     let lk_mkb = Arc::new(Mutex::<TopicAllInfo>::new(tot_mkb));
@@ -324,7 +324,7 @@ pub fn inf_loop(dbe: DBE, tot_mkb: TopicAllInfo, common_init: CommonInitFinal, l
             Ok(eval) => {
                 println!("parsing eval, step 1");
                 println!("eval.message={:?}", eval.message);
-                let esumreq = serde_json::from_str(&eval.message).unwrap();
+                let esumreq : SumTypeRequest = serde_json::from_str(&eval.message).unwrap();
                 println!("parsing eval, step 2");
                 let mut w_mkb : std::sync::MutexGuard<TopicAllInfo> = lk_mkb_4.lock().unwrap();
                 let res_oper = process_operation(&mut w_mkb, common_init.clone(), &my_reg, esumreq);

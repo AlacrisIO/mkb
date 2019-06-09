@@ -88,10 +88,12 @@ jsonrpc_client!(pub struct InternalClient {
 
 fn send_transaction_kernel(mesg: MessageTrans) -> String {
     let lnk : String = "http://".to_string() + &mesg.address;
+    println!("send_transaction_kernel lnk={:?}", lnk);
     let transport = HttpTransport::new().standalone().expect("Error in creation of HttpTransport");
     let transport_handle = transport.handle(&lnk).expect("Error in creation of transport_handle");
     let mut client = InternalClient::new(transport_handle);
     let result1 = client.internal_operation(mesg.message).call().expect("Error in calls of internal_check");
+    println!("send_transaction_kernel, we have result1");
     result1
 }
 
@@ -124,7 +126,8 @@ pub fn send_transaction(registrar: &SingleRegistrarFinal, esumreq: &SumTypeReque
     let reply = send_transaction_kernel(mesg);
     //
     let reply_b : SignedString = serde_json::from_str(&reply).expect("Error in signedstring");
-    if check_signature_oper(registrar.public_key, &reply_b)==false {
+    let public_key = retrieve_public_key(&registrar.public_key);
+    if check_signature_oper(public_key, &reply_b)==false {
         println!("send_transaction: error in the verification of signature");
         return None;
     }
@@ -222,6 +225,7 @@ pub fn process_request_kernel(w_mkb: &mut std::sync::MutexGuard<TopicAllInfo>, m
                             let etopexport = TopicExportation { topic: eadd.topic, topic_info: eval_b.clone()};
                             println!("process_request_kernel, add_registrar, step 8");
                             let esumreq_b = SumTypeRequest::Fulltopicexport(etopexport);
+                            println!("esumreq_b={:?}", esumreq_b);
                             println!("process_request_kernel, add_registrar, step 9");
                             let ans_opt = send_transaction(&reg_send, &esumreq_b);
                             println!("process_request_kernel, add_registrar, step 10");
