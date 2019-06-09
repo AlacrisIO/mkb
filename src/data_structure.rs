@@ -439,7 +439,7 @@ pub fn process_operation(w_mkb: &mut std::sync::MutexGuard<TopicAllInfo>, common
                 Some(mut etop_b) => {
                     let test = etop_b.list_active_reg.contains(&ereg.registrar_address.clone());
                     match test {
-                        true => TypeAnswer { result: false, answer: triv_answer, text: "already_registered".to_string() },
+                        true => TypeAnswer { result: true, answer: triv_answer, text: "the registrar is already present. Nothing to do".to_string() },
                         false => {
                             etop_b.list_active_reg.insert(ereg.registrar_address);
                             etop_b.sgp = compute_simple_gossip_protocol_topic(&common_init, my_reg.address.clone(), etop_b.list_active_reg.clone());
