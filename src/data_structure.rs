@@ -197,6 +197,7 @@ pub fn process_operation(w_mkb: &mut std::sync::MutexGuard<TopicAllInfo>, common
                                                       list_active_reg: e_list,
                                                       sgp: sgp,
                                                       committee: Vec::<String>::new(),
+                                                      list_key_value: BTreeMap::new(),
                                                       list_subscribed_node: BTreeSet::<String>::new(),
                                                       all_account_state: BTreeMap::new()};
                     (*w_mkb).all_topic_state.insert(etop.topic, set_of_acct);
@@ -333,6 +334,27 @@ pub fn process_operation(w_mkb: &mut std::sync::MutexGuard<TopicAllInfo>, common
                 },
                 None => TypeAnswer { result: false, answer: triv_answer, text: "topic error".to_string() },
             }
+        },
+        Getkeyvaluerequest(ekey) => {
+            let x = (*w_mkb).all_topic_state.get(&ekey.topic);
+            match x {
+                Some(ekey_b) => {
+                    let _eval = ekey_b.list_key_value.get(&ekey.key);
+                    return TypeAnswer { result: true, answer: triv_answer, text: "topic error".to_string() };
+                },
+                None => TypeAnswer { result: false, answer: triv_answer, text: "topic error".to_string() },
+            }
+        },
+        Sendkeyvaluerequest(ekeyval) => {
+            let mut x = (*w_mkb).all_topic_state.get_mut(&ekeyval.topic);
+            match x {
+                Some(mut ekeyval_b) => {
+                    ekeyval_b.list_key_value.insert(ekeyval.key, ekeyval.value);
+                    return TypeAnswer { result: true, answer: triv_answer, text: "success".to_string() };
+                },
+                None => TypeAnswer { result: false, answer: triv_answer, text: "topic error".to_string() },
+            }
+            
         },
         Withdrawrequest(ewith) => {
             let mut x = (*w_mkb).all_topic_state.get_mut(&ewith.topic);

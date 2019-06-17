@@ -40,6 +40,7 @@ pub struct FullTopicData {
     pub list_active_reg: BTreeSet<String>,
     pub sgp: SimpleGossipProtocol,
     pub committee: Vec<String>,
+    pub list_key_value: BTreeMap<String,String>,
     pub list_subscribed_node: BTreeSet<String>,
     pub all_account_state: BTreeMap<String,Vec<AccountCurrent>>
 }
@@ -149,6 +150,9 @@ pub struct SendDataRequest {
     pub data: String
 }
 
+
+
+
 #[derive(Clone, Debug, Hash, Serialize, Deserialize)]
 pub struct SendDataRequestInput {
     pub topic: String,
@@ -156,6 +160,30 @@ pub struct SendDataRequestInput {
     pub hash: String,
     pub data: String
 }
+
+#[derive(Clone, Debug, Hash, Serialize, Deserialize)]
+pub struct SendKeyValueRequest {
+    pub topic: String,
+    pub account_name: String,
+    pub key: String,
+    pub value: String
+}
+
+#[derive(Clone, Debug, Hash, Serialize, Deserialize)]
+pub struct SendKeyValueRequestHash {
+    pub key_value: SendKeyValueRequest,
+    pub hash: String
+}
+
+#[derive(Clone, Debug, Hash, Serialize, Deserialize)]
+pub struct GetKeyValueRequest {
+    pub topic: String,
+    pub account_name: String,
+    pub key: String
+}
+
+
+
 
 
 
@@ -262,6 +290,8 @@ pub enum SumTypeRequest {
     Setcommittee(Committee),
     Getlatestentry(GetInfoRequest),
     Triplerequest(TripleRequest),
+    Sendkeyvaluerequest(SendKeyValueRequest),
+    Getkeyvaluerequest(GetKeyValueRequest),
 }
 
 pub fn get_topic_export_subscriber(ereq: &SumTypeRequest) -> Option<String> {
@@ -352,6 +382,8 @@ pub fn get_topic_symbolic(ereq: &SumTypeRequest) -> GossipOperationKind {
         Topiccreationrequest(_) => { GossipOperationKind::Nogossip()},
         Getlatestentry(_) => { GossipOperationKind::Nogossip()},
         Triplerequest(_) => { GossipOperationKind::Nogossip()},
+        Getkeyvaluerequest(_) => { GossipOperationKind::Nogossip()},
+        Sendkeyvaluerequest(ekeyval) => { GossipOperationKind::Topicgossip(ekeyval.topic.clone()) },
         Accountinfo(eacct) => { GossipOperationKind::Topicgossip(eacct.topic.clone()) },
         Depositrequest(edep) => { GossipOperationKind::Topicgossip(edep.topic.clone()) },
         Paymentrequest(epay) => { GossipOperationKind::Topicgossip(epay.topic.clone()) },

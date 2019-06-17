@@ -105,6 +105,8 @@ pub fn inf_loop(dbe: DBE, tot_mkb: TopicAllInfo, common_init: CommonInitFinal, l
     let process_request_9  = process_request.clone();
     let process_request_10 = process_request.clone();
     let process_request_11 = process_request.clone();
+    let process_request_12 = process_request.clone();
+    let process_request_13 = process_request.clone();
 
 
     let get_total_list_registrars = move || -> Result<serde_json::Value> {
@@ -208,12 +210,36 @@ pub fn inf_loop(dbe: DBE, tot_mkb: TopicAllInfo, common_init: CommonInitFinal, l
             Err(e) => fct_parsing_error(e, "send_data".to_string()),
         }
     });
+    io.add_method("send_key_value", move |params: Params| {
+        println!("Processing a send_key_value command");
+        match params.parse::<SendKeyValueRequest>() {
+            Ok(eval) => {
+                let eval_b = SendKeyValueRequest { topic: eval.topic, account_name: eval.account_name,
+                                                   key: eval.key, value: eval.value };
+                let esumreq = SumTypeRequest::Sendkeyvaluerequest(eval_b);
+                return process_request_6(esumreq);
+            },
+            Err(e) => fct_parsing_error(e, "send_data_key_value".to_string()),
+        }
+    });
+    io.add_method("get_key_value", move |params: Params| {
+        println!("Processing a get_data_key_value command");
+        match params.parse::<GetKeyValueRequest>() {
+            Ok(eval) => {
+                let eval_b = GetKeyValueRequest { topic: eval.topic, account_name: eval.account_name,
+                                                  key: eval.key};
+                let esumreq = SumTypeRequest::Getkeyvaluerequest(eval_b);
+                return process_request_7(esumreq);
+            },
+            Err(e) => fct_parsing_error(e, "get_key_value".to_string()),
+        }
+    });
     io.add_method("get_from_latest", move |params: Params| {
         println!("Processing a get_from_latest");
         match params.parse::<GetInfoRequest>() {
             Ok(eval) => {
                 let esumreq = SumTypeRequest::Getlatestentry(eval);
-                return process_request_6(esumreq);
+                return process_request_8(esumreq);
             },
             Err(e) => fct_parsing_error(e, "get_info".to_string()),
         }
@@ -223,7 +249,7 @@ pub fn inf_loop(dbe: DBE, tot_mkb: TopicAllInfo, common_init: CommonInitFinal, l
         match params.parse::<TripleRequest>() {
             Ok(eval) => {
                 let esumreq = SumTypeRequest::Triplerequest(eval);
-                return process_request_7(esumreq);
+                return process_request_9(esumreq);
             },
             Err(e) => fct_parsing_error(e, "get_info".to_string()),
         }
@@ -233,7 +259,7 @@ pub fn inf_loop(dbe: DBE, tot_mkb: TopicAllInfo, common_init: CommonInitFinal, l
         match params.parse::<AddSubscriber>() {
             Ok(eval) => {
                 let esumreq = SumTypeRequest::Addsubscriber(eval);
-                return process_request_8(esumreq);
+                return process_request_10(esumreq);
             },
             Err(e) => fct_parsing_error(e, "add_subscriber".to_string()),
         }
@@ -243,7 +269,7 @@ pub fn inf_loop(dbe: DBE, tot_mkb: TopicAllInfo, common_init: CommonInitFinal, l
         match params.parse::<RemoveSubscriber>() {
             Ok(eval) => {
                 let esumreq = SumTypeRequest::Removesubscriber(eval);
-                return process_request_9(esumreq);
+                return process_request_11(esumreq);
             },
             Err(e) => fct_parsing_error(e, "add_subscriber".to_string()),
         }
@@ -257,7 +283,7 @@ pub fn inf_loop(dbe: DBE, tot_mkb: TopicAllInfo, common_init: CommonInitFinal, l
                     Some(ereg) => {
                         let eval_b = AddRegistrar { topic: eval.topic, registrar_address: ereg.address};
                         let esumreq = SumTypeRequest::Addregistrar(eval_b);
-                        return process_request_10(esumreq);
+                        return process_request_12(esumreq);
                     }
                 }
             },
@@ -269,7 +295,7 @@ pub fn inf_loop(dbe: DBE, tot_mkb: TopicAllInfo, common_init: CommonInitFinal, l
         match params.parse::<RemoveRegistrar>() {
             Ok(eval) => {
                 let esumreq = SumTypeRequest::Removeregistrar(eval);
-                return process_request_11(esumreq);
+                return process_request_13(esumreq);
             },
             Err(e) => fct_parsing_error(e, "remove_registrar".to_string()),
         }
