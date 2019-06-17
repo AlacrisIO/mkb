@@ -339,8 +339,15 @@ pub fn process_operation(w_mkb: &mut std::sync::MutexGuard<TopicAllInfo>, common
             let x = (*w_mkb).all_topic_state.get(&ekey.topic);
             match x {
                 Some(ekey_b) => {
-                    let _eval = ekey_b.list_key_value.get(&ekey.key);
-                    return TypeAnswer { result: true, answer: triv_answer, text: "topic error".to_string() };
+                    let eval = ekey_b.list_key_value.get(&ekey.key);
+                    match eval {
+                        Some(eval_b) => {
+                            let eval_c = ValueOfKey { value: eval_b.to_string() };
+                            let ans = SumTypeAnswer::Valueofkey(eval_c);
+                            return TypeAnswer { result: true, answer: ans, text: "topic error".to_string() };
+                        },
+                        None => {return TypeAnswer { result: false, answer: triv_answer, text: "key error".to_string()};},
+                    }
                 },
                 None => TypeAnswer { result: false, answer: triv_answer, text: "topic error".to_string() },
             }

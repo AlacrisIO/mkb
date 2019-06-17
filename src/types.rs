@@ -17,6 +17,14 @@ pub struct AccountCurrent {
     pub nonce: u32
 }
 
+#[derive(Clone, Debug, Hash, Serialize, Deserialize)]
+pub struct ValueOfKey {
+    pub value: String
+}
+
+
+
+
 #[derive(Clone, PartialEq, Debug, Hash, Default, Serialize, Deserialize)]
 pub struct TopicDescription {
     pub topic: String, // the name of the topic
@@ -339,6 +347,7 @@ pub enum SumTypeAnswer {
     Accounttriplerequest(AccountCurrent),
     Accountlatestrequest(AccountCurrent),
     Trivialanswer(TrivialAnswer),
+    Valueofkey(ValueOfKey),
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
