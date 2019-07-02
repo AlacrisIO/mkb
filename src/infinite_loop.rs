@@ -141,11 +141,11 @@ pub fn inf_loop(dbe: DBE, tot_mkb: TopicAllInfo, common_init: CommonInitFinal, l
     };
 
     let mut io = IoHandler::new();
-    io.add_method("terminate", |_: Params| {
+    io.add_method("mkb_terminate", |_: Params| {
         println!("Processing a terminate command");
         Ok(Value::String("We are trying to exit from the terminate".into()))
     });
-    io.add_method("topic_creation", move |params: Params| {
+    io.add_method("mkb_topic_creation", move |params: Params| {
         println!("Processing a topic_creation request command");
         match params.parse::<TopicDescription>() {
             Ok(eval) => {
@@ -155,7 +155,7 @@ pub fn inf_loop(dbe: DBE, tot_mkb: TopicAllInfo, common_init: CommonInitFinal, l
             Err(e) => fct_parsing_error(e, "topic_creation".to_string()),
         }
     });
-    io.add_method("add_account", move |params: Params| {
+    io.add_method("mkb_add_account", move |params: Params| {
         println!("Processing a add_account command");
         match params.parse::<AccountInfo>() {
             Ok(eval) => {
@@ -167,7 +167,7 @@ pub fn inf_loop(dbe: DBE, tot_mkb: TopicAllInfo, common_init: CommonInitFinal, l
             Err(e) => fct_parsing_error(e, "add_account".to_string()),
         }
     });
-    io.add_method("deposit", move |params: Params| {
+    io.add_method("mkb_deposit", move |params: Params| {
         println!("Processing a deposit command");
         match params.parse::<DepositRequest>() {
             Ok(eval) => {
@@ -177,7 +177,7 @@ pub fn inf_loop(dbe: DBE, tot_mkb: TopicAllInfo, common_init: CommonInitFinal, l
             Err(e) => fct_parsing_error(e, "deposit".to_string()),
         }
     });
-    io.add_method("payment", move |params: Params| {
+    io.add_method("mkb_payment", move |params: Params| {
         println!("Processing a payment command");
         match params.parse::<PaymentRequest>() {
             Ok(eval) => {
@@ -187,7 +187,7 @@ pub fn inf_loop(dbe: DBE, tot_mkb: TopicAllInfo, common_init: CommonInitFinal, l
             Err(e) => fct_parsing_error(e, "deposit".to_string()),
         }
     });
-    io.add_method("withdrawal", move |params: Params| {
+    io.add_method("mkb_withdrawal", move |params: Params| {
         println!("Processing a withdrawal command");
         match params.parse::<WithdrawRequest>() {
             Ok(eval) => {
@@ -197,7 +197,7 @@ pub fn inf_loop(dbe: DBE, tot_mkb: TopicAllInfo, common_init: CommonInitFinal, l
             Err(e) => fct_parsing_error(e, "withdrawal".to_string()),
         }
     });
-    io.add_method("send_data", move |params: Params| {
+    io.add_method("mkb_send_data", move |params: Params| {
         println!("Processing a send_data command");
         match params.parse::<SendDataRequestInput>() {
             Ok(eval) => {
@@ -210,7 +210,7 @@ pub fn inf_loop(dbe: DBE, tot_mkb: TopicAllInfo, common_init: CommonInitFinal, l
             Err(e) => fct_parsing_error(e, "send_data".to_string()),
         }
     });
-    io.add_method("send_key_value", move |params: Params| {
+    io.add_method("mkb_send_key_value", move |params: Params| {
         println!("Processing a send_key_value command");
         match params.parse::<SendKeyValueRequest>() {
             Ok(eval) => {
@@ -222,7 +222,7 @@ pub fn inf_loop(dbe: DBE, tot_mkb: TopicAllInfo, common_init: CommonInitFinal, l
             Err(e) => fct_parsing_error(e, "send_data_key_value".to_string()),
         }
     });
-    io.add_method("get_key_value", move |params: Params| {
+    io.add_method("mkb_get_key_value", move |params: Params| {
         println!("Processing a get_data_key_value command");
         match params.parse::<GetKeyValueRequest>() {
             Ok(eval) => {
@@ -234,17 +234,17 @@ pub fn inf_loop(dbe: DBE, tot_mkb: TopicAllInfo, common_init: CommonInitFinal, l
             Err(e) => fct_parsing_error(e, "get_key_value".to_string()),
         }
     });
-    io.add_method("get_from_latest", move |params: Params| {
+    io.add_method("mkb_get_from_latest", move |params: Params| {
         println!("Processing a get_from_latest");
         match params.parse::<GetInfoRequest>() {
             Ok(eval) => {
                 let esumreq = SumTypeRequest::Getlatestentry(eval);
                 return process_request_8(esumreq);
             },
-            Err(e) => fct_parsing_error(e, "get_info".to_string()),
+            Err(e) => fct_parsing_error(e, "get_from_latest".to_string()),
         }
     });
-    io.add_method("get_from_triple", move |params: Params| {
+    io.add_method("mkb_get_from_triple", move |params: Params| {
         println!("Processing a get_from_triple");
         match params.parse::<TripleRequest>() {
             Ok(eval) => {
@@ -254,7 +254,7 @@ pub fn inf_loop(dbe: DBE, tot_mkb: TopicAllInfo, common_init: CommonInitFinal, l
             Err(e) => fct_parsing_error(e, "get_info".to_string()),
         }
     });
-    io.add_method("add_subscriber", move |params: Params| {
+    io.add_method("mkb_add_subscriber", move |params: Params| {
         println!("Processing a add subscriber request");
         match params.parse::<AddSubscriber>() {
             Ok(eval) => {
@@ -264,7 +264,7 @@ pub fn inf_loop(dbe: DBE, tot_mkb: TopicAllInfo, common_init: CommonInitFinal, l
             Err(e) => fct_parsing_error(e, "add_subscriber".to_string()),
         }
     });
-    io.add_method("remove_subscriber", move |params: Params| {
+    io.add_method("mkb_remove_subscriber", move |params: Params| {
         println!("Processing a remove_subscriber request");
         match params.parse::<RemoveSubscriber>() {
             Ok(eval) => {
@@ -274,7 +274,7 @@ pub fn inf_loop(dbe: DBE, tot_mkb: TopicAllInfo, common_init: CommonInitFinal, l
             Err(e) => fct_parsing_error(e, "add_subscriber".to_string()),
         }
     });
-    io.add_method("add_registrar", move |params: Params| {
+    io.add_method("mkb_add_registrar", move |params: Params| {
         println!("Processing a add_registrar request");
         match params.parse::<AddRegistrarInput>() {
             Ok(eval) => {
@@ -290,7 +290,7 @@ pub fn inf_loop(dbe: DBE, tot_mkb: TopicAllInfo, common_init: CommonInitFinal, l
             Err(e) => fct_parsing_error(e, "add_registrar".to_string()),
         }
     });
-    io.add_method("remove_registrar", move |params: Params| {
+    io.add_method("mkb_remove_registrar", move |params: Params| {
         println!("Processing a remove_registrar request");
         match params.parse::<RemoveRegistrar>() {
             Ok(eval) => {
@@ -300,7 +300,7 @@ pub fn inf_loop(dbe: DBE, tot_mkb: TopicAllInfo, common_init: CommonInitFinal, l
             Err(e) => fct_parsing_error(e, "remove_registrar".to_string()),
         }
     });
-    io.add_method("get_total_list_registrars", move |params: Params| {
+    io.add_method("mkb_get_total_list_registrars", move |params: Params| {
         println!("Processing a get_total_list_registrars command");
         match params.parse::<TotalListRegistrar>() {
             Ok(_) => {
@@ -309,7 +309,7 @@ pub fn inf_loop(dbe: DBE, tot_mkb: TopicAllInfo, common_init: CommonInitFinal, l
             Err(e) => fct_parsing_error(e, "get_total_list_registrars".to_string()),
         }
     });
-    io.add_method("find_topic_info", move |params: Params| {
+    io.add_method("mkb_find_topic_info", move |params: Params| {
         println!("Providing information of the topic");
         match params.parse::<RequestInfoTopic>() {
             Ok(eval) => {
@@ -326,13 +326,13 @@ pub fn inf_loop(dbe: DBE, tot_mkb: TopicAllInfo, common_init: CommonInitFinal, l
             Err(e) => fct_parsing_error(e, "find_topic_info".to_string()),
         }
     });
-    io.add_method("retrieve_proof", move |_: Params| {
+    io.add_method("mkb_retrieve_proof", move |_: Params| {
         Ok(Value::String("retrieve_proof operation".into()))
     });
     //
     // internal operation of the system
     //
-    io.add_method("internal_operation", move |params: Params| {
+    io.add_method("mkb_internal_operation", move |params: Params| {
         println!("Doing an internal check");
         let fct_signature = move |emer: &TypeAnswer| -> Result<serde_json::Value> {
             match emer.result {
@@ -342,7 +342,7 @@ pub fn inf_loop(dbe: DBE, tot_mkb: TopicAllInfo, common_init: CommonInitFinal, l
                     let estr_b = serde_json::to_string(&str_sig).unwrap();
                     return Ok(Value::String(estr_b));
                 },
-                _ => Err(JsonRpcError::invalid_params("internal_operation failed e={}".to_string())),
+                _ => Err(JsonRpcError::invalid_params("mkb_internal_operation failed e={}".to_string())),
             }
         };
         println!("fct_signature is defined");

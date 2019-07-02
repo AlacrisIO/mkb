@@ -344,9 +344,9 @@ pub fn process_operation(w_mkb: &mut std::sync::MutexGuard<TopicAllInfo>, common
                         Some(eval_b) => {
                             let eval_c = ValueOfKey { value: eval_b.to_string() };
                             let ans = SumTypeAnswer::Valueofkey(eval_c);
-                            return TypeAnswer { result: true, answer: ans, text: "topic error".to_string() };
+                            TypeAnswer { result: true, answer: ans, text: "success".to_string() }
                         },
-                        None => {return TypeAnswer { result: false, answer: triv_answer, text: "key error".to_string()};},
+                        None => {TypeAnswer { result: false, answer: triv_answer, text: "key error".to_string()}},
                     }
                 },
                 None => TypeAnswer { result: false, answer: triv_answer, text: "topic error".to_string() },
@@ -357,11 +357,10 @@ pub fn process_operation(w_mkb: &mut std::sync::MutexGuard<TopicAllInfo>, common
             match x {
                 Some(mut ekeyval_b) => {
                     ekeyval_b.list_key_value.insert(ekeyval.key, ekeyval.value);
-                    return TypeAnswer { result: true, answer: triv_answer, text: "success".to_string() };
+                    TypeAnswer { result: true, answer: triv_answer, text: "success".to_string() }
                 },
                 None => TypeAnswer { result: false, answer: triv_answer, text: "topic error".to_string() },
             }
-            
         },
         Withdrawrequest(ewith) => {
             let mut x = (*w_mkb).all_topic_state.get_mut(&ewith.topic);

@@ -8,6 +8,7 @@ pub struct SignedString {
     pub sig: Vec<u8>,
 }
 
+// Convert a string of the type "012bcef4" into a vector of Vec<u8>
 pub fn hex_to_bytes(hex: &str) -> Vec<u8> {
     hex.as_bytes()
         .chunks(2)
@@ -16,6 +17,7 @@ pub fn hex_to_bytes(hex: &str) -> Vec<u8> {
         .collect()
 }
 
+// Convert a vector of the type "[128, 34, 255]" into a string of hexadecimal "df34ff"
 pub fn bytes_to_hex(ev: Vec<u8>) -> String {
     hex::encode(ev)
 }

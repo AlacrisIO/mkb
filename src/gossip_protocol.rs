@@ -82,7 +82,7 @@ pub fn get_hostname_plus_port(hostname: &String, port: u16) -> String {
 
 
 jsonrpc_client!(pub struct InternalClient {
-    pub fn internal_operation(&mut self, transmission: String) -> RpcRequest<String>;
+    pub fn mkb_internal_operation(&mut self, transmission: String) -> RpcRequest<String>;
     pub fn registration_info(&mut self, request: String) -> RpcRequest<String>;
 });
 
@@ -92,7 +92,7 @@ fn send_transaction_kernel(mesg: MessageTrans) -> String {
     let transport = HttpTransport::new().standalone().expect("Error in creation of HttpTransport");
     let transport_handle = transport.handle(&lnk).expect("Error in creation of transport_handle");
     let mut client = InternalClient::new(transport_handle);
-    let result1 = client.internal_operation(mesg.message).call().expect("Error in calls of internal_check");
+    let result1 = client.mkb_internal_operation(mesg.message).call().expect("Error in calls of internal_check");
     println!("send_transaction_kernel, we have result1");
     result1
 }
